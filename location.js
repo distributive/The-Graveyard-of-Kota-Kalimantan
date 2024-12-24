@@ -1,6 +1,6 @@
 const LOCATION_WIDTH = 160; //px
 const LOCATION_HEIGHT = 224; //px
-const LOCATION_GAP = 40; //px
+const LOCATION_GAP = 50; //px
 const LOCATION_ZOOMS = [0.3, 0.39, 0.5, 0.65, 0.85, 1.1, 1.5];
 const LOCATION_ZOOM_DEFAULT = 2; // index
 
@@ -16,8 +16,10 @@ class Location {
   static #mapOffsetX = 0;
   static #mapOffsetY = 0;
   static setMapOffset(x, y) {
-    this.#mapOffsetX = Number.isNaN(x) ? this.#mapOffsetX : x;
-    this.#mapOffsetY = Number.isNaN(y) ? this.#mapOffsetY : y;
+    x = Number.isNaN(x) ? this.#mapOffsetX : x;
+    y = Number.isNaN(y) ? this.#mapOffsetY : y;
+    this.#mapOffsetX = x;
+    this.#mapOffsetY = y;
     const root = this.root;
     root.css("--local-x", `${this.#mapOffsetX}px`);
     root.css("--local-y", `${this.#mapOffsetY}px`);
@@ -77,11 +79,21 @@ class Location {
     return y * (LOCATION_HEIGHT + LOCATION_GAP);
   }
 
+  static determineCanFightEvade() {
+    const currentLocation = this.currentLocation;
+    const enemiesPresent = this.currentLocation.#enemies.length > 0;
+    UiMode.setFlag("can-fight", enemiesPresent);
+    UiMode.setFlag("can-evade", enemiesPresent);
+  }
+
   static instances = [];
   static idToInstance = {};
   static currentLocation = null;
   static nextId = 0;
 
+  static getCurrentLocation() {
+    return this.currentLocation;
+  }
   static getInstance(id) {
     return this.idToInstance[id];
   }
@@ -90,12 +102,19 @@ class Location {
   #id = -1;
   #x = 0;
   #y = 0;
+
+  #shroud = 0;
   #clues = 0;
+  #doom = 0;
+
   #neighbours = [];
   #connections = {};
 
+  #enemies = [];
+
   #jObj = null;
   #jClues = null;
+  #jDoom = null;
 
   constructor(x, y) {
     this.#id = Location.nextId;
@@ -106,7 +125,10 @@ class Location {
     let jObj = $(`
       <div class="location-container">
         <img src="img/card/location.png" class="location-image card-image" onmousedown="event.preventDefault()" />
-        <div class="location-clues shake-centered"></div>
+        <div class="hosted-counters">
+          <div class="clues shake-counter"></div>
+          <div class="doom shake-counter"></div>
+        </div>
       </div>`);
     this.#jObj = jObj;
     jObj.data("location-id", this.#id);
@@ -120,13 +142,25 @@ class Location {
         let id = jObj.data("location-id");
         let location = Location.getInstance(id);
         if (location) {
-          location.setCurrentLocation();
+          Game.actionMoveTo(location);
         }
       }
     });
 
-    this.#jClues = this.#jObj.find(".location-clues");
-    this.setClues(0);
+    this.#jClues = this.#jObj.find(".clues");
+    this.#jDoom = this.#jObj.find(".doom");
+    this.setClues(1);
+    this.setDoom(0);
+  }
+
+  get shroud() {
+    return this.#shroud;
+  }
+  get clues() {
+    return this.#clues;
+  }
+  get doom() {
+    return this.#doom;
   }
 
   setClues(value, doAnimate = true) {
@@ -145,6 +179,42 @@ class Location {
     }
     this.#clues = value;
     return this;
+  }
+
+  setDoom(value, doAnimate = true) {
+    if (value == 0) {
+      this.#jDoom.hide();
+    } else {
+      this.#jDoom.show();
+    }
+    let jDoom = this.#jDoom;
+    jDoom.html(value);
+    if (value != this.#doom && doAnimate) {
+      jDoom.addClass("animate");
+      setTimeout(function () {
+        jDoom.removeClass("animate");
+      }, 500);
+    }
+    this.#doom = value;
+    return this;
+  }
+
+  removeClues(number) {
+    if (number > this.#clues) {
+      this.setClues(0);
+      return false;
+    }
+    this.setClues(this.#clues - number);
+    return true;
+  }
+
+  removeDoom(number) {
+    if (number > this.#doom) {
+      this.setDoom(0);
+      return false;
+    }
+    this.setDoom(this.#doom - number);
+    return true;
   }
 
   setPos(x, y) {
@@ -176,6 +246,10 @@ class Location {
     Object.keys(this.#connections).forEach((key) =>
       this.#connections[key].addClass("valid-connection")
     );
+
+    $("#map-reset").attr("disabled", false);
+    UiMode.setFlag("can-investigate", this.#clues > 0);
+    Location.determineCanFightEvade();
 
     return this;
   }
@@ -213,6 +287,52 @@ class Location {
     }
 
     return this;
+  }
+
+  // These do not affect the enemies, they are just for logging them at locations
+  addEnemy(enemy) {
+    if (this.#enemies.includes(enemy)) {
+      return false;
+    }
+    if (this.#enemies.length == 0) {
+      setTimeout(() => {
+        if (this.#enemies.length > 0) {
+          this.cover();
+        }
+      }, 250); // Timing chosen based on the enemy movement speed of 0.2s
+    }
+    this.#enemies.push(enemy);
+    Location.determineCanFightEvade();
+    this.setEnemyIndices();
+    return true;
+  }
+  removeEnemy(enemy) {
+    const index = this.#enemies.indexOf(enemy);
+    if (index >= 0) {
+      this.#enemies.splice(index, 1);
+      Location.determineCanFightEvade();
+      this.setEnemyIndices();
+      if (this.#enemies.length == 0) {
+        this.uncover();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  // Repositions each enemy so they don't fully cover each other
+  setEnemyIndices() {
+    this.#enemies.forEach(function (enemy, i, enemies) {
+      enemy.setOffsetIndex(i, enemies.length);
+    });
+  }
+
+  // Moves hosted counters out of the way of hosted enemies
+  cover() {
+    this.#jObj.find(".hosted-counters").addClass("covered");
+  }
+  uncover() {
+    this.#jObj.find(".hosted-counters").removeClass("covered");
   }
 
   set image(path) {}

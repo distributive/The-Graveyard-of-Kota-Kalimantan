@@ -29,6 +29,14 @@ $(document).ready(function () {
   l4.addNeighbour(l7);
   l4.addNeighbour(l8);
 
+  let enemy = new Enemy(l5);
+  new Enemy(l5).setDamage(1);
+  new Enemy(l5).setDamage(2);
+  // setTimeout(() => enemy.moveTo(l2), 1 * 800);
+  // setTimeout(() => enemy.moveTo(l0), 2 * 800);
+  // setTimeout(() => enemy.moveTo(l4), 3 * 800);
+  // setTimeout(() => enemy.moveTo(l8), 4 * 800);
+
   let headerB = "Modal B";
   let bodyB = "The next modal.";
   let optionsB = [new Option("Close", "close")];
@@ -47,14 +55,8 @@ $(document).ready(function () {
   let modalA = new Modal("a", headerA, bodyA, optionsA);
   // modalA.display();
 
-  let xs = [];
-  for (let i = 0; i < 45; i++) {
-    xs.push(0);
-  }
-  Cards.addToStack(xs);
-
-  Cards.draw(3);
-  Cards.install();
-  Cards.install();
-  Cards.install();
+  Game.initGameState();
+  setTimeout(function () {
+    Game.startTurn();
+  }, 500);
 });

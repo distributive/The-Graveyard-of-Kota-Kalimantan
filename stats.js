@@ -5,6 +5,31 @@ class Stats {
   static #strength = -1;
   static #clicks = -1;
   static #credits = -1;
+  static #clues = -1;
+
+  static getBase(stat) {
+    return stat == "link"
+      ? Stats.link
+      : stat == "mu"
+      ? Stats.mu
+      : stat == "influence"
+      ? Stats.influence
+      : stat == "strength"
+      ? Stats.strength
+      : 0;
+  }
+
+  static getName(stat) {
+    return stat == "link"
+      ? "Link"
+      : stat == "mu"
+      ? "MU"
+      : stat == "influence"
+      ? "Influence"
+      : stat == "strength"
+      ? "Strength"
+      : 0;
+  }
 
   static get link() {
     return this.#link;
@@ -57,6 +82,17 @@ class Stats {
       animate($("#credit-count"));
     }
     this.#credits = value;
+  }
+
+  static get clues() {
+    return this.#clues;
+  }
+  static set clues(value) {
+    $("#clue-count").html(value);
+    if (this.#clues != value) {
+      animate($("#clue-count"));
+    }
+    this.#clues = value;
   }
 
   static get clicks() {

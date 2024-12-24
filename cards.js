@@ -7,8 +7,28 @@ class Cards {
   ///////////////////////////////////////////////
   // General
 
-  static focusCard(cardImage) {
-    $("#card-focused-image").attr("src", cardImage.attr("src"));
+  static focusCard(jCardImage) {
+    $("#card-focused-image")
+      // .attr("src", jCardImage.attr("src").replace(".png", "_full.png"))
+      .attr("src", jCardImage.attr("src"))
+      .removeClass("unfocused")
+      .addClass("focused");
+  }
+  static unfocusCard() {
+    $("#card-focused-image").removeClass("focused").addClass("unfocused");
+  }
+  static removeFocusCard() {
+    $("#card-focused-image").removeClass("focused").removeClass("unfocused");
+  }
+
+  static flip(jCardImage, newImage) {
+    jCardImage.addClass("flipping");
+    setTimeout(() => {
+      if (newImage) {
+        jCardImage.attr("src", newImage);
+      }
+      jCardImage.removeClass("flipping");
+    }, 1000); // CSS currently takes 1s to flip a card halfway
   }
 
   ///////////////////////////////////////////////
@@ -24,6 +44,7 @@ class Cards {
       shuffle(this.stack);
     }
     this.updateStackHeapHeights();
+    this.determineCanDraw();
   }
 
   static addToHeap(cardId, shuffleInto = false) {
@@ -36,6 +57,7 @@ class Cards {
       shuffle(this.heap);
     }
     this.updateStackHeapHeights();
+    this.determineCanDraw();
   }
 
   // Returns the number of cards that couldn't be drawn
@@ -56,12 +78,14 @@ class Cards {
       }, i * 50);
     }
     this.updateStackHeapHeights();
+    this.determineCanDraw();
     return n - i;
   }
 
   static discard(index) {
     if (this.removeGripCard(index)) {
       this.updateStackHeapHeights();
+      this.determineCanDraw();
     }
   }
 
@@ -72,12 +96,18 @@ class Cards {
     this.stack = shuffle(this.heap.map((x) => x));
     this.heap = [];
     this.updateStackHeapHeights();
+    this.determineCanDraw();
   }
 
   static removeGripCard(card) {
     const index = typeof card == "object" ? this.grip.indexOf(card) : card;
     if (index >= 0 && index < this.grip.length) {
+      this.grip[index].remove();
       this.grip.splice(index, 1);
+      this.updateHandPositions();
+      setTimeout(function () {
+        Cards.updateHandPositions();
+      }, 210);
       return true;
     }
     return false;
@@ -108,6 +138,12 @@ class Cards {
       });
   }
 
+  static determineCanDraw() {
+    const canDraw = this.stack.length > 0 || this.heap.length > 0;
+    UiMode.setFlag("can-draw", canDraw);
+    return canDraw;
+  }
+
   ///////////////////////////////////////////////
   // Rig
 
@@ -133,14 +169,18 @@ class GripCard {
 
   constructor(jObj) {
     this.#jObj = jObj;
-    jObj.click(() => {
-      if (UiMode.uiMode != UIMODE_SELECT_GRIP_CARD) {
-        return;
-      }
-      if (this == GripCard.selectedCard) {
-        this.deselect();
-      } else {
-        this.select();
+    let instance = this;
+    this.#jObj.click(function () {
+      if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
+        if (Game.actionPlayCard(instance)) {
+          Cards.removeGripCard(instance);
+        }
+      } else if (UiMode.uiMode == UIMODE_SELECT_GRIP_CARD) {
+        if (instance == GripCard.selectedCard) {
+          instance.deselect();
+        } else {
+          instance.select();
+        }
       }
     });
   }
@@ -157,6 +197,14 @@ class GripCard {
     GripCard.selectedCard = null;
     $(".grip-card").removeClass("selected-card");
     Cards.updateHandPositions();
+  }
+
+  remove() {
+    let jObj = this.#jObj;
+    jObj.addClass("transition-out");
+    setTimeout(function () {
+      jObj.remove();
+    }, 200);
   }
 
   // // Releases the card from the grip and moves it to a given point
@@ -215,7 +263,38 @@ class RigCard {
 $(document).ready(function () {
   Cards.updateStackHeapHeights();
 
-  $("body").on("mouseenter", ".card-image", function () {
-    Cards.focusCard($(this));
-  });
+  const displayCardModal = function () {
+    const header = "Card Title";
+    const body = `
+      <img class="card-image" id="card-modal-image" src="${$(
+        "#card-focused-image"
+      ).attr("src")}" />
+      <div>Card text here.</div>`;
+    const options = [new Option("Close", "close")];
+    const modal = new Modal(null, header, body, options, true);
+    modal.display();
+  };
+
+  $("body")
+    .on(
+      "mouseenter",
+      ":not(.modal) .card-image:not(#card-focused-image, #card-modal-image)",
+      function () {
+        Cards.focusCard($(this));
+      }
+    )
+    .on(
+      "mouseleave",
+      ":not(.modal) .card-image:not(#card-focused-image, #card-modal-image)",
+      function () {
+        Cards.unfocusCard($(this));
+      }
+    )
+    .on(
+      "dblclick",
+      ".card-image:not(#card-focused-image, #card-modal-image)",
+      displayCardModal
+    );
+
+  $("#card-focused-image").click(displayCardModal);
 });

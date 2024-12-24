@@ -4,6 +4,7 @@ const UIMODE_SELECT_ACTION = 2;
 const UIMODE_MOVEMENT = 3;
 const UIMODE_SELECT_GRIP_CARD = 4;
 const UIMODE_SELECT_INSTALLED_CARD = 5;
+const UIMODE_SELECT_ENEMY = 6;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -14,6 +15,7 @@ UIMODE_TO_CLASS[UIMODE_SELECT_ACTION] = "uimode-select-action";
 UIMODE_TO_CLASS[UIMODE_MOVEMENT] = "uimode-movement";
 UIMODE_TO_CLASS[UIMODE_SELECT_GRIP_CARD] = "uimode-select-grip-card";
 UIMODE_TO_CLASS[UIMODE_SELECT_INSTALLED_CARD] = "uimode-select-installed-card";
+UIMODE_TO_CLASS[UIMODE_SELECT_ENEMY] = "uimode-select-enemy";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +27,14 @@ class UiMode {
   static set uiMode(mode) {
     $("#ui-mode").removeClass().addClass(UIMODE_TO_CLASS[mode]);
     UiMode.#uiMode = mode;
+  }
+
+  static setFlag(flag, value) {
+    if (value) {
+      $("#ui-flags").addClass(flag);
+    } else {
+      $("#ui-flags").removeClass(flag);
+    }
   }
 
   // UIMODE_NON_GAME
@@ -50,6 +60,10 @@ class UiMode {
   // UIMODE_SELECT_INSTALLED_CARD
   static enterSelectInstalledCard() {}
   static exitSelectInstalledCard() {}
+
+  // UIMODE_SELECT_ENEMY
+  static enterSelectEnemy() {}
+  static exitSelectEnemy() {}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

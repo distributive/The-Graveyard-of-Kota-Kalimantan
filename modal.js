@@ -1,7 +1,10 @@
 class Modal {
   // STATIC
-  static show() {
-    $("#modal").modal({ backdrop: "static", keyboard: false });
+  static show(allowKeyboard) {
+    $("#modal").modal({
+      backdrop: allowKeyboard ? true : "static",
+      keyboard: !!allowKeyboard,
+    });
     $("#modal").modal("show");
   }
   static hide() {
@@ -18,16 +21,20 @@ class Modal {
   #header;
   #body;
   #options;
+  #allowKeyboard; // Bool => true allows the modal to be closed by keyboard/clicking outside the modal
 
-  constructor(id, header, body, options) {
-    this.#id = id;
+  constructor(id, header, body, options, allowKeyboard) {
+    this.#id = id; // Null => temporary modal that does not need referencing later
     this.#header = header;
     this.#body = body;
     this.#options = options;
-    if (Modal.find(id)) {
-      throw new Error(`Duplicate modal ID "${id}"`);
+    this.#allowKeyboard = allowKeyboard;
+    if (this.#id) {
+      if (Modal.find(id)) {
+        throw new Error(`Duplicate modal ID "${id}"`);
+      }
+      Modal.instances[id] = this;
     }
-    Modal.instances[id] = this;
   }
 
   display() {
@@ -38,7 +45,11 @@ class Modal {
     );
     modal.find("#modal-body").empty().append(this.#body).append(optionsParent);
     this.#options.forEach((option) => {
-      let optionContainer = $(`<button class="modal-option"></button>`);
+      let optionContainer = $(
+        `<button class="modal-option ${
+          option.classes ? option.classes : ""
+        }"></button>`
+      );
       let effect =
         option.effect instanceof Modal
           ? () => {
@@ -53,7 +64,7 @@ class Modal {
           : option.effect;
       optionsParent.append(optionContainer.append(option.text).click(effect));
     });
-    Modal.show();
+    Modal.show(this.#allowKeyboard);
   }
 }
 
@@ -64,8 +75,9 @@ class Modal {
  * - function - runs the function
  */
 class Option {
-  constructor(text, effect) {
+  constructor(text, effect, classes) {
     this.text = text;
     this.effect = effect;
+    this.classes = classes;
   }
 }
