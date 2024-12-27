@@ -30,6 +30,7 @@
     <script src="location.js"></script>
     <script src="enemy.js"></script>
     <script src="cards.js"></script>
+    <script src="card.impl.js"></script>
     <script src="agenda.js"></script>
     <script src="act.js"></script>
     <script src="uiMode.js"></script>
@@ -75,7 +76,7 @@
         <!-- Game -->
         <div class="container-fluid h-100">
           <div class="row h-70">
-            <div class="col-6 p-0">
+            <div class="col-6 col-lg-5 p-0">
               <div id="location-window">
                 <div id="location-map">
                   <div id="enemy-container"></div>
@@ -93,9 +94,16 @@
                 </div>
               </div>
             </div>
-            <div class="col-6 h-100">
-              <div class="d-flex h-60">
-                <div id="agenda" class="mx-2 h-100 py-2">
+            <div class="col-6 col-lg-7 d-flex h-100">
+              <div class="h-100 d-flex flex-column py-1 gap-1">
+                <div id="act" class="h-50">
+                  <img
+                    id="act-image"
+                    class="card-image h-100"
+                    src="img/card/actPlaceholder.png"
+                  />
+                </div>
+                <div id="agenda" class="h-50">
                   <img
                     id="agenda-image"
                     class="card-image h-100"
@@ -105,18 +113,11 @@
                     <div class="doom shake-counter" style="display: none"></div>
                   </div>
                 </div>
-                <div id="act" class="mx-2 h-100 py-2">
-                  <img
-                    id="act-image"
-                    class="card-image h-100"
-                    src="img/card/actPlaceholder.png"
-                  />
-                </div>
               </div>
-              <div class="h-40 pt-1 pb-2">
+              <div class="flex-grow-1">
                 <div
                   id="rig"
-                  class="h-100 w-100 d-flex flex-row-reverse gap-2"
+                  class="h-100 w-100 d-flex flex-row-reverse flex-wrap-reverse align-content-start p-1 gap-1"
                 ></div>
               </div>
             </div>
@@ -133,7 +134,7 @@
                   <img
                     id="stack-top-card"
                     class="h-100"
-                    src="img/card/backRunner.png"
+                    src="img/card/backNeutral.png"
                   />
                 </div>
                 <div id="grip" class="mx-2 flex-grow-1 h-100"></div>
@@ -142,7 +143,7 @@
                   <img
                     id="heap-top-card"
                     class="h-100"
-                    src="img/card/cardPlaceholder.png"
+                    src="img/card/backNeutral.png"
                   />
                 </div>
                 <div id="runner-id" class="mx-2 h-100">
@@ -221,8 +222,8 @@
                   </div>
                 </div>
               </div>
-              <div id="basic-actions" class="flex-grow-1 row">
-                <div class="col-6 d-flex flex-column font-size-14">
+              <div id="basic-actions" class="flex-grow-1 row font-size-14">
+                <div class="col-4 d-flex flex-column">
                   <button id="action-credit" class="action-button">
                     Gain 1
                     <img
@@ -234,20 +235,28 @@
                   <button id="action-draw" class="action-button mt-2">
                     Draw 1 card
                   </button>
-                  <button id="action-move" class="action-button mt-2">
-                    <span id="action-move-default">Move</span
-                    ><span id="action-move-cancel">Cancel</span>
-                  </button>
                 </div>
-                <div class="col-6 d-flex flex-column font-size-14">
-                  <button id="action-investigate" class="action-button">
+                <div class="col-4 d-flex flex-column">
+                  <button id="action-move" class="action-button">
+                    <span id="action-move-default">Move</span>
+                    <span id="action-move-cancel">Cancel</span>
+                  </button>
+                  <button id="action-investigate" class="action-button mt-2">
                     Jack in
                   </button>
+                </div>
+                <div class="col-4 d-flex flex-column">
+                  <button id="action-engage" class="action-button">
+                    <span id="action-engage-default">Engage</span>
+                    <span id="action-engage-cancel">Cancel</span>
+                  </button>
                   <button id="action-fight" class="action-button mt-2">
-                    Fight
+                    <span id="action-fight-default">Fight</span>
+                    <span id="action-fight-cancel">Cancel</span>
                   </button>
                   <button id="action-evade" class="action-button mt-2">
-                    Evade
+                    <span id="action-evade-default">Evade</span>
+                    <span id="action-evade-cancel">Cancel</span>
                   </button>
                 </div>
               </div>

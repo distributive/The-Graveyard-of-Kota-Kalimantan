@@ -113,7 +113,7 @@ $(document).ready(function () {
     }
     Chaos.runModal(
       "mu",
-      3,
+      3, // TODO - set this to location's clue count
       true,
       "Jacking in...",
       `<p>If successful, you will discover ${
@@ -132,5 +132,44 @@ $(document).ready(function () {
         );
       }
     );
+  });
+
+  $("#action-engage").click(() => {
+    if (Enemy.mode == ENEMY_MODE_NONE) {
+      Enemy.actionEngage(function (result, enemy) {
+        Stats.clicks--;
+        UiMode.uiMode = UIMODE_SELECT_ACTION;
+        Game.checkTurnEnd();
+      });
+    } else if (Enemy.mode == ENEMY_MODE_ENGAGE) {
+      Enemy.cancelAction();
+      UiMode.uiMode = UIMODE_SELECT_ACTION;
+    }
+  });
+
+  $("#action-fight").click(() => {
+    if (Enemy.mode == ENEMY_MODE_NONE) {
+      Enemy.actionFight(function (result, enemy) {
+        Stats.clicks--;
+        UiMode.uiMode = UIMODE_SELECT_ACTION;
+        Game.checkTurnEnd();
+      });
+    } else if (Enemy.mode == ENEMY_MODE_FIGHT) {
+      Enemy.cancelAction();
+      UiMode.uiMode = UIMODE_SELECT_ACTION;
+    }
+  });
+
+  $("#action-evade").click(() => {
+    if (Enemy.mode == ENEMY_MODE_NONE) {
+      Enemy.actionEvade(function (result, enemy) {
+        Stats.clicks--;
+        UiMode.uiMode = UIMODE_SELECT_ACTION;
+        Game.checkTurnEnd();
+      });
+    } else if (Enemy.mode == ENEMY_MODE_EVADE) {
+      Enemy.cancelAction();
+      UiMode.uiMode = UIMODE_SELECT_ACTION;
+    }
   });
 });

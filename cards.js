@@ -69,7 +69,7 @@ class Cards {
       }
       this.stack.pop();
       let jCard = $(
-        `<div class="grip-card h-100"><img class="grip-card-image card-image h-100" src="img/card/placeholder.png" /></div>`
+        `<div class="grip-card h-100"><img class="grip-card-image card-image h-100" src="img/card/eventPlaceholder.png" /></div>`
       );
       this.grip.push(new GripCard(jCard));
       setTimeout(() => {
@@ -151,9 +151,9 @@ class Cards {
     // card-padding is to make sure the parent class has the correct width
     // TODO: create a high/low res copy of each card image and have this display the high one
     let jCard = $(`
-      <div class="installed-card h-100">
+      <div class="installed-card">
         <img class="card-padding h-100" src="img/card/placeholder.png" />
-        <img class="installed-card-image card-image h-100" src="img/card/placeholder.png" />
+        <img class="installed-card-image card-image h-100" src="img/card/assetPlaceholder.png" />
       </div>`);
     $("#rig").append(jCard);
     this.installedCards = new RigCard(jCard);
@@ -292,7 +292,7 @@ $(document).ready(function () {
     )
     .on(
       "dblclick",
-      ".card-image:not(#card-focused-image, #card-modal-image)",
+      ".card-image:not(#card-focused-image, #card-modal-image, .grip-card-image)",
       displayCardModal
     );
 

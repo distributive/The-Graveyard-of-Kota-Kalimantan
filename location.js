@@ -79,13 +79,6 @@ class Location {
     return y * (LOCATION_HEIGHT + LOCATION_GAP);
   }
 
-  static determineCanFightEvade() {
-    const currentLocation = this.currentLocation;
-    const enemiesPresent = this.currentLocation.#enemies.length > 0;
-    UiMode.setFlag("can-fight", enemiesPresent);
-    UiMode.setFlag("can-evade", enemiesPresent);
-  }
-
   static instances = [];
   static idToInstance = {};
   static currentLocation = null;
@@ -249,7 +242,7 @@ class Location {
 
     $("#map-reset").attr("disabled", false);
     UiMode.setFlag("can-investigate", this.#clues > 0);
-    Location.determineCanFightEvade();
+    Enemy.determineCanEngageFightEvade();
 
     return this;
   }
@@ -302,7 +295,7 @@ class Location {
       }, 250); // Timing chosen based on the enemy movement speed of 0.2s
     }
     this.#enemies.push(enemy);
-    Location.determineCanFightEvade();
+    Enemy.determineCanEngageFightEvade();
     this.setEnemyIndices();
     return true;
   }
@@ -310,7 +303,7 @@ class Location {
     const index = this.#enemies.indexOf(enemy);
     if (index >= 0) {
       this.#enemies.splice(index, 1);
-      Location.determineCanFightEvade();
+      Enemy.determineCanEngageFightEvade();
       this.setEnemyIndices();
       if (this.#enemies.length == 0) {
         this.uncover();

@@ -31,7 +31,7 @@ $(document).ready(function () {
 
   let enemy = new Enemy(l5);
   new Enemy(l5).setDamage(1);
-  new Enemy(l5).setDamage(2);
+  new Enemy(l0).setDamage(2);
   // setTimeout(() => enemy.moveTo(l2), 1 * 800);
   // setTimeout(() => enemy.moveTo(l0), 2 * 800);
   // setTimeout(() => enemy.moveTo(l4), 3 * 800);
