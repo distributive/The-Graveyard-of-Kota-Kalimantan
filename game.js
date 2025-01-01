@@ -8,21 +8,22 @@ class Game {
 
     // TODO read decklist for given ID
     let xs = [];
-    for (let i = 0; i < 45; i++) {
-      xs.push(0);
+    for (let i = 0; i < 22; i++) {
+      xs.push(CardSureGamble);
+      xs.push(CardUnderTheHood);
     }
     Cards.addToStack(xs);
 
     Cards.draw(5);
 
-    Stats.credits = 0;
+    Stats.setCredits(0);
     for (let i = 1; i <= 5; i++) {
       setTimeout(() => {
-        Stats.credits = i;
+        Stats.setCredits(i);
       }, i * 100);
     }
 
-    Stats.clues = 0;
+    Stats.setClues(0);
 
     Agenda.setDoom(0);
 
@@ -30,13 +31,13 @@ class Game {
   }
 
   static startTurn() {
-    UiMode.uiMode = UIMODE_SELECT_ACTION;
-    Stats.clicks = 4;
+    UiMode.setMode(UIMODE_SELECT_ACTION);
+    Stats.setClicks(3);
     animateTurnBanner("runner");
   }
   static endTurn() {
-    UiMode.uiMode = UIMODE_CORP_TURN;
-    Stats.clicks = 0;
+    UiMode.setMode(UIMODE_CORP_TURN);
+    Stats.setClicks(0);
     Agenda.addDoom(1);
     animateTurnBanner("corp");
 
@@ -48,7 +49,7 @@ class Game {
 
   static checkTurnEnd() {
     if (Stats.clicks <= 0) {
-      this.endTurn();
+      UiMode.setMode(UIMODE_END_TURN);
       return true;
     }
     return false;
@@ -56,21 +57,77 @@ class Game {
 
   static actionMoveTo(location) {
     location.setCurrentLocation();
-    Stats.clicks--;
+    Stats.addClicks(-1);
     if (!Game.checkTurnEnd()) {
-      UiMode.uiMode = UIMODE_SELECT_ACTION;
+      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
   }
 
-  static actionPlayCard(gripCard) {
-    if (Stats.clicks <= 0) {
-      return;
+  static async actionPlayCard(gripCard) {
+    const cardData = gripCard.cardData;
+    const cost = cardData.calculateCost(gripCard);
+    if (
+      Stats.clicks <= 0 ||
+      (cardData.type != TYPE_ASSET && cardData.type != TYPE_EVENT) ||
+      cost > Stats.credits ||
+      !cardData.canPlay(gripCard)
+    ) {
+      return false;
     }
-    // TODO - check if card is playable, then play it
-    Stats.clicks--;
-    Cards.install();
+    Stats.addClicks(-1);
+    Stats.addCredits(-cost);
+    if (cardData.type == TYPE_ASSET) {
+      const rigCard = Cards.install(cardData.id);
+      await cardData.onPlay(rigCard);
+      await Broadcast.signal("onCardInstalled", { card: rigCard });
+    } else {
+      await cardData.onPlay(gripCard);
+      await Broadcast.signal("onCardPlayed", { card: gripCard });
+    }
     Game.checkTurnEnd();
     return true;
+  }
+
+  // If location isn't set, use the current location
+  static async actionInvestigate(clues, location, callback) {
+    if (!location) {
+      location = Location.getCurrentLocation();
+    }
+    location.cardData.onThisInvestigationAttempt({ location: location });
+    await Broadcast.signal("onInvestigationAttempt", { location: location });
+    Chaos.runModal(
+      "mu",
+      location.cardData.shroud,
+      true,
+      "Jacking in...",
+      `<p>If successful, you will download ${clues} data from ${
+        location == Location.getCurrentLocation()
+          ? "your current location"
+          : "the target location"
+      }.</p>`,
+      async function (results) {
+        const { success } = results;
+        Modal.hide();
+        if (success) {
+          Location.getCurrentLocation().removeClues(clues);
+          Stats.addClues(1);
+        }
+        UiMode.setFlag(
+          "can-investigate",
+          Location.getCurrentLocation().clues > 0
+        );
+        location.cardData.onThisInvestigationAttempt({
+          location: location,
+          clues: clues,
+        });
+        await Broadcast.signal("onInvestigation", {
+          location: location,
+          results: results,
+          clues: clues,
+        });
+        callback(results);
+      }
+    );
   }
 }
 
@@ -78,21 +135,25 @@ class Game {
 
 $(document).ready(function () {
   // Action buttons
+  $("#action-end-turn").click(() => {
+    Game.endTurn();
+  });
+
   $("#action-credit").click(() => {
     if (Stats.clicks <= 0) {
       return;
     }
-    Stats.credits++;
-    Stats.clicks--;
+    Stats.addCredits(1);
+    Stats.addClicks(-1);
     Game.checkTurnEnd();
   });
 
   $("#action-draw").click(() => {
-    if (Stats.clicks <= 0 || Cards.stack.length == 0) {
+    if (Stats.clicks <= 0 || !Cards.canDraw()) {
       return;
     }
     Cards.draw(1);
-    Stats.clicks--;
+    Stats.addClicks(-1);
     Game.checkTurnEnd();
   });
 
@@ -101,9 +162,9 @@ $(document).ready(function () {
       return;
     }
     if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
-      UiMode.uiMode = UIMODE_MOVEMENT;
+      UiMode.setMode(UIMODE_MOVEMENT);
     } else if (UiMode.uiMode == UIMODE_MOVEMENT) {
-      UiMode.uiMode = UIMODE_SELECT_ACTION;
+      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
   });
 
@@ -111,65 +172,47 @@ $(document).ready(function () {
     if (Stats.clicks <= 0 || UiMode.uiMode != UIMODE_SELECT_ACTION) {
       return;
     }
-    Chaos.runModal(
-      "mu",
-      3, // TODO - set this to location's clue count
-      true,
-      "Jacking in...",
-      `<p>If successful, you will discover ${
-        1 /*TODO*/
-      } clue at your current location.</p>`,
-      function (result, token, value) {
-        Modal.hide();
-        Stats.clicks--;
-        if (result) {
-          Location.getCurrentLocation().removeClues(1);
-          Stats.clues++;
-        }
-        UiMode.setFlag(
-          "can-investigate",
-          Location.getCurrentLocation().clues > 0
-        );
-      }
-    );
+    Game.actionInvestigate(1, null, function (results) {
+      Stats.addClicks(-1);
+    });
   });
 
   $("#action-engage").click(() => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
-      Enemy.actionEngage(function (result, enemy) {
-        Stats.clicks--;
-        UiMode.uiMode = UIMODE_SELECT_ACTION;
+      Enemy.actionEngage(function (results, enemy) {
+        Stats.addClicks(-1);
+        UiMode.setMode(UIMODE_SELECT_ACTION);
         Game.checkTurnEnd();
       });
     } else if (Enemy.mode == ENEMY_MODE_ENGAGE) {
       Enemy.cancelAction();
-      UiMode.uiMode = UIMODE_SELECT_ACTION;
+      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
   });
 
   $("#action-fight").click(() => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
-      Enemy.actionFight(function (result, enemy) {
-        Stats.clicks--;
-        UiMode.uiMode = UIMODE_SELECT_ACTION;
+      Enemy.actionFight(1, function (results, enemy) {
+        Stats.addClicks(-1);
+        UiMode.setMode(UIMODE_SELECT_ACTION);
         Game.checkTurnEnd();
       });
     } else if (Enemy.mode == ENEMY_MODE_FIGHT) {
       Enemy.cancelAction();
-      UiMode.uiMode = UIMODE_SELECT_ACTION;
+      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
   });
 
   $("#action-evade").click(() => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
-      Enemy.actionEvade(function (result, enemy) {
-        Stats.clicks--;
-        UiMode.uiMode = UIMODE_SELECT_ACTION;
+      Enemy.actionEvade(function (results, enemy) {
+        Stats.addClicks(-1);
+        UiMode.setMode(UIMODE_SELECT_ACTION);
         Game.checkTurnEnd();
       });
     } else if (Enemy.mode == ENEMY_MODE_EVADE) {
       Enemy.cancelAction();
-      UiMode.uiMode = UIMODE_SELECT_ACTION;
+      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
   });
 });

@@ -1,8 +1,10 @@
 class Cards {
-  static stack = []; // Array of card IDs
+  static stack = []; // Array of PlayableCardData classes
   static grip = []; // Array of GripCard objects
-  static heap = []; // Array of card IDs
+  static heap = []; // Array of PlayableCardData classes
   static installedCards = []; // Array of RigCard objects
+
+  static focusedCardId;
 
   ///////////////////////////////////////////////
   // General
@@ -13,6 +15,7 @@ class Cards {
       .attr("src", jCardImage.attr("src"))
       .removeClass("unfocused")
       .addClass("focused");
+    this.focusedCardId = jCardImage.parent().data("card-id");
   }
   static unfocusCard() {
     $("#card-focused-image").removeClass("focused").addClass("unfocused");
@@ -34,11 +37,12 @@ class Cards {
   ///////////////////////////////////////////////
   // Hand/deck/discard
 
-  static addToStack(cardId, shuffleInto = false) {
-    if (typeof cardId == "object") {
-      this.stack.push(...cardId);
+  // cardData may be an array of classes
+  static addToStack(cardData, shuffleInto = false) {
+    if (typeof cardData == "object") {
+      this.stack.push(...cardData);
     } else {
-      this.stack.push(cardId);
+      this.stack.push(cardData);
     }
     if (shuffleInto) {
       shuffle(this.stack);
@@ -47,11 +51,12 @@ class Cards {
     this.determineCanDraw();
   }
 
-  static addToHeap(cardId, shuffleInto = false) {
-    if (typeof cardId == "object") {
-      this.heap.push(...cardId);
+  // cardData may be an array of classes
+  static addToHeap(cardData, shuffleInto = false) {
+    if (typeof cardData == "object") {
+      this.heap.push(...cardData);
     } else {
-      this.heap.push(cardId);
+      this.heap.push(cardData);
     }
     if (shuffleInto) {
       shuffle(this.heap);
@@ -60,18 +65,25 @@ class Cards {
     this.determineCanDraw();
   }
 
+  static canDraw() {
+    return this.stack.length > 0 || this.heap.length > 0;
+  }
+
   // Returns the number of cards that couldn't be drawn
   static draw(n = 1) {
     let i = 0;
-    for (; i < n && (this.stack.length > 0 || this.heap.length > 0); i++) {
+    for (; i < n && this.canDraw(); i++) {
       if (this.stack.length == 0) {
         this.shuffleHeap();
       }
-      this.stack.pop();
+      const cardData = this.stack.pop();
       let jCard = $(
-        `<div class="grip-card h-100"><img class="grip-card-image card-image h-100" src="img/card/eventPlaceholder.png" /></div>`
+        `<div class="grip-card h-100">
+          <img class="grip-card-image card-image h-100" src="${cardData.image}" />
+        </div>`
       );
-      this.grip.push(new GripCard(jCard));
+      jCard.data("card-id", cardData.id);
+      this.grip.push(new GripCard(cardData.id, jCard));
       setTimeout(() => {
         $("#grip").append(jCard);
         this.updateHandPositions();
@@ -83,6 +95,7 @@ class Cards {
   }
 
   static discard(index) {
+    // TODO
     if (this.removeGripCard(index)) {
       this.updateStackHeapHeights();
       this.determineCanDraw();
@@ -131,8 +144,15 @@ class Cards {
   }
 
   static updateHandPositions() {
+    // Unselected cards (default)
     $(".grip-card:not(.selected-card)")
       .css("--hand-size", $("#grip .grip-card:not(.selected-card)").length)
+      .each((i, card) => {
+        $(card).css("--index", i);
+      });
+    // Selected cards
+    $(".grip-card.selected-card")
+      .css("--hand-size", $("#grip .grip-card.selected-card").length)
       .each((i, card) => {
         $(card).css("--index", i);
       });
@@ -148,54 +168,69 @@ class Cards {
   // Rig
 
   static install(cardId) {
-    // card-padding is to make sure the parent class has the correct width
-    // TODO: create a high/low res copy of each card image and have this display the high one
-    let jCard = $(`
-      <div class="installed-card">
-        <img class="card-padding h-100" src="img/card/placeholder.png" />
-        <img class="installed-card-image card-image h-100" src="img/card/assetPlaceholder.png" />
-      </div>`);
-    $("#rig").append(jCard);
-    this.installedCards = new RigCard(jCard);
+    const rigCard = new RigCard(cardId);
+    this.installedCards.push(rigCard);
+    return rigCard;
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 class GripCard {
-  static selectedCard = null;
+  static selectedCards = new Set();
+  static deselectAll() {
+    Cards.grip.forEach((card) => card.deselect());
+  }
 
+  #cardData;
   #jObj;
 
-  constructor(jObj) {
+  constructor(cardId, jObj) {
+    this.#cardData = CardData.getCard(cardId);
     this.#jObj = jObj;
-    let instance = this;
-    this.#jObj.click(function () {
+    const instance = this;
+    this.#jObj.click(async function () {
       if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
-        if (Game.actionPlayCard(instance)) {
+        const success = await Game.actionPlayCard(instance);
+        if (success) {
           Cards.removeGripCard(instance);
+          Cards.addToHeap(cardId);
+        } else {
+          animate(instance.#jObj, 300);
         }
       } else if (UiMode.uiMode == UIMODE_SELECT_GRIP_CARD) {
-        if (instance == GripCard.selectedCard) {
+        if (GripCard.selectedCards.has(instance)) {
           instance.deselect();
-        } else {
+        } else if (UiMode.data.maxCards == 1) {
+          GripCard.deselectAll();
           instance.select();
+        } else if (GripCard.selectedCards.size < UiMode.data.maxCards) {
+          instance.select();
+        } else {
+          const message =
+            UiMode.data.minCards != UiMode.data.maxCards
+              ? `You must select between ${UiMode.data.minCards} and ${UiMode.data.maxCards} cards, inclusive.`
+              : `You must select ${UiMode.data.maxCards} cards.`;
+          Alert.send(message, ALERT_WARNING, true, false);
         }
       }
     });
   }
 
+  get cardData() {
+    return this.#cardData;
+  }
+
   select() {
-    GripCard.selectedCard = this;
-    $(".grip-card").removeClass("selected-card");
+    GripCard.selectedCards.add(this);
     this.#jObj.addClass("selected-card");
     Cards.updateHandPositions();
   }
 
   // Only to be used if another card is not being selected
   deselect() {
-    GripCard.selectedCard = null;
-    $(".grip-card").removeClass("selected-card");
+    GripCard.selectedCards.delete(this);
+    this.#jObj.removeClass("selected-card");
     Cards.updateHandPositions();
   }
 
@@ -221,39 +256,165 @@ class GripCard {
 ///////////////////////////////////////////////////////////////////////////////
 
 class RigCard {
-  static instances = [];
-  static selectAll() {
-    this.instances.forEach((card) => card.select());
-  }
+  static selectedCards = new Set();
   static deselectAll() {
-    this.instances.forEach((card) => card.deselect());
+    Cards.installedCards.forEach((card) => card.deselect());
   }
+
+  static #totalPerceivedDamage = 0;
+  static resetAllPerceivedDamage() {
+    Cards.installedCards.forEach((card) =>
+      card.setPerceivedDamage(card.damage)
+    );
+    this.#totalPerceivedDamage = 0;
+  }
+
+  #cardData;
 
   #jObj;
-  #selected = false;
+  #jDamage;
+  #jDoom;
+  #jPower;
 
-  constructor(jObj) {
-    RigCard.instances.push(this);
-    this.#jObj = jObj;
-    jObj.click(() => {
-      if (UiMode.uiMode != UIMODE_SELECT_INSTALLED_CARD) {
-        return;
-      }
-      if (this.#selected) {
-        this.deselect();
-      } else {
-        this.select();
+  #damage;
+  #perceivedDamage = 0; // For showing potential damage while assigning damage
+  #doom;
+  #power;
+
+  constructor(cardId) {
+    const instance = this;
+    this.#cardData = CardData.getCard(cardId);
+
+    // card-padding is to make sure the parent class has the correct width
+    this.#jObj = $(`
+      <div class="installed-card">
+        <img class="card-padding h-100" src="img/card/placeholder.png" />
+        <img class="installed-card-image card-image h-100" src="${
+          this.#cardData.image
+        }" />
+        <div class="hosted-counters">
+          <div class="power shake-counter"></div>
+          <div class="damage shake-counter"></div>
+          <div class="doom shake-counter"></div>
+        </div>
+      </div>`);
+    this.#jObj.data("card-id", this.#cardData.id);
+    $("#rig").append(this.#jObj);
+
+    this.#jObj.click(() => {
+      if (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD) {
+        if (RigCard.selectedCards.has(instance)) {
+          instance.deselect();
+        } else if (UiMode.data.maxCards == 1) {
+          RigCard.deselectAll();
+          instance.select();
+        } else if (RigCard.selectedCards.size < UiMode.data.maxCards) {
+          instance.select();
+        } else {
+          const message =
+            UiMode.data.minCards != UiMode.data.maxCards
+              ? `You must select between ${UiMode.data.minCards} and ${UiMode.data.maxCards} cards, inclusive.`
+              : `You must select ${UiMode.data.maxCards} cards.`;
+          Alert.send(message, ALERT_WARNING, true, false);
+        }
+      } else if (UiMode.uiMode == UIMODE_ASSIGN_DAMAGE) {
+        if (
+          RigCard.#totalPerceivedDamage < UiMode.data.damage &&
+          this.#perceivedDamage < this.health
+        ) {
+          this.setPerceivedDamage(this.#perceivedDamage + 1);
+          RigCard.#totalPerceivedDamage++;
+        }
       }
     });
+
+    this.#jDamage = this.#jObj.find(".damage");
+    this.#jDoom = this.#jObj.find(".doom");
+    this.#jPower = this.#jObj.find(".power");
+    this.setDamage(0);
+    this.setDoom(0);
+    this.setPower(0);
+  }
+
+  get cardData() {
+    return this.#cardData;
+  }
+  get health() {
+    return this.cardData.health;
+  }
+
+  get damage() {
+    return this.#damage;
+  }
+  get doom() {
+    return this.#doom;
+  }
+  get power() {
+    return this.#power;
+  }
+
+  setDamage(value, doAnimate = true) {
+    this.setPerceivedDamage(value, doAnimate);
+    this.#damage = value;
+    return this;
+  }
+  setPerceivedDamage(value, doAnimate = false) {
+    const jDamage = this.#jDamage;
+    if (value == 0) {
+      this.#jDamage.hide();
+    } else {
+      this.#jDamage.show();
+    }
+    jDamage.html(value);
+    if (value != this.#damage && doAnimate) {
+      animate(jDamage, 500);
+    }
+    this.#perceivedDamage = value;
+    if (this.#perceivedDamage >= this.health) {
+      this.#jObj.addClass("perceived-trashed");
+    } else {
+      this.#jObj.removeClass("perceived-trashed");
+    }
+    return this;
+  }
+
+  setDoom(value, doAnimate = true) {
+    const jDoom = this.#jDoom;
+    if (value == 0) {
+      this.#jDoom.hide();
+    } else {
+      this.#jDoom.show();
+    }
+    jDoom.html(value);
+    if (value != this.#doom && doAnimate) {
+      animate(jDoom, 500);
+    }
+    this.#doom = value;
+    return this;
+  }
+
+  setPower(value, doAnimate = true) {
+    const jPower = this.#jPower;
+    if (value == 0) {
+      this.#jPower.hide();
+    } else {
+      this.#jPower.show();
+    }
+    jPower.html(value);
+    if (value != this.#power && doAnimate) {
+      animate(jPower, 500);
+    }
+    this.#power = value;
+    return this;
   }
 
   select() {
-    this.#selected = true;
+    RigCard.selectedCards.add(this);
     this.#jObj.addClass("selected-card");
   }
 
   deselect() {
-    this.#selected = false;
+    RigCard.selectedCards.delete(this);
     this.#jObj.removeClass("selected-card");
   }
 }
@@ -263,15 +424,32 @@ class RigCard {
 $(document).ready(function () {
   Cards.updateStackHeapHeights();
 
-  const displayCardModal = function () {
-    const header = "Card Title";
+  const displayCardModal = function (cardId) {
+    const cardData = CardData.getCard(cardId);
+    if (!cardData) {
+      return;
+    }
     const body = `
-      <img class="card-image" id="card-modal-image" src="${$(
-        "#card-focused-image"
-      ).attr("src")}" />
-      <div>Card text here.</div>`;
+      <div>
+        ${cardData.title}
+      </div>
+      <div class="row">
+        <div class="col-5">
+          <img class="card-image w-100" id="card-modal-image" src="${
+            cardData.image
+          }" />
+        </div>
+        <div class="col-7">
+          <div>
+            ${FACTION_TO_TEXT[cardData.faction]} ${
+      TYPE_TO_TEXT[cardData.type]
+    } ${cardData.subtypes ? `: ${cardData.subtypes.join(" - ")}` : ""} 
+          </div>
+          <div>${cardData.text}</div>
+        </div>
+      </div>`;
     const options = [new Option("Close", "close")];
-    const modal = new Modal(null, header, body, options, true);
+    const modal = new Modal(null, null, body, options, true);
     modal.display();
   };
 
@@ -293,8 +471,12 @@ $(document).ready(function () {
     .on(
       "dblclick",
       ".card-image:not(#card-focused-image, #card-modal-image, .grip-card-image)",
-      displayCardModal
+      function () {
+        displayCardModal($(this).parent().data("card-id"));
+      }
     );
 
-  $("#card-focused-image").click(displayCardModal);
+  $("#card-focused-image").click(function () {
+    displayCardModal(Cards.focusedCardId);
+  });
 });

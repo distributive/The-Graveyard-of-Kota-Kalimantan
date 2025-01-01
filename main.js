@@ -1,18 +1,18 @@
 $(document).ready(function () {
   Location.resetMapOffset();
   Location.resetZoom();
-  Stats.clicks = 0;
+  Stats.setClicks(0);
 
-  const l0 = new Location(0, 0).setCurrentLocation();
-  const l1 = new Location(0, 1);
-  const l2 = new Location(1, 0);
-  const l3 = new Location(0, -1);
-  const l4 = new Location(-1, 0);
+  const l0 = new Location("room", 0, 0).setCurrentLocation();
+  const l1 = new Location("room", 0, 1);
+  const l2 = new Location("room", 1, 0);
+  const l3 = new Location("room", 0, -1);
+  const l4 = new Location("room", -1, 0);
 
-  const l5 = new Location(2, 0.5);
-  const l6 = new Location(2, -0.5);
-  const l7 = new Location(-2, 0.5);
-  const l8 = new Location(-2, -0.5);
+  const l5 = new Location("room", 2, 0.5);
+  const l6 = new Location("room", 2, -0.5);
+  const l7 = new Location("room", -2, 0.5);
+  const l8 = new Location("room", -2, -0.5);
 
   l0.addNeighbour(l1);
   l0.addNeighbour(l2);
@@ -29,9 +29,9 @@ $(document).ready(function () {
   l4.addNeighbour(l7);
   l4.addNeighbour(l8);
 
-  let enemy = new Enemy(l5);
-  new Enemy(l5).setDamage(1);
-  new Enemy(l0).setDamage(2);
+  let enemy = new Enemy("example", l5);
+  new Enemy("example", l5).setDamage(1);
+  new Enemy("example", l0).setDamage(2);
   // setTimeout(() => enemy.moveTo(l2), 1 * 800);
   // setTimeout(() => enemy.moveTo(l0), 2 * 800);
   // setTimeout(() => enemy.moveTo(l4), 3 * 800);

@@ -30,15 +30,15 @@ class Chaos {
     if (token == "fail") {
       value = 0;
     } else if (token == "skull") {
-      value = base; // TODO: core damage
+      value = base; // TODO: damage
     } else if (token == "elder") {
       value = target;
     } else {
       value = base + token;
     }
-    const result = token != "fail" && value >= target;
+    const success = token != "fail" && value >= target;
     return {
-      result: result,
+      success: success,
       token: token,
       value: value,
     };
@@ -120,15 +120,15 @@ class Chaos {
     // Third panel
     const runThirdPanel = function () {
       clearInterval(intervalID);
-      const { result, token, value } = Chaos.performCheck("mu", target);
+      const { success, token, value } = Chaos.performCheck("mu", target);
 
       const analysis =
         token == "elder"
-          ? "You rolled the elder sign, and win by default!"
+          ? "You rolled the elder sign, and automatically win!"
           : token == "skull"
-          ? result
+          ? success
             ? `You rolled a skull! Your base MU (${base}) was unaffected and you succeeded!`
-            : `You rolled a skull! Your base MU (${base}) was unaffected and you failed! You suffer 1 core damage.`
+            : `You rolled a skull! Your base MU (${base}) is unaffected and you failed! You suffer 1 damage.`
           : token == "fail"
           ? "You rolled the auto-fail token. You automatically failed this test with a final value of 0."
           : token < 0
@@ -137,7 +137,7 @@ class Chaos {
             )}. Your final value is ${value}.`
           : `You rolled ${base} + ${token}. Your final value is ${value}.`;
 
-      const header = result ? "Success!" : "Failure...";
+      const header = success ? "Success!" : "Failure...";
       const body = `
       <div id="chaos-roll">
         <img id="chaos-roll-image" src="img/game/chaosToken.png" />
@@ -152,7 +152,7 @@ class Chaos {
       const options = [
         new Option("Continue", function () {
           if (callback) {
-            callback(result, token, value);
+            callback({ success: success, token: token, value: value });
           }
         }),
       ];

@@ -1,0 +1,9 @@
+const CardExample = new EnemyData("example");
+CardExample.title = "Example";
+CardExample.text = "";
+CardExample.subtypes = [];
+CardExample.faction = FACTION_ICE;
+CardExample.image = "img/card/iceExample.png";
+CardExample.strength = 3;
+CardExample.health = 2;
+CardExample.link = 1;

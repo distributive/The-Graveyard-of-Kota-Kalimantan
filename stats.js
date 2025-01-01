@@ -76,18 +76,42 @@ class Stats {
   static get credits() {
     return this.#credits;
   }
-  static set credits(value) {
+  static async addCredits(value) {
+    await this.setCredits(this.#credits + value);
+  }
+  static async setCredits(value) {
     $("#credit-count").html(value);
     if (this.#credits != value) {
       animate($("#credit-count"));
     }
+
+    // Update value
+    const oldCredits = this.#credits;
     this.#credits = value;
+
+    // Broadcast event
+    if (value > oldCredits) {
+      await Broadcast.signal("onGainCredits", {
+        old: oldCredits,
+        new: value,
+        increase: value - oldCredits,
+      });
+    } else {
+      await Broadcast.signal("onLoseCredits", {
+        old: oldCredits,
+        new: value,
+        decrease: oldCredits - value,
+      });
+    }
   }
 
   static get clues() {
     return this.#clues;
   }
-  static set clues(value) {
+  static addClues(value) {
+    this.setClues(this.#clues + value);
+  }
+  static setClues(value) {
     $("#clue-count").html(value);
     if (this.#clues != value) {
       animate($("#clue-count"));
@@ -98,22 +122,25 @@ class Stats {
   static get clicks() {
     return this.#clicks;
   }
-  static set clicks(value) {
+  static async addClicks(value) {
+    await this.setClicks(this.#clicks + value);
+  }
+  static async setClicks(value) {
     if (value != this.#clicks) {
-      let inc = value > this.#clicks;
-      let classes = `inline-icon click-tracker ${
+      const inc = value > this.#clicks;
+      const classes = `inline-icon click-tracker ${
         inc ? "bouncy" : "anti-bouncy"
       }`;
       $("#click-count").empty();
       for (let i = 0; i < value; i++) {
         $("#click-count").append(
           `<img src="img/game/${
-            i < 4 ? "click" : "clickExtra"
+            i < 3 ? "click" : "clickExtra"
           }.png" class="${classes}" title="click" />`
         );
         $("#click-count").append(" ");
       }
-      for (let i = value; i < 4; i++) {
+      for (let i = value; i < 3; i++) {
         $("#click-count").append(
           `<img src="img/game/clickSpent.png" class="${classes}" title="click" />`
         );
@@ -126,7 +153,25 @@ class Stats {
           animate($(`.click-tracker:nth-child(${value + 1})`), 200);
         }
       }, 1); // Wait 1ms to ensure the animation doesn't start preloaded
+
+      // Update value
+      const oldClicks = this.#clicks;
+      this.#clicks = value;
+
+      // Broadcast event
+      if (inc) {
+        await Broadcast.signal("onGainClicks", {
+          old: oldClicks,
+          new: value,
+          increase: value - oldClicks,
+        });
+      } else {
+        await Broadcast.signal("onLoseClicks", {
+          old: oldClicks,
+          new: value,
+          decrease: oldClicks - value,
+        });
+      }
     }
-    this.#clicks = value;
   }
 }

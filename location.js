@@ -20,9 +20,9 @@ class Location {
     y = Number.isNaN(y) ? this.#mapOffsetY : y;
     this.#mapOffsetX = x;
     this.#mapOffsetY = y;
-    const root = this.root;
-    root.css("--local-x", `${this.#mapOffsetX}px`);
-    root.css("--local-y", `${this.#mapOffsetY}px`);
+    const window = this.window;
+    window.css("--local-x", `${this.#mapOffsetX}px`);
+    window.css("--local-y", `${this.#mapOffsetY}px`);
   }
   static adjustMapOffset(x, y) {
     this.setMapOffset(this.#mapOffsetX + x, this.#mapOffsetY + y);
@@ -58,7 +58,7 @@ class Location {
   static #zoomIndex = LOCATION_ZOOM_DEFAULT;
   static setZoomIndex(value) {
     this.#zoomIndex = Math.min(Math.max(value, 0), LOCATION_ZOOMS.length - 1);
-    this.root.css("--zoom", LOCATION_ZOOMS[this.#zoomIndex]);
+    this.window.css("--zoom", LOCATION_ZOOMS[this.#zoomIndex]);
     $("#map-zoom-in").attr(
       "disabled",
       this.#zoomIndex == LOCATION_ZOOMS.length - 1
@@ -93,10 +93,10 @@ class Location {
 
   // INSTANCE
   #id = -1;
+  #cardData;
   #x = 0;
   #y = 0;
 
-  #shroud = 0;
   #clues = 0;
   #doom = 0;
 
@@ -109,15 +109,17 @@ class Location {
   #jClues = null;
   #jDoom = null;
 
-  constructor(x, y) {
-    this.#id = Location.nextId;
+  constructor(cardId, x, y) {
+    this.#id = Location.nextId++;
+    this.#cardData = CardData.getCard(cardId);
     Location.idToInstance[this.#id] = this;
-    Location.nextId++;
     Location.instances.push(this);
 
     let jObj = $(`
       <div class="location-container">
-        <img src="img/card/location.png" class="location-image card-image" onmousedown="event.preventDefault()" />
+        <img src="${
+          this.#cardData.image
+        }" class="location-image card-image" onmousedown="event.preventDefault()" />
         <div class="hosted-counters">
           <div class="clues shake-counter"></div>
           <div class="doom shake-counter"></div>
@@ -125,6 +127,7 @@ class Location {
       </div>`);
     this.#jObj = jObj;
     jObj.data("location-id", this.#id);
+    jObj.data("card-id", cardId);
     Location.root.append(jObj);
     this.setPos(x, y);
     jObj.click(() => {
@@ -146,8 +149,12 @@ class Location {
     this.setDoom(0);
   }
 
+  get cardData() {
+    return this.#cardData;
+  }
+
   get shroud() {
-    return this.#shroud;
+    return this.#cardData.shroud;
   }
   get clues() {
     return this.#clues;
@@ -165,10 +172,7 @@ class Location {
     let jClues = this.#jClues;
     jClues.html(value);
     if (value != this.#clues && doAnimate) {
-      jClues.addClass("animate");
-      setTimeout(function () {
-        jClues.removeClass("animate");
-      }, 500);
+      animate(jClues, 500);
     }
     this.#clues = value;
     return this;
@@ -183,10 +187,7 @@ class Location {
     let jDoom = this.#jDoom;
     jDoom.html(value);
     if (value != this.#doom && doAnimate) {
-      jDoom.addClass("animate");
-      setTimeout(function () {
-        jDoom.removeClass("animate");
-      }, 500);
+      animate(jDoom, 500);
     }
     this.#doom = value;
     return this;

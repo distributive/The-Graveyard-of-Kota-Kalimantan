@@ -39,7 +39,7 @@ class Enemy {
     }
     // Update UI/enemy modes
     UiMode.setFlag("can-cancel-engage", true);
-    UiMode.uiMode = UIMODE_SELECT_ENEMY;
+    UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_ENGAGE;
     // Make all valid targets selectable and set up their click callbacks
     const currentLocation = Location.getCurrentLocation();
@@ -56,7 +56,7 @@ class Enemy {
     });
   }
 
-  static actionFight(callback) {
+  static actionFight(damage, callback) {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canFight) {
@@ -64,7 +64,7 @@ class Enemy {
     }
     // Update UI/enemy modes
     UiMode.setFlag("can-cancel-fight", true);
-    UiMode.uiMode = UIMODE_SELECT_ENEMY;
+    UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_FIGHT;
     // Make all valid targets selectable and set up their click callbacks
     const currentLocation = Location.getCurrentLocation();
@@ -72,20 +72,22 @@ class Enemy {
       enemy.selectable =
         enemy.#currentLocation == currentLocation && enemy.engaged;
       if (enemy.selectable) {
-        enemy.click(() => {
+        enemy.click(async function () {
           Chaos.runModal(
             "strength",
-            3, // TODO - Set this to enemy strength
+            enemy.cardData.strength,
             false,
             "Fight!",
-            `<p>If successful, you will do ${1} damage to this enemy.</p>`, // TODO
-            function (result, token, value) {
+            `<p>If successful, you will do ${damage} damage to this enemy.</p>`,
+            function (results) {
+              const { success } = results;
               Modal.hide();
-              if (result) {
-                enemy.addDamage(1); // TODO
+              if (success) {
+                enemy.addDamage(damage);
               }
+              enemy.cardData.onThisAttacked(enemy, results, damage);
               Enemy.cancelAction();
-              callback(result, enemy);
+              callback(results, enemy);
             }
           );
         });
@@ -101,7 +103,7 @@ class Enemy {
     }
     // Update UI/enemy modes
     UiMode.setFlag("can-cancel-evade", true);
-    UiMode.uiMode = UIMODE_SELECT_ENEMY;
+    UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_EVADE;
     // Make all valid targets selectable and set up their click callbacks
     const currentLocation = Location.getCurrentLocation();
@@ -112,17 +114,18 @@ class Enemy {
         enemy.click(() => {
           Chaos.runModal(
             "link",
-            3, // TODO - Set this to enemy link
+            enemy.cardData.link,
             false,
             "Evade!",
             `<p>If successful, you will evade this enemy.</p>`,
-            function (result, token, value) {
+            function (results) {
+              const { success } = results;
               Modal.hide();
-              if (result) {
+              if (success) {
                 enemy.disengage();
               }
               Enemy.cancelAction();
-              callback(result, enemy);
+              callback(results, enemy);
             }
           );
         });
@@ -140,7 +143,15 @@ class Enemy {
     $(".enemy-container").off("click");
   }
 
+  // Call this whenever there should be an attack of opportunity
+  // i.e. before any action that isn't fighting, evading, or parleying
+  static attackOfOpportunity() {
+    // TODO
+  }
+
   // INSTANCE
+  #cardData;
+
   #jObj;
   #jDamage;
   #jClues;
@@ -152,18 +163,22 @@ class Enemy {
   #clues;
   #doom;
 
-  constructor(location) {
+  constructor(cardId, location) {
     Enemy.instances.push(this);
+    this.#cardData = CardData.getCard(cardId);
 
     this.#jObj = $(`
       <div class="enemy-container">
-        <img src="img/card/enemyPlaceholder.png" class="enemy-image card-image" onmousedown="event.preventDefault()" />
+        <img src="${
+          this.#cardData.image
+        }" class="enemy-image card-image" onmousedown="event.preventDefault()" />
         <div class="hosted-counters">
           <div class="damage shake-counter"></div>
           <div class="clues shake-counter"></div>
           <div class="doom shake-counter"></div>
         </div>
       </div>`);
+    this.#jObj.data("card-id", cardId);
     Location.root.append(this.#jObj);
 
     this.#jDamage = this.#jObj.find(".damage");
@@ -174,6 +189,10 @@ class Enemy {
     this.setDoom(0);
 
     this.moveTo(location);
+  }
+
+  get cardData() {
+    return this.#cardData;
   }
 
   remove() {

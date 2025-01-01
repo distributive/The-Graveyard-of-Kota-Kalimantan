@@ -1,7 +1,14 @@
-function animate(obj, timeout = 100) {
-  obj.addClass("animate");
+const ANIMATED_JQUERY_OBJECTS = new Set();
+
+function animate(jObj, timeout = 100) {
+  if (ANIMATED_JQUERY_OBJECTS.has(jObj)) {
+    return;
+  }
+  ANIMATED_JQUERY_OBJECTS.add(jObj);
+  jObj.addClass("animate");
   setTimeout(function () {
-    obj.removeClass("animate");
+    ANIMATED_JQUERY_OBJECTS.delete(jObj);
+    jObj.removeClass("animate");
   }, timeout);
 }
 
