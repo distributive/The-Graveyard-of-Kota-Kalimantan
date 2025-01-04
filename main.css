@@ -222,11 +222,17 @@ button:disabled .inline-icon {
   border-radius: 5px;
   transform: translate(var(--size), calc(-1 * var(--size)));
   box-shadow: 0 0 0 #00000000,
+    calc(-1 * var(--size) / 12) calc(1 * var(--size) / 12) 0 #282828,
     calc(-1 * var(--size) / 6) calc(1 * var(--size) / 6) 0 #303030,
+    calc(-3 * var(--size) / 12) calc(3 * var(--size) / 12) 0 #282828,
     calc(-2 * var(--size) / 6) calc(2 * var(--size) / 6) 0 #282828,
+    calc(-5 * var(--size) / 12) calc(5 * var(--size) / 12) 0 #282828,
     calc(-3 * var(--size) / 6) calc(3 * var(--size) / 6) 0 #262626,
+    calc(-7 * var(--size) / 12) calc(7 * var(--size) / 12) 0 #282828,
     calc(-4 * var(--size) / 6) calc(4 * var(--size) / 6) 0 #242424,
+    calc(-9 * var(--size) / 12) calc(9 * var(--size) / 12) 0 #282828,
     calc(-5 * var(--size) / 6) calc(5 * var(--size) / 6) 0 #222222,
+    calc(-11 * var(--size) / 12) calc(11 * var(--size) / 12) 0 #282828,
     calc(-6 * var(--size) / 6) calc(6 * var(--size) / 6) 0 #202020,
     calc(-1 * var(--size)) calc(var(--size)) 10px black;
   transition: all 0.2s;
@@ -262,15 +268,23 @@ button:disabled .inline-icon {
 }
 .grip-card-image {
   transform: translate(0, 70px);
-  transition: transform 0.25s, box-shadow 0.1s;
+  transition: transform 0.25s, box-shadow 0.2s;
 }
 .grip-card:not(.selected-card):hover {
   rotate: 0deg;
   z-index: 100;
 }
-.grip-card:not(.selected-card):hover .grip-card-image {
+
+.grip-card.playable .grip-card-image {
+  box-shadow: 0 0 5px white, 0 0 10px #8ebe60, 0 0 10px #8ebe60;
+}
+.grip-card.playable:not(.selected-card):hover .grip-card-image {
   transform: translate(0, -10px) scale(1.2);
 }
+.grip-card:not(.selected-card, .playable):hover .grip-card-image {
+  transform: translate(0, 6px);
+}
+
 .grip-card.transition-out {
   transform: translateX(
       calc(-50% + 90px * (var(--index) - (var(--hand-size) - 1) / 2))
@@ -307,19 +321,19 @@ button:disabled .inline-icon {
 }
 @keyframes shake-card-unplayable {
   12.5% {
-    transform: translate(0, -10px) scale(1.2) rotate(-2deg);
+    rotate: -2deg;
   }
   37.5% {
-    transform: translate(0, -10px) scale(1.2) rotate(2deg);
+    rotate: 2deg;
   }
   62.5% {
-    transform: translate(0, -10px) scale(1.2) rotate(-1deg);
+    rotate: -1deg;
   }
   87.5% {
-    transform: translate(0, -10px) scale(1.2) rotate(1deg);
+    rotate: 1deg;
   }
   100% {
-    transform: translate(0, -10px) scale(1.2) rotate(0);
+    rotate: 0;
   }
 }
 
@@ -450,6 +464,7 @@ button:disabled .inline-icon {
 
 .uimode-movement .location-container.valid-destination {
   outline: 2px solid #7887ab;
+  cursor: pointer;
 }
 .uimode-movement .location-container.valid-destination:hover {
   outline: 2px solid #fceda6;
@@ -541,6 +556,9 @@ button:disabled .inline-icon {
   }
 }
 
+.uimode-select-enemy .enemy-container.selectable {
+  cursor: pointer;
+}
 .uimode-select-enemy .enemy-container.selectable .enemy-image {
   outline: 2px solid #7887ab;
 }
@@ -655,6 +673,29 @@ button:disabled .inline-icon {
   background-color: #00000000;
   border: none;
   transform: none;
+}
+
+.alert.animate {
+  animation: alert-animation 0.5s;
+}
+@keyframes alert-animation {
+  12.5% {
+    scale: 0.95 1.1;
+    color: red;
+  }
+  37.5% {
+    scale: 1.05 0.9;
+    color: white;
+  }
+  62.5% {
+    scale: 0.975 1.05;
+  }
+  87.5% {
+    scale: 1.025 0.95;
+  }
+  100% {
+    scale: 1;
+  }
 }
 
 /* Options */

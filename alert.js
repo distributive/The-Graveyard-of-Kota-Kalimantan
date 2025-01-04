@@ -25,6 +25,7 @@ class Alert {
   static #idToAlert = {};
   static #nextId = 0;
 
+  // Returns the alert created
   static send(
     message,
     type,
@@ -32,16 +33,29 @@ class Alert {
     pinned = false,
     options = null
   ) {
-    // Limit alert count
+    // If it is a simple alert (no options, unpinned and dismissible) and the
+    // previous alert shares the same text, conflate them
+    if (!options && dismissible && !pinned && this.#alerts.length > 0) {
+      const prevAlertId = this.#alerts[this.#alerts.length - 1];
+      const prevAlert = this.#idToAlert[prevAlertId];
+      if (prevAlert.#message == message) {
+        prevAlert.refreshTimeout(true);
+        return;
+      }
+    }
+
+    // Limit alert count (ignores pinned alerts)
     if (this.#alerts.length > ALERT_LIMIT - 1) {
       this.removeLastDismissable();
     }
+
     // Create alert
     const alert = new Alert(message, type, dismissible, pinned, options);
     this.#alerts.unshift(alert.id);
     this.#idToAlert[alert.id] = alert;
-    // Return the alert's ID
-    return alert.id;
+
+    // Return the alert
+    return alert;
   }
 
   static remove(id, forceClose = true) {
@@ -80,7 +94,10 @@ class Alert {
   // INSTANCE
   #id;
   #jObj;
+  #message;
   #dismissible;
+  #timeout; // Only if dismissible
+  #options;
   #hasBeenClosed = false;
 
   constructor(
@@ -93,6 +110,8 @@ class Alert {
     const instance = this;
     const id = Alert.#nextId++;
     this.#id = id;
+    this.#message = message;
+    this.#options = options;
     this.#dismissible = dismissible;
 
     // Create the jQuery object
@@ -118,24 +137,7 @@ class Alert {
             option.classes ? option.classes : ""
           }"></button>`
         );
-        let effect =
-          option.effect instanceof Modal
-            ? () => {
-                option.effect.display();
-              }
-            : option.effect == "close"
-            ? Modal.hide
-            : typeof option.effect == "string"
-            ? () => {
-                Modal.find(option.effect).display();
-              }
-            : option.effect;
-        optionsParent.append(
-          optionContainer.append(option.text).click(function () {
-            effect();
-            instance.close(); // All alert buttons must close their alert after resolving
-          })
-        );
+        optionsParent.append(optionContainer.append(option.text));
       });
       this.#jObj.append(optionsParent);
     }
@@ -151,12 +153,7 @@ class Alert {
 
     // Automatically remove dismissable alerts after a short period
     if (dismissible) {
-      setTimeout(function () {
-        if (!instance.#hasBeenClosed) {
-          instance.#hasBeenClosed = true;
-          Alert.remove(id);
-        }
-      }, ALERT_TIMEOUT);
+      this.refreshTimeout(false); // (Re)starts the timeout
     }
 
     // Add to the page
@@ -168,6 +165,42 @@ class Alert {
   }
   get dismissible() {
     return this.#dismissible;
+  }
+
+  refreshTimeout(doAnimate = true) {
+    clearTimeout(this.#timeout);
+    this.#timeout = setTimeout(function () {
+      if (!instance.#hasBeenClosed) {
+        instance.#hasBeenClosed = true;
+        Alert.remove(id);
+      }
+    }, ALERT_TIMEOUT);
+    if (doAnimate) {
+      animate(this.#jObj, 500);
+    }
+  }
+
+  // Adds listeners to the alert's buttons
+  // Alert options do nothing unless this is called
+  // This needs calling again for each successive response requested
+  async waitForOption() {
+    if (!this.#options) {
+      return;
+    }
+    // Wait for an option to be clicked and return its ID
+    // Closing the alert is the caller's responsibility
+    const instance = this;
+    return await new Promise(function (resolve) {
+      // Relies on this.#options and the option container having the same order
+      const options = instance.#options;
+      instance.#jObj.find(".alert-option").each(function (i) {
+        $(this)
+          .off("click")
+          .click(() => {
+            resolve(options[i].id);
+          });
+      });
+    });
   }
 
   close() {

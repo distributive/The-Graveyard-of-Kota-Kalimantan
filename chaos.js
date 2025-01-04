@@ -44,13 +44,14 @@ class Chaos {
     };
   }
 
-  static runModal(stat, target, canCancel, title, description, callback) {
+  static async runModal(stat, target, canCancel, title, description) {
     const base = Stats.getBase(stat);
     const chaosTokens = this.#chaosTokens;
     let intervalID;
+    let response; // The option ID selected in each modal
 
     // First panel
-    const runFirstPanel = function () {
+    {
       const header = title;
       const body = `
       <p>You are rolling ${Stats.getName(
@@ -76,15 +77,25 @@ class Chaos {
         </span>
       </p>
       `;
-      const options = [new Option("Continue", runSecondPanel)];
+      const options = [new Option("close", "Continue", "close")];
       if (canCancel) {
-        options.push(new Option("Cancel", "close", "warning w-100"));
+        options.push(new Option("cancel", "Cancel", "close", "warning w-100"));
       }
-      new Modal(null, header, body, options, canCancel).display();
-    };
+      response = await new Modal(
+        null,
+        header,
+        body,
+        options,
+        canCancel
+      ).display();
+    }
+
+    if (response == "cancel") {
+      return;
+    }
 
     // Second panel
-    const runSecondPanel = function () {
+    {
       const header = title;
       const body = `
       <div id="chaos-roll" class="d-flex">
@@ -95,8 +106,7 @@ class Chaos {
         <img id="chaos-roll-skull" src="img/game/tokenSkull.png" />
       </div>
       `;
-      const options = [new Option("Pick a random token", runThirdPanel)];
-      new Modal(null, header, body, options, false).display();
+      const options = [new Option("continue", "Pick a random token", "close")];
 
       intervalID = setInterval(function () {
         const randomToken = Chaos.randomToken();
@@ -115,12 +125,16 @@ class Chaos {
           }
         }
       }, 150);
-    };
+
+      await new Modal(null, header, body, options, false).display();
+    }
+
+    const results = Chaos.performCheck("mu", target);
+    const { success, token, value } = results;
 
     // Third panel
-    const runThirdPanel = function () {
+    {
       clearInterval(intervalID);
-      const { success, token, value } = Chaos.performCheck("mu", target);
 
       const analysis =
         token == "elder"
@@ -137,38 +151,28 @@ class Chaos {
             )}. Your final value is ${value}.`
           : `You rolled ${base} + ${token}. Your final value is ${value}.`;
 
+      const rollClass =
+        typeof token == "string" ? token : token < 0 ? "negative" : "";
+      const rollText = typeof token == "string" ? "" : token;
+
       const header = success ? "Success!" : "Failure...";
       const body = `
-      <div id="chaos-roll">
+      <div id="chaos-roll" class="${rollClass}">
         <img id="chaos-roll-image" src="img/game/chaosToken.png" />
         <img id="chaos-roll-elder" src="img/game/tokenElder.png" />
         <img id="chaos-roll-fail" src="img/game/tokenFail.png" />
         <img id="chaos-roll-skull" src="img/game/tokenSkull.png" />
-        <div id="chaos-roll-text">${token}</div>
+        <div id="chaos-roll-text">${rollText}</div>
         <img id="chaos-roll-fade-in" src="img/game/chaosToken.png" />
       </div>
       <p>${analysis}</p>
       `;
-      const options = [
-        new Option("Continue", function () {
-          if (callback) {
-            callback({ success: success, token: token, value: value });
-          }
-        }),
-      ];
-      new Modal(null, header, body, options, false).display();
+      const options = [new Option("continue", "Continue")];
 
-      if (typeof token == "string") {
-        $("#chaos-roll").addClass(token);
-        $("#chaos-roll-text").html("");
-      } else {
-        $("#chaos-roll-text").html(token);
-        if (token < 0) {
-          $("#chaos-roll").addClass("negative");
-        }
-      }
-    };
+      await new Modal(null, header, body, options, false).display();
+      Modal.hide();
+    }
 
-    runFirstPanel();
+    return results;
   }
 }

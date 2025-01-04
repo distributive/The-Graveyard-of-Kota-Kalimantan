@@ -39,18 +39,18 @@ $(document).ready(function () {
 
   let headerB = "Modal B";
   let bodyB = "The next modal.";
-  let optionsB = [new Option("Close", "close")];
+  let optionsB = [new Option("close", "Close", "close")];
   let modalB = new Modal("b", headerB, bodyB, optionsB);
 
   let headerA = "Modal A";
   let bodyA = "This is a test modal.<br>Test<br>Test<br>Test";
   let optionsA = [
-    new Option("Next", "b"),
-    new Option("Next", modalB),
-    new Option("Alert", function () {
+    new Option("nextString", "Next", "b"),
+    new Option("nextReference", "Next", modalB),
+    new Option("alert", "Alert", function () {
       alert("!");
     }),
-    new Option("Close", "close"),
+    new Option("close", "Close", "close"),
   ];
   let modalA = new Modal("a", headerA, bodyA, optionsA);
   // modalA.display();

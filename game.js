@@ -9,8 +9,10 @@ class Game {
     // TODO read decklist for given ID
     let xs = [];
     for (let i = 0; i < 22; i++) {
-      xs.push(CardSureGamble);
+      xs.push(CardOffSureFund);
       xs.push(CardUnderTheHood);
+      xs.push(CardFruitJuice);
+      xs.push(CardSelfDamage);
     }
     Cards.addToStack(xs);
 
@@ -64,18 +66,25 @@ class Game {
   }
 
   static async actionPlayCard(gripCard) {
+    // Determine if the card can be played
     const cardData = gripCard.cardData;
     const cost = cardData.calculateCost(gripCard);
-    if (
-      Stats.clicks <= 0 ||
-      (cardData.type != TYPE_ASSET && cardData.type != TYPE_EVENT) ||
-      cost > Stats.credits ||
-      !cardData.canPlay(gripCard)
-    ) {
-      return false;
+    if (Stats.clicks <= 0) {
+      return { success: false, reason: "clicks" };
     }
-    Stats.addClicks(-1);
-    Stats.addCredits(-cost);
+    if (cardData.type != TYPE_ASSET && cardData.type != TYPE_EVENT) {
+      return { success: false, reason: "type" };
+    }
+    if (Stats.credits < cardData.cost) {
+      return { success: false, reason: "credits" };
+    }
+    if (!gripCard.playable) {
+      return { success: false, reason: "unplayable" };
+    }
+
+    // Play/install the card
+    await Stats.addClicks(-1);
+    await Stats.addCredits(-cost);
     if (cardData.type == TYPE_ASSET) {
       const rigCard = Cards.install(cardData.id);
       await cardData.onPlay(rigCard);
@@ -84,50 +93,55 @@ class Game {
       await cardData.onPlay(gripCard);
       await Broadcast.signal("onCardPlayed", { card: gripCard });
     }
-    Game.checkTurnEnd();
-    return true;
+    if (!Game.checkTurnEnd()) {
+      UiMode.setMode(UIMODE_SELECT_ACTION); // TODO - is it true that this will always be the correct mode to return to?
+    }
+    return { success: true };
   }
 
   // If location isn't set, use the current location
-  static async actionInvestigate(clues, location, callback) {
+  static async actionInvestigate(clues, location) {
     if (!location) {
       location = Location.getCurrentLocation();
     }
-    location.cardData.onThisInvestigationAttempt({ location: location });
+    await location.cardData.onThisInvestigationAttempt({ location: location });
     await Broadcast.signal("onInvestigationAttempt", { location: location });
-    Chaos.runModal(
+    const results = await Chaos.runModal(
       "mu",
       location.cardData.shroud,
-      true,
+      false,
       "Jacking in...",
       `<p>If successful, you will download ${clues} data from ${
         location == Location.getCurrentLocation()
           ? "your current location"
           : "the target location"
-      }.</p>`,
-      async function (results) {
-        const { success } = results;
-        Modal.hide();
-        if (success) {
-          Location.getCurrentLocation().removeClues(clues);
-          Stats.addClues(1);
-        }
-        UiMode.setFlag(
-          "can-investigate",
-          Location.getCurrentLocation().clues > 0
-        );
-        location.cardData.onThisInvestigationAttempt({
-          location: location,
-          clues: clues,
-        });
-        await Broadcast.signal("onInvestigation", {
-          location: location,
-          results: results,
-          clues: clues,
-        });
-        callback(results);
-      }
+      }.</p>`
     );
+
+    const { success } = results;
+    if (success) {
+      Location.getCurrentLocation().removeClues(clues);
+      Stats.addClues(1);
+    }
+    UiMode.setFlag("can-investigate", Location.getCurrentLocation().clues > 0);
+    await location.cardData.onThisInvestigationAttempt({
+      location: location,
+      clues: clues,
+    });
+    await Broadcast.signal("onInvestigation", {
+      location: location,
+      results: results,
+      clues: clues,
+    });
+
+    return results;
+  }
+
+  static async sufferDamage(damage, callback) {
+    await UiMode.setMode(UIMODE_ASSIGN_DAMAGE, {
+      damage: damage,
+    });
+    const destroyedCardIds = UiMode.data.destroyedCardIds;
   }
 }
 
@@ -145,7 +159,9 @@ $(document).ready(function () {
     }
     Stats.addCredits(1);
     Stats.addClicks(-1);
-    Game.checkTurnEnd();
+    if (!Game.checkTurnEnd()) {
+      UiMode.setMode(UIMODE_SELECT_ACTION);
+    }
   });
 
   $("#action-draw").click(() => {
@@ -154,7 +170,9 @@ $(document).ready(function () {
     }
     Cards.draw(1);
     Stats.addClicks(-1);
-    Game.checkTurnEnd();
+    if (!Game.checkTurnEnd()) {
+      UiMode.setMode(UIMODE_SELECT_ACTION);
+    }
   });
 
   $("#action-move").click(() => {
@@ -168,51 +186,50 @@ $(document).ready(function () {
     }
   });
 
-  $("#action-investigate").click(() => {
+  $("#action-investigate").click(async () => {
     if (Stats.clicks <= 0 || UiMode.uiMode != UIMODE_SELECT_ACTION) {
       return;
     }
-    Game.actionInvestigate(1, null, function (results) {
-      Stats.addClicks(-1);
-    });
+    await Game.actionInvestigate(1);
+    await Stats.addClicks(-1);
   });
 
-  $("#action-engage").click(() => {
+  $("#action-engage").click(async () => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
-      Enemy.actionEngage(function (results, enemy) {
-        Stats.addClicks(-1);
-        UiMode.setMode(UIMODE_SELECT_ACTION);
-        Game.checkTurnEnd();
-      });
+      const { success, enemy } = await Enemy.actionEngage();
+      if (success) {
+        await Stats.addClicks(-1);
+      }
     } else if (Enemy.mode == ENEMY_MODE_ENGAGE) {
       Enemy.cancelAction();
-      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
+    UiMode.setMode(UIMODE_SELECT_ACTION);
+    Game.checkTurnEnd();
   });
 
-  $("#action-fight").click(() => {
+  $("#action-fight").click(async () => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
-      Enemy.actionFight(1, function (results, enemy) {
-        Stats.addClicks(-1);
-        UiMode.setMode(UIMODE_SELECT_ACTION);
-        Game.checkTurnEnd();
-      });
+      const { results, enemy } = await Enemy.actionFight(1);
+      if (results) {
+        await Stats.addClicks(-1);
+      }
     } else if (Enemy.mode == ENEMY_MODE_FIGHT) {
       Enemy.cancelAction();
-      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
+    UiMode.setMode(UIMODE_SELECT_ACTION);
+    Game.checkTurnEnd();
   });
 
-  $("#action-evade").click(() => {
+  $("#action-evade").click(async () => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
-      Enemy.actionEvade(function (results, enemy) {
-        Stats.addClicks(-1);
-        UiMode.setMode(UIMODE_SELECT_ACTION);
-        Game.checkTurnEnd();
-      });
+      const { results, enemy } = await Enemy.actionEvade();
+      if (results) {
+        await Stats.addClicks(-1);
+      }
     } else if (Enemy.mode == ENEMY_MODE_EVADE) {
       Enemy.cancelAction();
-      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
+    UiMode.setMode(UIMODE_SELECT_ACTION);
+    Game.checkTurnEnd();
   });
 });

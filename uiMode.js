@@ -40,43 +40,57 @@ class UiModeDataError extends Error {
 ///////////////////////////////////////////////////////////////////////////////
 
 class UiMode {
-  static data = {}; // Mode-specific data
+  // Mode-specific data
+  // This is set before each mode's enter function is called and not changed
+  // until after their exit function is called
+  static data = {};
 
   static #uiMode = UIMODE_NON_GAME;
   static #previousMode = this.#uiMode;
   static get uiMode() {
     return UiMode.#uiMode;
   }
-  static setMode(mode, data) {
+
+  // Some modes serve a singular purpose and this function will maintain
+  // control of the game state until that function is complete
+  // This will never return values from those actions, but instead add them
+  // to this.data
+  // Changing the UI mode after these modes are entered is the source code's
+  // responsibility
+  // - UIMODE_SELECT_GRIP_CARD
+  // - UIMODE_SELECT_INSTALLED_CARD
+  // - UIMODE_ASSIGN_DAMAGE
+  // - UIMODE_SELECT_ENEMY - TODO: move all cases to here
+  static async setMode(mode, data) {
     $("#ui-mode").removeClass().addClass(UIMODE_TO_CLASS[mode]);
 
     switch (this.#uiMode) {
       case UIMODE_NON_GAME:
-        this.exitNonGame();
+        await this.exitNonGame();
         break;
       case UIMODE_CORP_TURN:
-        this.exitCorpTurn();
+        await this.exitCorpTurn();
         break;
       case UIMODE_SELECT_ACTION:
-        this.exitSelectAction();
+        await this.exitSelectAction();
         break;
       case UIMODE_MOVEMENT:
-        this.exitMovement();
+        await this.exitMovement();
         break;
       case UIMODE_SELECT_GRIP_CARD:
-        this.exitSelectGripCard();
+        await this.exitSelectGripCard();
         break;
       case UIMODE_SELECT_INSTALLED_CARD:
-        this.exitSelectInstalledCard();
+        await this.exitSelectInstalledCard();
         break;
       case UIMODE_ASSIGN_DAMAGE:
-        this.exitAssignDamage();
+        await this.exitAssignDamage();
         break;
       case UIMODE_SELECT_ENEMY:
-        this.exitSelectEnemy();
+        await this.exitSelectEnemy();
         break;
       case UIMODE_END_TURN:
-        this.exitEndTurn();
+        await this.exitEndTurn();
         break;
     }
 
@@ -86,31 +100,31 @@ class UiMode {
 
     switch (this.uiMode) {
       case UIMODE_NON_GAME:
-        this.enterNonGame();
+        await this.enterNonGame();
         break;
       case UIMODE_CORP_TURN:
-        this.enterCorpTurn();
+        await this.enterCorpTurn();
         break;
       case UIMODE_SELECT_ACTION:
-        this.enterSelectAction();
+        await this.enterSelectAction();
         break;
       case UIMODE_MOVEMENT:
-        this.enterMovement();
+        await this.enterMovement();
         break;
       case UIMODE_SELECT_GRIP_CARD:
-        this.enterSelectGripCard();
+        await this.enterSelectGripCard();
         break;
       case UIMODE_SELECT_INSTALLED_CARD:
-        this.enterSelectInstalledCard();
+        await this.enterSelectInstalledCard();
         break;
       case UIMODE_ASSIGN_DAMAGE:
-        this.enterAssignDamage();
+        await this.enterAssignDamage();
         break;
       case UIMODE_SELECT_ENEMY:
-        this.enterSelectEnemy();
+        await this.enterSelectEnemy();
         break;
       case UIMODE_END_TURN:
-        this.enterEndTurn();
+        await this.enterEndTurn();
         break;
     }
   }
@@ -124,50 +138,54 @@ class UiMode {
   }
 
   // UIMODE_NON_GAME
-  static enterNonGame() {}
-  static exitNonGame() {}
+  static async enterNonGame() {}
+  static async exitNonGame() {}
 
   // UIMODE_CORP_TURN
-  static enterCorpTurn() {}
-  static exitCorpTurn() {}
+  static async enterCorpTurn() {}
+  static async exitCorpTurn() {}
 
   // UIMODE_SELECT_ACTION
-  static enterSelectAction() {}
-  static exitSelectAction() {}
+  static async enterSelectAction() {
+    GripCard.markPlayableCards();
+  }
+  static async exitSelectAction() {
+    GripCard.markAllCardsUnplayable();
+  }
 
   // UIMODE_MOVEMENT
-  static enterMovement() {}
-  static exitMovement() {}
+  static async enterMovement() {}
+  static async exitMovement() {}
 
   // UIMODE_SELECT_GRIP_CARD
   // data {
   //  minCards,
   //  maxCards,
-  //  onAccept,
   //  canCancel,
+  //  success, // Assigned by enterSelectGripCard
   // }
-  static enterSelectGripCard() {
+  static async enterSelectGripCard() {
+    // Create alert
     const message =
       this.data.minCards != this.data.maxCards
         ? `Select between ${this.data.minCards} and ${this.data.maxCards} cards, inclusive, from your hand.`
         : `Select ${this.data.maxCards} ${
             this.data.maxCards == 1 ? "card" : "cards"
           } from your hand.`;
-    const options = [new Option("Accept", this.data.onAccept)];
+    const options = [new Option("accept", "Accept")];
     if (this.data.canCancel) {
-      options.push(
-        new Option(
-          "Cancel",
-          function () {
-            UiMode.setMode(UiMode.#previousMode); // TODO - this doesn't account for the previous mode data
-          },
-          "warning"
-        )
-      );
+      options.push(new Option("cancel", "Cancel", "warning"));
     }
-    Alert.send(message, ALERT_PRIMARY, false, true, options);
+    const alert = Alert.send(message, ALERT_PRIMARY, false, true, options);
+
+    // Wait for the selection to be approved or cancelled
+    const optionId = await alert.waitForOption();
+    alert.close();
+
+    // Declare if the selection went ahead
+    this.data.success = optionId == "accept"; // TODO - record the selected cards?
   }
-  static exitSelectGripCard() {
+  static async exitSelectGripCard() {
     GripCard.deselectAll();
   }
 
@@ -175,49 +193,70 @@ class UiMode {
   // data {
   //  minCards,
   //  maxCards,
-  //  onAccept,
   //  canCancel,
+  //  success, // Assigned by enterSelectInstalledCard
   // }
-  static enterSelectInstalledCard() {
+  static async enterSelectInstalledCard() {
+    // Create alert
     const message =
       this.data.minCards != this.data.maxCards
         ? `Select between ${this.data.minCards} and ${this.data.maxCards} installed cards, inclusive.`
         : `Select ${this.data.maxCards} installed ${
             this.data.maxCards == 1 ? "card" : "cards"
           }.`;
-    const options = [new Option("Accept", this.data.onAccept)];
+    const options = [new Option("accept", "Accept")];
     if (this.data.canCancel) {
-      options.push(
-        new Option(
-          "Cancel",
-          function () {
-            UiMode.setMode(UiMode.#previousMode); // TODO - this doesn't account for the previous mode data
-          },
-          "warning"
-        )
-      );
+      options.push(new Option("cancel", "Cancel", "warning"));
     }
-    Alert.send(message, ALERT_PRIMARY, false, true, options);
+    const alert = Alert.send(message, ALERT_PRIMARY, false, true, options);
+
+    // Wait for the selection to be approved or cancelled
+    const optionId = await alert.waitForOption();
+    alert.close();
+
+    // Declare if the selection went ahead
+    this.data.success = optionId == "accept"; // TODO - record the selected cards?
   }
-  static exitSelectInstalledCard() {
+  static async exitSelectInstalledCard() {
     RigCard.deselectAll();
   }
 
   // UIMODE_ASSIGN_DAMAGE
   // data {
   //   damage,
-  //   onAccept,
+  //   destroyedCardIds, // Defined by enterAssignDamage
   // }
-  static enterAssignDamage() {}
-  static exitAssignDamage() {}
+  static async enterAssignDamage() {
+    // Create the alert
+    const message = `Choose up to ${this.data.damage} damage to split among installed cards. Any excess will be dealt to your identity.`;
+    const options = [
+      new Option("accept", "Accept"),
+      new Option("reset", "Reset", "warning"),
+    ];
+    const alert = Alert.send(message, ALERT_PRIMARY, false, true, options);
+
+    // Respond to the options
+    let destroyedCardIds = null;
+    while (destroyedCardIds == null) {
+      const optionId = await alert.waitForOption();
+      if (optionId == "accept") {
+        alert.close();
+        destroyedCardIds = await RigCard.applyAllPerceivedDamage();
+      } else {
+        RigCard.resetAllPerceivedDamage();
+      }
+    }
+    this.data.destroyedCardIds = destroyedCardIds;
+  }
+  static async exitAssignDamage() {}
 
   // UIMODE_SELECT_ENEMY
-  static enterSelectEnemy() {}
-  static exitSelectEnemy() {}
+  static async enterSelectEnemy() {}
+  static async exitSelectEnemy() {}
 
   // UIMODE_END_TURN
-  static enterEndTurn() {}
-  static exitEndTurn() {}
+  static async enterEndTurn() {}
+  static async exitEndTurn() {}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

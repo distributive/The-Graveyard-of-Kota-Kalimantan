@@ -31,106 +31,138 @@ class Enemy {
     return this.instances.filter((enemy) => enemy.#currentLocation == location);
   }
 
-  static actionEngage(callback) {
+  static async actionEngage() {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canEngage) {
-      return false;
+      return {};
     }
+
     // Update UI/enemy modes
     UiMode.setFlag("can-cancel-engage", true);
     UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_ENGAGE;
+
     // Make all valid targets selectable and set up their click callbacks
     const currentLocation = Location.getCurrentLocation();
-    this.instances.forEach((enemy) => {
-      enemy.selectable =
-        enemy.#currentLocation == currentLocation && !enemy.engaged;
-      if (enemy.selectable) {
-        enemy.click(() => {
-          enemy.engage();
-          this.cancelAction();
-          callback(true, enemy);
-        });
-      }
+    const enemy = await new Promise((resolve) => {
+      this.instances.forEach((enemy) => {
+        enemy.selectable =
+          enemy.#currentLocation == currentLocation && !enemy.engaged;
+        if (enemy.selectable) {
+          enemy.click(async function () {
+            resolve(enemy);
+          });
+        }
+      });
     });
+
+    await enemy.engage();
+    this.cancelAction();
+
+    return { success: true, enemy: enemy };
   }
 
-  static actionFight(damage, callback) {
+  static async actionFight(damage) {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canFight) {
-      return false;
+      return {};
     }
+
     // Update UI/enemy modes
     UiMode.setFlag("can-cancel-fight", true);
     UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_FIGHT;
+
     // Make all valid targets selectable and set up their click callbacks
     const currentLocation = Location.getCurrentLocation();
-    this.instances.forEach((enemy) => {
-      enemy.selectable =
-        enemy.#currentLocation == currentLocation && enemy.engaged;
-      if (enemy.selectable) {
-        enemy.click(async function () {
-          Chaos.runModal(
-            "strength",
-            enemy.cardData.strength,
-            false,
-            "Fight!",
-            `<p>If successful, you will do ${damage} damage to this enemy.</p>`,
-            function (results) {
-              const { success } = results;
-              Modal.hide();
-              if (success) {
-                enemy.addDamage(damage);
-              }
-              enemy.cardData.onThisAttacked(enemy, results, damage);
-              Enemy.cancelAction();
-              callback(results, enemy);
-            }
-          );
-        });
-      }
+    const enemy = await new Promise((resolve) => {
+      this.instances.forEach((enemy) => {
+        enemy.selectable =
+          enemy.#currentLocation == currentLocation && enemy.engaged;
+        if (enemy.selectable) {
+          enemy.click(async function () {
+            resolve(enemy);
+          });
+        }
+      });
     });
+
+    // Trigger events
+    await enemy.cardData.onThisAttackAttempt();
+    await Broadcast.signal("onPlayerAttackAttempt");
+
+    // Run the modal
+    const results = await Chaos.runModal(
+      "strength",
+      enemy.cardData.strength,
+      false,
+      "Fight!",
+      `<p>If successful, you will do ${damage} damage to this enemy.</p>`
+    );
+    Modal.hide();
+
+    // Apply effects/triggers
+    // TODO - add trigger for succeeding/failing tests
+    if (results.success) {
+      await enemy.cardData.onThisAttacked(enemy, results, damage);
+      await Broadcast.signal("onPlayerAttacks");
+      await enemy.addDamage(damage);
+    }
+    Enemy.cancelAction();
+
+    return { results: results, enemy: enemy };
   }
 
-  static actionEvade(callback) {
+  static async actionEvade() {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canEvade) {
       return false;
     }
+
     // Update UI/enemy modes
     UiMode.setFlag("can-cancel-evade", true);
     UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_EVADE;
+
     // Make all valid targets selectable and set up their click callbacks
     const currentLocation = Location.getCurrentLocation();
-    this.instances.forEach((enemy) => {
-      enemy.selectable =
-        enemy.#currentLocation == currentLocation && enemy.engaged;
-      if (enemy.selectable) {
-        enemy.click(() => {
-          Chaos.runModal(
-            "link",
-            enemy.cardData.link,
-            false,
-            "Evade!",
-            `<p>If successful, you will evade this enemy.</p>`,
-            function (results) {
-              const { success } = results;
-              Modal.hide();
-              if (success) {
-                enemy.disengage();
-              }
-              Enemy.cancelAction();
-              callback(results, enemy);
-            }
-          );
-        });
-      }
+    const enemy = await new Promise((resolve) => {
+      this.instances.forEach((enemy) => {
+        enemy.selectable =
+          enemy.#currentLocation == currentLocation && enemy.engaged;
+        if (enemy.selectable) {
+          enemy.click(async function () {
+            resolve(enemy);
+          });
+        }
+      });
     });
+
+    // Trigger events
+    await enemy.cardData.onThisEvadeAttempt();
+    await Broadcast.signal("onPlayerEvadeAttempt");
+
+    // Run the modal
+    const results = await Chaos.runModal(
+      "link",
+      enemy.cardData.link,
+      false,
+      "Evade!",
+      `<p>If successful, you will evade this enemy.</p>`
+    );
+    Modal.hide();
+
+    // Apply effects/triggers
+    // TODO - add trigger for succeeding/failing tests
+    if (results.success) {
+      await enemy.disengage();
+    }
+    Enemy.cancelAction();
+
+    return { results: results, enemy: enemy };
   }
 
   static cancelAction() {
@@ -193,6 +225,9 @@ class Enemy {
 
   get cardData() {
     return this.#cardData;
+  }
+  get health() {
+    return this.cardData.health;
   }
 
   remove() {
@@ -294,17 +329,20 @@ class Enemy {
   }
 
   // if not in the current location, move there (maybe this behaviour is not wanted)
-  engage() {
+  async engage() {
     if (this.#currentLocation != Location.getCurrentLocation()) {
       this.moveTo(Location.getCurrentLocation());
     }
+    // TODO - add triggers for engaging enemies
     this.#engaged = true;
     this.#jObj.addClass("engaged");
     Enemy.determineCanEngageFightEvade();
     return this;
   }
 
-  disengage() {
+  async disengage() {
+    await this.cardData.onThisEvaded();
+    await Broadcast.signal("onPlayerEvades");
     this.#engaged = false;
     this.#jObj.removeClass("engaged");
     Enemy.determineCanEngageFightEvade();

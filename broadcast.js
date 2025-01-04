@@ -33,9 +33,10 @@ class Broadcast {
       await source.cardData[trigger](source, data);
     }
 
-    // Broadcast to the agenda/act
-    // These are unique in that they do not provide a source
+    // Broadcast to the agenda/act/identity
+    // These are unique in that they do not provide a source as there is only ever one active
     // await Act.cardData[trigger](data);
     // await Agenda.cardData[trigger](data);
+    // await Identity.cardData[trigger](data);
   }
 }

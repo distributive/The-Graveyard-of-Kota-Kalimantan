@@ -172,12 +172,12 @@ class PlayableCardData extends CardData {
     this.#cost = value;
   }
 
-  // Adds any non-printed play costs
+  // Adds any non-printed play/install costs
   calculateCost(source, data) { return this.cost; }
-  // Lists any non-cost requirements to play
+  // Lists any non-cost requirements to play/install
   canPlay(source, data) { return true; }
 
-  async onPlay(source, data) {CardData.log("onPlay", data)}
+  async onPlay(source, data, callback) {CardData.log("onPlay", data)}
   async onDiscard(source, data) {CardData.log("onDiscard", data)}
 }
 

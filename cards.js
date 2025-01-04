@@ -177,13 +177,29 @@ class Cards {
 ///////////////////////////////////////////////////////////////////////////////
 
 class GripCard {
+  // STATIC
   static selectedCards = new Set();
   static deselectAll() {
     Cards.grip.forEach((card) => card.deselect());
   }
 
+  static markPlayableCards() {
+    Cards.grip.forEach((gripCard) => {
+      gripCard.playable =
+        Stats.credits >= gripCard.cardData.cost &&
+        gripCard.cardData.canPlay(gripCard);
+    });
+  }
+  static markAllCardsUnplayable() {
+    Cards.grip.forEach((gripCard) => {
+      gripCard.playable = false;
+    });
+  }
+
+  // INSTANCE
   #cardData;
   #jObj;
+  #playable = false;
 
   constructor(cardId, jObj) {
     this.#cardData = CardData.getCard(cardId);
@@ -191,12 +207,30 @@ class GripCard {
     const instance = this;
     this.#jObj.click(async function () {
       if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
-        const success = await Game.actionPlayCard(instance);
+        const { success, reason } = await Game.actionPlayCard(instance);
         if (success) {
           Cards.removeGripCard(instance);
           Cards.addToHeap(cardId);
         } else {
           animate(instance.#jObj, 300);
+          if (reason == "clicks") {
+            Alert.send(
+              "You do not have enough clicks to play this card.",
+              ALERT_WARNING
+            );
+          } else if (reason == "type") {
+            Alert.send("This card is not a playable type.", ALERT_WARNING);
+          } else if (reason == "credits") {
+            Alert.send(
+              "You do not have enough credits to play this card.",
+              ALERT_WARNING
+            );
+          } else if (reason == "unplayable") {
+            Alert.send(
+              "You do not meet the additional requirements to play this card.",
+              ALERT_WARNING
+            );
+          }
         }
       } else if (UiMode.uiMode == UIMODE_SELECT_GRIP_CARD) {
         if (GripCard.selectedCards.has(instance)) {
@@ -219,6 +253,18 @@ class GripCard {
 
   get cardData() {
     return this.#cardData;
+  }
+
+  get playable() {
+    return this.#playable;
+  }
+  set playable(value) {
+    this.#playable = value;
+    if (value) {
+      this.#jObj.addClass("playable");
+    } else {
+      this.#jObj.removeClass("playable");
+    }
   }
 
   select() {
@@ -267,6 +313,18 @@ class RigCard {
       card.setPerceivedDamage(card.damage)
     );
     this.#totalPerceivedDamage = 0;
+  }
+  static async applyAllPerceivedDamage() {
+    const destroyedCardIds = [];
+    for (let i = 0; i < Cards.installedCards.length; i++) {
+      const card = Cards.installedCards[i];
+      await card.setDamage(card.#perceivedDamage);
+      if (card.damage == card.health) {
+        destroyedCardIds.push(card.id);
+      }
+    }
+    this.#totalPerceivedDamage = 0;
+    return destroyedCardIds;
   }
 
   #cardData;
@@ -424,7 +482,7 @@ class RigCard {
 $(document).ready(function () {
   Cards.updateStackHeapHeights();
 
-  const displayCardModal = function (cardId) {
+  const displayCardModal = async function (cardId) {
     const cardData = CardData.getCard(cardId);
     if (!cardData) {
       return;
@@ -448,9 +506,9 @@ $(document).ready(function () {
           <div>${cardData.text}</div>
         </div>
       </div>`;
-    const options = [new Option("Close", "close")];
+    const options = [new Option("close", "Close", "close")];
     const modal = new Modal(null, null, body, options, true);
-    modal.display();
+    await modal.display();
   };
 
   $("body")
@@ -472,6 +530,13 @@ $(document).ready(function () {
       "dblclick",
       ".card-image:not(#card-focused-image, #card-modal-image, .grip-card-image)",
       function () {
+        if (
+          (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD ||
+            UiMode.uiMode == UIMODE_ASSIGN_DAMAGE) &&
+          $(this).parent().hasClass("installed-card")
+        ) {
+          return;
+        }
         displayCardModal($(this).parent().data("card-id"));
       }
     );
