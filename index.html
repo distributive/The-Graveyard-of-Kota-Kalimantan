@@ -41,6 +41,7 @@
     <script src="broadcast.js"></script>
     <script src="agenda.js"></script>
     <script src="act.js"></script>
+    <script src="identity.js"></script>
     <script src="uiMode.js"></script>
     <script src="stats.js"></script>
     <script src="chaos.js"></script>
@@ -90,6 +91,21 @@
             <div class="col-6 col-lg-5 p-0">
               <div id="location-window">
                 <div id="location-map">
+                  <div id="current-location-marker">
+                    <img
+                      id="current-location-frame"
+                      src="img/game/currentLocation.png"
+                    />
+                    <img
+                      id="current-location-inner"
+                      src="img/game/currentLocationInner.png"
+                    />
+                    <img
+                      id="current-location-padding"
+                      class="h-100"
+                      src="img/game/currentLocationBlank.png"
+                    />
+                  </div>
                   <div id="enemy-container"></div>
                 </div>
                 <div id="location-buttons" class="d-flex flex-column gap-1">
@@ -167,6 +183,13 @@
                     class="card-image h-100"
                     src="img/card/theCatalyst.png"
                   />
+                  <div class="hosted-counters">
+                    <div
+                      class="damage shake-counter"
+                      style="display: none"
+                    ></div>
+                    <div class="doom shake-counter" style="display: none"></div>
+                  </div>
                 </div>
               </div>
             </div>

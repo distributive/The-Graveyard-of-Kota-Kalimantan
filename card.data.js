@@ -110,19 +110,25 @@ class CardData {
     this.#image = value;
   }
 
+  async onTurnStart(source, data) {CardData.log("onTurnStart", data)}
+  async onTurnEnd(source, data) {CardData.log("onTurnEnd", data)}
+  
   async onGainCredits(source, data) {CardData.log("onGainCredits", data)}
   async onLoseCredits(source, data) {CardData.log("onLoseCredits", data)}
   async onGainClicks(source, data) {CardData.log("onGainClicks", data)}
   async onLoseClicks(source, data) {CardData.log("onLoseClicks", data)}
+
+  async onCardsDrawn(source, data) {CardData.log("onCardsDrawn", data)}
   async onCardPlayed(source, data) {CardData.log("onCardPlayed", data)}
   async onCardInstalled(source, data) {CardData.log("onCardInstalled", data)}
   async onCardDiscarded(source, data) {CardData.log("onCardDiscarded", data)} // Trashing from hand is the same as discarding
   async onAssetTrashed(source, data) {CardData.log("onAssetTrashed", data)} // Trashing means specifically while installed
-  async onPlayerMoved(source, data) {CardData.log("onPlayerMoved", data)}
-  async onEnemyMoved(source, data) {CardData.log("onEnemyMoved", data)}
+
   async onActAdvanced(source, data) {CardData.log("onActAdvanced", data)}
   async onAgendaAdvanced(source, data) {CardData.log("onAgendaAdvanced", data)}
-  async onAgendaDoomPlaced(source, data) {CardData.log("onAgendaDoomPlaced", data)}
+  async onDoomPlaced(source, data) {CardData.log("onAgendaDoomPlaced", data)}
+  async onPlayerMoved(source, data) {CardData.log("onPlayerMoved", data)}
+  async onEnemyMoved(source, data) {CardData.log("onEnemyMoved", data)}
   async onPlayerAttackAttempt(source, data) {CardData.log("onPlayerAttackAttempt", data)}
   async onPlayerAttacks(source, data) {CardData.log("onPlayerAttacks", data)}
   async onPlayerKills(source, data) {CardData.log("onPlayerKills", data)}
@@ -177,7 +183,7 @@ class PlayableCardData extends CardData {
   // Lists any non-cost requirements to play/install
   canPlay(source, data) { return true; }
 
-  async onPlay(source, data, callback) {CardData.log("onPlay", data)}
+  async onPlay(source, data) {CardData.log("onPlay", data)}
   async onDiscard(source, data) {CardData.log("onDiscard", data)}
 }
 
@@ -191,8 +197,6 @@ class AssetData extends PlayableCardData {
     CardDataWriteError.throwIfSet(this, "health");
     this.#health = value;
   }
-
-  async onTrash(source, data) {CardData.log("onTrash", data)}
 }
 
 class EventData extends PlayableCardData {
@@ -223,11 +227,6 @@ class EnemyData extends CardData {
   }
 
   async attack(source, data) {CardData.log("attack", data)}
-
-  async onThisAttackAttempt(source, data) {CardData.log("onThisAttackAttempt", data)}
-  async onThisAttacked(source, data) {CardData.log("onThisAttacked", data)}
-  async onThisEvadeAttempt(source, data) {CardData.log("onThisEvadeAttempt", data)}
-  async onThisEvaded(source, data) {CardData.log("onThisEvaded", data)}
 }
 
 class ActData extends CardData {
@@ -262,7 +261,4 @@ class LocationData extends CardData {
     CardDataWriteError.throwIfSet(this, "clues");
     this.#clues = value;
   }
-
-  async onThisInvestigationAttempt(source, data) {CardData.log("onThisInvestigationAttempt", data)}
-  async onThisInvestigated(source, data) {CardData.log("onThisInvestigated", data)}
 }

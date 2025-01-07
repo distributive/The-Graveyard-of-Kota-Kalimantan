@@ -154,24 +154,32 @@ class UiMode {
   }
 
   // UIMODE_MOVEMENT
-  static async enterMovement() {}
-  static async exitMovement() {}
+  static async enterMovement() {
+    $(".valid-destination").addClass("selectable");
+  }
+  static async exitMovement() {
+    $(".location-container").removeClass("selectable");
+  }
 
   // UIMODE_SELECT_GRIP_CARD
   // data {
+  //  message, // Optional
   //  minCards,
   //  maxCards,
   //  canCancel,
-  //  success, // Assigned by enterSelectGripCard
+  // [Assigned by enterSelectGripCard]
+  //  success,
+  //  selectedCards,
   // }
   static async enterSelectGripCard() {
     // Create alert
-    const message =
-      this.data.minCards != this.data.maxCards
-        ? `Select between ${this.data.minCards} and ${this.data.maxCards} cards, inclusive, from your hand.`
-        : `Select ${this.data.maxCards} ${
-            this.data.maxCards == 1 ? "card" : "cards"
-          } from your hand.`;
+    const message = this.data.message
+      ? this.data.message
+      : this.data.minCards != this.data.maxCards
+      ? `Select between ${this.data.minCards} and ${this.data.maxCards} cards, inclusive, from your hand.`
+      : `Select ${this.data.maxCards} ${
+          this.data.maxCards == 1 ? "card" : "cards"
+        } from your hand.`;
     const options = [new Option("accept", "Accept")];
     if (this.data.canCancel) {
       options.push(new Option("cancel", "Cancel", "warning"));
@@ -179,11 +187,32 @@ class UiMode {
     const alert = Alert.send(message, ALERT_PRIMARY, false, true, options);
 
     // Wait for the selection to be approved or cancelled
-    const optionId = await alert.waitForOption();
+    let optionId;
+    let validSelection = false;
+    while (!validSelection) {
+      optionId = await alert.waitForOption();
+      if (
+        optionId == "cancel" ||
+        (GripCard.selectedCards.size >= this.data.minCards &&
+          GripCard.selectedCards.size <= this.data.maxCards)
+      ) {
+        validSelection = true;
+      } else {
+        Alert.send(
+          `You must select at least ${this.data.minCards} ${
+            this.data.minCards == 1 ? "card" : "cards"
+          }`,
+          ALERT_WARNING
+        );
+      }
+    }
     alert.close();
 
-    // Declare if the selection went ahead
-    this.data.success = optionId == "accept"; // TODO - record the selected cards?
+    // Record the outcome
+    this.data.success = optionId == "accept";
+    if (this.data.success) {
+      this.data.selectedCards = Array.from(GripCard.selectedCards);
+    }
   }
   static async exitSelectGripCard() {
     GripCard.deselectAll();
@@ -194,7 +223,8 @@ class UiMode {
   //  minCards,
   //  maxCards,
   //  canCancel,
-  //  success, // Assigned by enterSelectInstalledCard
+  // [Assigned by enterSelectInstalledCard]
+  //  success,
   // }
   static async enterSelectInstalledCard() {
     // Create alert
@@ -224,9 +254,13 @@ class UiMode {
   // UIMODE_ASSIGN_DAMAGE
   // data {
   //   damage,
-  //   destroyedCardIds, // Defined by enterAssignDamage
+  //  [Defined by enterAssignDamage]
+  //   destroyedCardIds,
   // }
   static async enterAssignDamage() {
+    // Highlight damageable cards
+    RigCard.highlightDamageableCards();
+
     // Create the alert
     const message = `Choose up to ${this.data.damage} damage to split among installed cards. Any excess will be dealt to your identity.`;
     const options = [
@@ -241,18 +275,25 @@ class UiMode {
       const optionId = await alert.waitForOption();
       if (optionId == "accept") {
         alert.close();
+        Identity.addDamage(this.data.damage - RigCard.totalPerceivedDamage);
         destroyedCardIds = await RigCard.applyAllPerceivedDamage();
       } else {
         RigCard.resetAllPerceivedDamage();
+        RigCard.highlightDamageableCards();
       }
     }
     this.data.destroyedCardIds = destroyedCardIds;
+
+    // Revert UI
+    RigCard.unhighlightAllCards();
   }
   static async exitAssignDamage() {}
 
   // UIMODE_SELECT_ENEMY
   static async enterSelectEnemy() {}
-  static async exitSelectEnemy() {}
+  static async exitSelectEnemy() {
+    $(".enemy-container").removeClass("selectable");
+  }
 
   // UIMODE_END_TURN
   static async enterEndTurn() {}

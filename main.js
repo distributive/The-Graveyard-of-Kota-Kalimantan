@@ -3,7 +3,7 @@ $(document).ready(function () {
   Location.resetZoom();
   Stats.setClicks(0);
 
-  const l0 = new Location("room", 0, 0).setCurrentLocation();
+  const l0 = new Location("room", 0, 0).setCurrentLocation(true);
   const l1 = new Location("room", 0, 1);
   const l2 = new Location("room", 1, 0);
   const l3 = new Location("room", 0, -1);
@@ -29,9 +29,9 @@ $(document).ready(function () {
   l4.addNeighbour(l7);
   l4.addNeighbour(l8);
 
-  let enemy = new Enemy("example", l5);
+  let enemy = new Enemy("example", l5).setDamage(1);
   new Enemy("example", l5).setDamage(1);
-  new Enemy("example", l0).setDamage(2);
+  new Enemy("example", l0).setDamage(1);
   // setTimeout(() => enemy.moveTo(l2), 1 * 800);
   // setTimeout(() => enemy.moveTo(l0), 2 * 800);
   // setTimeout(() => enemy.moveTo(l4), 3 * 800);

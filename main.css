@@ -169,10 +169,11 @@ button:disabled .inline-icon {
 /* Cards */
 .card-image {
   border-radius: 5px;
-  transition: scale 1s ease-in, filter 1s;
+  transition: scale 1s linear, filter 1s;
 }
 .card-image.flipping {
   scale: 0 1;
+  filter: brightness(0.5);
 }
 
 #card-focused {
@@ -209,6 +210,36 @@ button:disabled .inline-icon {
   opacity: 0;
 }
 
+.card-image-container {
+  border-radius: 5px;
+  transition: box-shadow 0.2s, scale 0.2s;
+}
+.playable .card-image-container,
+.selectable .card-image-container {
+  box-shadow: 0 0 5px white, 0 0 10px #8ebe60, 0 0 10px #8ebe60;
+}
+.playable:hover .card-image-container,
+.selectable:hover .card-image-container {
+  box-shadow: 0 0 10px white, 0 0 25px #8ebe60, 0 0 15px #8ebe60;
+}
+.playable .card-image-container::after,
+.selectable .card-image-container::after {
+  border-radius: 5px;
+  box-shadow: inset 0 0 10px #8ebe60;
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+.playable,
+.selectable {
+  cursor: pointer;
+}
+
 /* Runner cards */
 #stack,
 #heap {
@@ -234,6 +265,13 @@ button:disabled .inline-icon {
     calc(-5 * var(--size) / 6) calc(5 * var(--size) / 6) 0 #222222,
     calc(-11 * var(--size) / 12) calc(11 * var(--size) / 12) 0 #282828,
     calc(-6 * var(--size) / 6) calc(6 * var(--size) / 6) 0 #202020,
+    0 0 10px white,
+    calc(-1 * var(--size) / 6) calc(1 * var(--size) / 6) 5px white,
+    calc(-2 * var(--size) / 6) calc(2 * var(--size) / 6) 5px white,
+    calc(-3 * var(--size) / 6) calc(3 * var(--size) / 6) 5px white,
+    calc(-4 * var(--size) / 6) calc(4 * var(--size) / 6) 5px white,
+    calc(-5 * var(--size) / 6) calc(5 * var(--size) / 6) 5px white,
+    calc(-6 * var(--size) / 6) calc(6 * var(--size) / 6) 5px white,
     calc(-1 * var(--size)) calc(var(--size)) 10px black;
   transition: all 0.2s;
 }
@@ -261,28 +299,39 @@ button:disabled .inline-icon {
   position: absolute;
   left: 50%;
   transform: translateX(
-    calc(-50% + 90px * (var(--index) - (var(--hand-size) - 1) / 2))
+    calc(
+      -50% + (90px - 4px * var(--hand-size)) * (var(--index) -
+            (var(--hand-size) - 1) / 2)
+    )
   );
   rotate: calc(1deg * (var(--index) - (var(--hand-size) - 1) / 2));
   transition: transform 0.25s, rotate 0.2s;
 }
-.grip-card-image {
+.grip-card .card-image-container {
   transform: translate(0, 70px);
   transition: transform 0.25s, box-shadow 0.2s;
+}
+.uimode-select-action .grip-card:not(.playable) .card-image-container {
+  transform: translate(0, 71px);
 }
 .grip-card:not(.selected-card):hover {
   rotate: 0deg;
   z-index: 100;
 }
 
-.grip-card.playable .grip-card-image {
-  box-shadow: 0 0 5px white, 0 0 10px #8ebe60, 0 0 10px #8ebe60;
-}
-.grip-card.playable:not(.selected-card):hover .grip-card-image {
+.grip-card.playable:not(.selected-card):hover .card-image-container {
   transform: translate(0, -10px) scale(1.2);
 }
-.grip-card:not(.selected-card, .playable):hover .grip-card-image {
+.grip-card:not(.selected-card, .playable):hover .card-image-container {
   transform: translate(0, 6px);
+}
+
+.grip-card.in-play {
+  rotate: 0deg;
+  z-index: 10000;
+}
+.grip-card.in-play .card-image-container {
+  transform: translate(0, -50px) rotate(0) scale(1.2) !important;
 }
 
 .grip-card.transition-out {
@@ -300,19 +349,19 @@ button:disabled .inline-icon {
     -80%
   );
 }
-.grip-card.selected-card .grip-card-image {
+.grip-card.selected-card .card-image-container {
   transform: none;
   box-shadow: 0 0 15px black;
 }
-.grip-card.selected-card .grip-card-image {
+.grip-card.selected-card .card-image-container {
   transform: none;
   box-shadow: 0 0 15px white;
 }
-.grip-card.selected-card .grip-card-image:hover {
+.grip-card.selected-card .card-image-container:hover {
   scale: 1.01;
 }
 
-.uimode-select-action .grip-card,
+.uimode-select-action .grip-card.playable,
 .uimode-select-grip-card .grip-card {
   cursor: pointer;
 }
@@ -361,7 +410,7 @@ button:disabled .inline-icon {
   top: 0;
   transition: transform 0.2s, scale 0.2s;
 }
-.installed-card:hover .card-image {
+.installed-card:hover .card-image-container {
   transform: scale(1.01);
 }
 .uimode-select-installed-card .installed-card:hover .card-image {
@@ -396,6 +445,34 @@ button:disabled .inline-icon {
   z-index: 10000;
 }
 
+.installed-card .card-image-container {
+  transition: transform 0.2s;
+}
+.installed-card.transition-out .card-image-container {
+  transform: scale(0, 120%);
+}
+.installed-card.transition-out .hosted-counters {
+  display: none;
+}
+
+.installed-card-outro-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  filter: opacity(0);
+  pointer-events: none;
+}
+.installed-card.transition-out .installed-card-outro-container {
+  filter: opacity(1);
+}
+.installed-card .installed-card-outro {
+  transition: all 0.2s;
+}
+.installed-card.transition-out .installed-card-outro {
+  transform: scale(2);
+  filter: opacity(0);
+}
+
 /* Locations */
 #location-window {
   --local-x: 320px;
@@ -425,13 +502,14 @@ button:disabled .inline-icon {
   }
 }
 #location-map {
+  --move-period: 0.2s; /* How long it takes to reach target location */
   position: relative;
   transform: translate(var(--local-x), var(--local-y)) scale(var(--zoom));
   width: 0px;
   height: 0px;
   margin: 0;
   padding: 0;
-  transition: transform 0.2s, --zoom 0.1s;
+  transition: transform var(--move-period), --zoom 0.1s;
 }
 #location-map.dragged {
   transition: --zoom 0.1s;
@@ -455,20 +533,10 @@ button:disabled .inline-icon {
   z-index: 1000;
 }
 
-.location-container.current-location {
-  box-shadow: 0 0 20px #d4c26b, 0 0 20px #d4c26b;
-}
 .current-location .location-image {
   filter: saturate(1);
 }
 
-.uimode-movement .location-container.valid-destination {
-  outline: 2px solid #7887ab;
-  cursor: pointer;
-}
-.uimode-movement .location-container.valid-destination:hover {
-  outline: 2px solid #fceda6;
-}
 .uimode-movement
   .location-container:not(.valid-destination, .current-location)
   .location-image {
@@ -520,6 +588,100 @@ button:disabled .inline-icon {
   background: none;
 }
 
+#current-location-marker {
+  --x-pos: 0px;
+  --y-pos: 0px;
+  position: absolute;
+  transform: translate(calc(var(--x-pos) - 50%), calc(var(--y-pos) - 50%));
+  transition: transform 0.3s;
+  z-index: 49;
+  width: 180px;
+  pointer-events: none;
+}
+#current-location-marker.hover {
+  z-index: 5000;
+}
+#current-location-marker.moving #current-location-frame,
+#current-location-marker.moving #current-location-inner {
+  animation: location-marker-movement 0.3s forwards;
+}
+@keyframes location-marker-movement {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(100%, 100%);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(120%, 60%);
+  }
+}
+#current-location-marker.moving #current-location-padding {
+  animation: location-marker-padding-movement 0.3s forwards;
+}
+@keyframes location-marker-padding-movement {
+  0%,
+  100% {
+  }
+  10%,
+  90% {
+    box-shadow: none;
+  }
+}
+
+#current-location-marker #current-location-frame,
+#current-location-marker #current-location-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+}
+#current-location-marker #current-location-padding {
+  width: 180px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #d4c26b, 0 0 10px #d4c26b, inset 0 0 10px #d4c26b,
+    inset 0 0 10px #d4c26b;
+}
+
+#current-location-frame {
+  animation: current-location-frame-animation 13s infinite;
+  z-index: 1;
+}
+@keyframes current-location-frame-animation {
+  10%,
+  12%,
+  50%,
+  52%,
+  74%,
+  76%,
+  78% {
+    filter: opacity(1);
+  }
+  11%,
+  51%,
+  75%,
+  77% {
+    filter: opacity(0.7);
+  }
+}
+
+#current-location-inner {
+  animation: current-location-inner-animation 10s infinite;
+}
+@keyframes current-location-inner-animation {
+  0%,
+  100% {
+    filter: opacity(1);
+  }
+  50% {
+    filter: opacity(0.2);
+  }
+}
+
+/* Identity */
+#runner-id {
+  position: relative;
+}
+
 /* Enemies */
 .enemy-container {
   --x-pos: 0px;
@@ -539,11 +701,14 @@ button:disabled .inline-icon {
   width: 100%;
   box-shadow: 0 0 15px black;
   filter: saturate(0.5);
-  transition: scale 1s ease-in, filter 1s, scale 0.1s, box-shadow 0.1s !important;
+  transition: filter 1s, scale 0.1s, box-shadow 0.1s !important;
   z-index: 50;
 }
-.enemy-container.engaged .enemy-image {
+#ui-mode:not(.uimode-select-enemy)
+  .enemy-container.engaged:not(.transition-out) {
   box-shadow: 0 0 20px red;
+}
+.enemy-container.engaged .card-image-container {
   animation: engaged-enemy 1s ease calc(-0.2s * var(--index)) infinite;
 }
 @keyframes engaged-enemy {
@@ -556,18 +721,31 @@ button:disabled .inline-icon {
   }
 }
 
-.uimode-select-enemy .enemy-container.selectable {
-  cursor: pointer;
-}
-.uimode-select-enemy .enemy-container.selectable .enemy-image {
-  outline: 2px solid #7887ab;
-}
-.uimode-select-enemy .enemy-container.selectable:hover .enemy-image {
+.uimode-select-enemy .enemy-container.selectable:hover .card-image-container {
   scale: 1.05 !important;
-  outline: 2px solid #fceda6;
 }
-.uimode-select-enemy .enemy-container.selectable.engaged:hover .enemy-image {
-  box-shadow: 0 0 20px red, 0 0 20px red;
+
+.enemy-outro-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  filter: opacity(0);
+  pointer-events: none;
+}
+.enemy-container.transition-out .enemy-outro-container {
+  filter: opacity(1);
+}
+.enemy-container .enemy-outro {
+  transition: all 1s;
+}
+.enemy-container.transition-out .enemy-outro {
+  transform: scale(2);
+  filter: opacity(0);
+}
+.enemy-container.transition-out .card-image-container {
+  box-shadow: none;
+  opacity: 0;
+  transition: filter 1s, box-shadow 1s;
 }
 
 /* Agenda */

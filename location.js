@@ -20,9 +20,9 @@ class Location {
     y = Number.isNaN(y) ? this.#mapOffsetY : y;
     this.#mapOffsetX = x;
     this.#mapOffsetY = y;
-    const window = this.window;
-    window.css("--local-x", `${this.#mapOffsetX}px`);
-    window.css("--local-y", `${this.#mapOffsetY}px`);
+    this.window
+      .css("--local-x", `${this.#mapOffsetX}px`)
+      .css("--local-y", `${this.#mapOffsetY}px`);
   }
   static adjustMapOffset(x, y) {
     this.setMapOffset(this.#mapOffsetX + x, this.#mapOffsetY + y);
@@ -30,11 +30,11 @@ class Location {
       $("#map-reset").attr("disabled", false);
     }
   }
-  static resetMapOffset() {
+  static resetMapOffset(movePeriod) {
     const window = this.window;
     const x = window.innerWidth() / 2;
     const y = window.innerHeight() / 2;
-    this.setMapOffset(x, y);
+    this.setMapOffset(x, y, movePeriod);
     $("#map-reset").attr(
       "disabled",
       !this.currentLocation || this.currentLocation.pos == [0, 0]
@@ -117,9 +117,11 @@ class Location {
 
     let jObj = $(`
       <div class="location-container">
-        <img src="${
-          this.#cardData.image
-        }" class="location-image card-image" onmousedown="event.preventDefault()" />
+        <div class="card-image-container h-100">
+          <img src="${
+            this.#cardData.image
+          }" class="location-image card-image" onmousedown="event.preventDefault()" />
+        </div>
         <div class="hosted-counters">
           <div class="clues shake-counter"></div>
           <div class="doom shake-counter"></div>
@@ -222,16 +224,19 @@ class Location {
     return [this.#x, this.#y];
   }
 
-  setCurrentLocation() {
+  setCurrentLocation(firstTime = false) {
     if (Location.currentLocation == this) {
       return this;
     }
     if (Location.currentLocation) {
-      Location.currentLocation.#jObj.removeClass("current-location");
+      Location.currentLocation.#jObj
+        .removeClass("current-location")
+        .off("hover");
     }
     Location.currentLocation = this;
     this.#jObj.addClass("current-location");
 
+    // Reassign valid destinations
     $(".location-container").removeClass("valid-destination");
     this.#neighbours.forEach((location) => {
       location.#jObj.addClass("valid-destination");
@@ -241,6 +246,32 @@ class Location {
       this.#connections[key].addClass("valid-connection")
     );
 
+    // Move the current-location identifier
+    $("#current-location-marker")
+      .css("--x-pos", `${Location.xCoordToPos(this.#x)}px`)
+      .css("--y-pos", `${Location.yCoordToPos(this.#y)}px`);
+    this.#jObj.hover(
+      function () {
+        $("#current-location-marker").addClass("hover");
+      },
+      function () {
+        $("#current-location-marker").removeClass("hover");
+      }
+    );
+    if (!firstTime) {
+      // This location is already being hovered
+      $("#current-location-marker").addClass("hover");
+    }
+    $("#current-location-marker").addClass("moving");
+    setTimeout(function () {
+      $("#current-location-marker").removeClass("moving");
+    }, 300);
+
+    // Move camera to new location
+    // TODO - determine if new location is off screen?
+    // Location.focusMapOffsetCurrentLocation();
+
+    // Update UI buttons
     $("#map-reset").attr("disabled", false);
     UiMode.setFlag("can-investigate", this.#clues > 0);
     Enemy.determineCanEngageFightEvade();

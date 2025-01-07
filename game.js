@@ -28,13 +28,11 @@ class Game {
     Stats.setClues(0);
 
     Agenda.setDoom(0);
-
-    Location.focusMapOffsetCurrentLocation();
   }
 
   static startTurn() {
     UiMode.setMode(UIMODE_SELECT_ACTION);
-    Stats.setClicks(3);
+    Stats.setClicks(7);
     animateTurnBanner("runner");
   }
   static endTurn() {
@@ -92,6 +90,7 @@ class Game {
     } else {
       await cardData.onPlay(gripCard);
       await Broadcast.signal("onCardPlayed", { card: gripCard });
+      Cards.addToHeap(gripCard.cardData.id);
     }
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION); // TODO - is it true that this will always be the correct mode to return to?
@@ -138,10 +137,14 @@ class Game {
   }
 
   static async sufferDamage(damage, callback) {
-    await UiMode.setMode(UIMODE_ASSIGN_DAMAGE, {
-      damage: damage,
-    });
-    const destroyedCardIds = UiMode.data.destroyedCardIds;
+    if (RigCard.getDamageableCards().length > 0) {
+      await UiMode.setMode(UIMODE_ASSIGN_DAMAGE, {
+        damage: damage,
+      });
+      const destroyedCardIds = UiMode.data.destroyedCardIds;
+    } else {
+      Identity.addDamage(damage);
+    }
   }
 }
 
@@ -149,7 +152,21 @@ class Game {
 
 $(document).ready(function () {
   // Action buttons
-  $("#action-end-turn").click(() => {
+  $("#action-end-turn").click(async () => {
+    if (Cards.grip.length > 8) {
+      const difference = Cards.grip.length - 8;
+      await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
+        message: `Select ${difference} ${
+          difference == 1 ? "card" : "cards"
+        } to discard to handsize.`,
+        minCards: difference,
+        maxCards: difference,
+        canCancel: false,
+      });
+      UiMode.data.selectedCards.forEach((gripCard) => {
+        Cards.discard(gripCard);
+      });
+    }
     Game.endTurn();
   });
 

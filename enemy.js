@@ -90,7 +90,6 @@ class Enemy {
     });
 
     // Trigger events
-    await enemy.cardData.onThisAttackAttempt();
     await Broadcast.signal("onPlayerAttackAttempt");
 
     // Run the modal
@@ -106,7 +105,6 @@ class Enemy {
     // Apply effects/triggers
     // TODO - add trigger for succeeding/failing tests
     if (results.success) {
-      await enemy.cardData.onThisAttacked(enemy, results, damage);
       await Broadcast.signal("onPlayerAttacks");
       await enemy.addDamage(damage);
     }
@@ -142,7 +140,6 @@ class Enemy {
     });
 
     // Trigger events
-    await enemy.cardData.onThisEvadeAttempt();
     await Broadcast.signal("onPlayerEvadeAttempt");
 
     // Run the modal
@@ -201,9 +198,14 @@ class Enemy {
 
     this.#jObj = $(`
       <div class="enemy-container">
-        <img src="${
-          this.#cardData.image
-        }" class="enemy-image card-image" onmousedown="event.preventDefault()" />
+        <div class="card-image-container h-100">
+          <img src="${
+            this.#cardData.image
+          }" class="enemy-image card-image" onmousedown="event.preventDefault()" />
+        </div>
+        <div class="enemy-outro-container h-100">
+          <img class="enemy-outro h-100" src="img/card/trashedCardOutro.png" />
+        </div>
         <div class="hosted-counters">
           <div class="damage shake-counter"></div>
           <div class="clues shake-counter"></div>
@@ -234,7 +236,12 @@ class Enemy {
     const index = Enemy.instances.indexOf(this);
     if (index >= 0) {
       Enemy.instances.splice(index, 1);
-      Location.removeEnemy(this);
+      this.#currentLocation.removeEnemy(this);
+      const jObj = this.#jObj;
+      jObj.addClass("transition-out");
+      setTimeout(function () {
+        jObj.remove();
+      }, 1000);
       return true;
     }
     return false;
@@ -262,18 +269,19 @@ class Enemy {
   }
 
   setDamage(value, doAnimate = true) {
-    if (value == 0) {
+    if (value == 0 || value >= this.health) {
       this.#jDamage.hide();
     } else {
       this.#jDamage.show();
     }
-    let jDamage = this.#jDamage;
-    jDamage.html(value);
-    if (value != this.#damage && doAnimate) {
-      jDamage.addClass("animate");
-      setTimeout(function () {
-        jDamage.removeClass("animate");
-      }, 500);
+    if (value < this.health) {
+      let jDamage = this.#jDamage;
+      jDamage.html(value);
+      if (value != this.#damage && doAnimate) {
+        animate(jDamage, 500);
+      }
+    } else {
+      this.remove();
     }
     this.#damage = value;
     return this;
@@ -291,10 +299,7 @@ class Enemy {
     let jClues = this.#jClues;
     jClues.html(value);
     if (value != this.#clues && doAnimate) {
-      jClues.addClass("animate");
-      setTimeout(function () {
-        jClues.removeClass("animate");
-      }, 500);
+      animate(jClues, 500);
     }
     this.#clues = value;
     return this;
@@ -312,10 +317,7 @@ class Enemy {
     let jDoom = this.#jDoom;
     jDoom.html(value);
     if (value != this.#doom && doAnimate) {
-      jDoom.addClass("animate");
-      setTimeout(function () {
-        jDoom.removeClass("animate");
-      }, 500);
+      animate(jDoom, 500);
     }
     this.#doom = value;
     return this;
@@ -341,7 +343,6 @@ class Enemy {
   }
 
   async disengage() {
-    await this.cardData.onThisEvaded();
     await Broadcast.signal("onPlayerEvades");
     this.#engaged = false;
     this.#jObj.removeClass("engaged");

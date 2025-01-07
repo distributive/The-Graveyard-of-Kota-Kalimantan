@@ -79,7 +79,9 @@ class Cards {
       const cardData = this.stack.pop();
       let jCard = $(
         `<div class="grip-card h-100">
-          <img class="grip-card-image card-image h-100" src="${cardData.image}" />
+          <div class="card-image-container h-100">
+            <img class="grip-card-image card-image h-100" src="${cardData.image}" />
+          </div>
         </div>`
       );
       jCard.data("card-id", cardData.id);
@@ -94,8 +96,8 @@ class Cards {
     return n - i;
   }
 
-  static discard(index) {
-    // TODO
+  static discard(card) {
+    const index = typeof card == "object" ? this.grip.indexOf(card) : card;
     if (this.removeGripCard(index)) {
       this.updateStackHeapHeights();
       this.determineCanDraw();
@@ -121,6 +123,17 @@ class Cards {
       setTimeout(function () {
         Cards.updateHandPositions();
       }, 210);
+      return true;
+    }
+    return false;
+  }
+
+  static removeInstalledCard(card) {
+    const index =
+      typeof card == "object" ? this.installedCards.indexOf(card) : card;
+    if (index >= 0 && index < this.installedCards.length) {
+      this.installedCards[index].remove();
+      this.installedCards.splice(index, 1);
       return true;
     }
     return false;
@@ -181,6 +194,7 @@ class GripCard {
   static selectedCards = new Set();
   static deselectAll() {
     Cards.grip.forEach((card) => card.deselect());
+    GripCard.selectedCards.clear();
   }
 
   static markPlayableCards() {
@@ -207,11 +221,12 @@ class GripCard {
     const instance = this;
     this.#jObj.click(async function () {
       if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
+        jObj.addClass("in-play");
         const { success, reason } = await Game.actionPlayCard(instance);
         if (success) {
           Cards.removeGripCard(instance);
-          Cards.addToHeap(cardId);
         } else {
+          jObj.removeClass("in-play");
           animate(instance.#jObj, 300);
           if (reason == "clicks") {
             Alert.send(
@@ -302,12 +317,19 @@ class GripCard {
 ///////////////////////////////////////////////////////////////////////////////
 
 class RigCard {
+  // STATIC
   static selectedCards = new Set();
+
   static deselectAll() {
     Cards.installedCards.forEach((card) => card.deselect());
   }
 
   static #totalPerceivedDamage = 0;
+
+  static get totalPerceivedDamage() {
+    return this.#totalPerceivedDamage;
+  }
+
   static resetAllPerceivedDamage() {
     Cards.installedCards.forEach((card) =>
       card.setPerceivedDamage(card.damage)
@@ -327,6 +349,35 @@ class RigCard {
     return destroyedCardIds;
   }
 
+  static highlightPlayableCards() {
+    Cards.installedCards.forEach((card) => {
+      if (card.cardData.canPlay(card)) {
+        card.#jObj.addClass("playable");
+      } else {
+        card.#jObj.removeClass("playable");
+      }
+    });
+  }
+  static highlightDamageableCards() {
+    Cards.installedCards.forEach((card) => {
+      if (card.health > 0) {
+        card.#jObj.addClass("selectable");
+      } else {
+        card.#jObj.removeClass("selectable");
+      }
+    });
+  }
+  static unhighlightAllCards() {
+    Cards.installedCards.forEach((card) =>
+      card.#jObj.removeClass("playable").removeClass("selectable")
+    );
+  }
+
+  static getDamageableCards() {
+    return Cards.installedCards.filter((card) => card.health > 0);
+  }
+
+  // INSTANCE
   #cardData;
 
   #jObj;
@@ -346,10 +397,15 @@ class RigCard {
     // card-padding is to make sure the parent class has the correct width
     this.#jObj = $(`
       <div class="installed-card">
-        <img class="card-padding h-100" src="img/card/placeholder.png" />
-        <img class="installed-card-image card-image h-100" src="${
-          this.#cardData.image
-        }" />
+        <div class="card-image-container h-100">
+          <img class="card-padding h-100" src="img/card/placeholder.png" />
+          <img class="installed-card-image card-image h-100" src="${
+            this.#cardData.image
+          }" />
+        </div>
+        <div class="installed-card-outro-container h-100">
+          <img class="installed-card-outro h-100" src="img/card/trashedCardOutro.png" />
+        </div>
         <div class="hosted-counters">
           <div class="power shake-counter"></div>
           <div class="damage shake-counter"></div>
@@ -412,8 +468,12 @@ class RigCard {
   }
 
   setDamage(value, doAnimate = true) {
-    this.setPerceivedDamage(value, doAnimate);
-    this.#damage = value;
+    if (value < this.health) {
+      this.setPerceivedDamage(value, doAnimate);
+      this.#damage = value;
+    } else {
+      Cards.removeInstalledCard(this);
+    }
     return this;
   }
   setPerceivedDamage(value, doAnimate = false) {
@@ -429,7 +489,7 @@ class RigCard {
     }
     this.#perceivedDamage = value;
     if (this.#perceivedDamage >= this.health) {
-      this.#jObj.addClass("perceived-trashed");
+      this.#jObj.addClass("perceived-trashed").removeClass("selectable");
     } else {
       this.#jObj.removeClass("perceived-trashed");
     }
@@ -474,6 +534,14 @@ class RigCard {
   deselect() {
     RigCard.selectedCards.delete(this);
     this.#jObj.removeClass("selected-card");
+  }
+
+  remove() {
+    let jObj = this.#jObj;
+    jObj.addClass("transition-out").removeClass("perceived-trashed");
+    setTimeout(function () {
+      jObj.remove();
+    }, 200);
   }
 }
 

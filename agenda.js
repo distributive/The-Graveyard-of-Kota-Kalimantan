@@ -1,8 +1,22 @@
 class Agenda {
+  static #cardData;
   static #doom;
+
+  static get cardData() {
+    return this.#cardData;
+  }
 
   static get doom() {
     return this.#doom;
+  }
+
+  static setCard(cardId, doAnimate = true) {
+    this.#cardData = CardData.getCard(cardId);
+    if (doAnimate) {
+      Cards.flip($("#agenda .card-image"), this.#cardData.image);
+    } else {
+      $("#agenda .card-image").attr("src", this.#cardData.image);
+    }
   }
 
   static setDoom(value, doAnimate = true) {

@@ -1,3 +1,19 @@
+// Identities
+
+const CardTheCatalyst = new EventData("the_catalyst");
+CardTheCatalyst.title = "The Catalyst";
+CardTheCatalyst.text =
+  "Start the game with a random deck of cards containing no duplicates.";
+CardTheCatalyst.subtypes = ["natural"];
+CardTheCatalyst.faction = FACTION_NEUTRAL;
+CardTheCatalyst.image = "img/card/theCatalyst.png";
+CardTheCatalyst.influence = 4;
+CardTheCatalyst.mu = 4;
+CardTheCatalyst.strength = 4;
+CardTheCatalyst.link = 4;
+
+// Constructed cards
+
 const CardOffSureFund = new EventData("off_shore_fund");
 CardOffSureFund.title = "Off-Shore Fund";
 CardOffSureFund.text = "Gain 9{c}.";

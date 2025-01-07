@@ -36,7 +36,7 @@ class Alert {
     // If it is a simple alert (no options, unpinned and dismissible) and the
     // previous alert shares the same text, conflate them
     if (!options && dismissible && !pinned && this.#alerts.length > 0) {
-      const prevAlertId = this.#alerts[this.#alerts.length - 1];
+      const prevAlertId = this.#alerts[0];
       const prevAlert = this.#idToAlert[prevAlertId];
       if (prevAlert.#message == message) {
         prevAlert.refreshTimeout(true);
@@ -107,7 +107,6 @@ class Alert {
     pinned = false,
     options = null
   ) {
-    const instance = this;
     const id = Alert.#nextId++;
     this.#id = id;
     this.#message = message;
@@ -144,6 +143,7 @@ class Alert {
 
     // Clean up alerts closed by the user
     // Does not force close the UI, as that will recursively call this function
+    const instance = this;
     this.#jObj.on("close.bs.alert", function () {
       if (!instance.#hasBeenClosed) {
         instance.#hasBeenClosed = true;
@@ -169,10 +169,11 @@ class Alert {
 
   refreshTimeout(doAnimate = true) {
     clearTimeout(this.#timeout);
+    const instance = this;
     this.#timeout = setTimeout(function () {
       if (!instance.#hasBeenClosed) {
         instance.#hasBeenClosed = true;
-        Alert.remove(id);
+        Alert.remove(instance.#id);
       }
     }, ALERT_TIMEOUT);
     if (doAnimate) {

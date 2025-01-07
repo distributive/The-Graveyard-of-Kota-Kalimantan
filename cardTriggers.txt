@@ -1,42 +1,38 @@
 // Global
+--onTurnStart(source)
+--onTurnEnd(source)
+
 onGainCredits(source, {old, new, increase})
 onLoseCredits(source, {old, new, decrease})
 onGainClicks(source, {oldValue, newValue})
-onDrawCards(source, {})
-onCardPlayed(source, {})
+onLoseClicks(source, {oldValue, newValue})
+
+onCardsDrawn(source, {number})
+onCardPlayed(source, {}) // Conflates playing events with installing assets
 onCardInstalled(source, {})
 --onCardDiscarded(source, {})
 --onAssetTrashed(source, {})
---onPlayerMoved(source, {fromLocation, toLocation})
---onEnemyMoved(source, {enemy, fromLocation, toLocation})
---onActAdvanced(source, {act})
---onAgendaAdvanced(source, {agenda})
---onAgendaDoomPlaced(source, {agenda,  doom})
+
+--onActAdvanced(source, {})
+--onAgendaAdvanced(source, {})
+--onAgendaDoomPlaced(source, {doom})
+
+--onPlayerMoves(source, {fromLocation, toLocation})
 --onPlayerAttackAttempt(source, {enemy, damage})
 --onPlayerAttacks(source, {enemy, results, damage})
 --onPlayerKills(source, {enemy})
 --onPlayerEvadeAttempt(source, {enemy})
 --onPlayerEvades(source, {enemy, results})
 --onPlayerAttacked(source, {enemy})
+
+--onEnemyMoves(source, {enemy, fromLocation, toLocation})
+
 onInvestigationAttempt(source, {location})
 onInvestigation(source, {location, results, clues})
 
 // Playable cards
 --calculateCost(source, {})
 --canPlay(source, {})
-onPlay(source, {}) // Conflates playing events with installing assets
---onDiscard(source, {})
-
-// Assets
---onTrash(source, {asset})
 
 // Enemies
 --attack(source, {enemy})
---onThisAttackAttempt(source, {enemy})
---onThisAttacked(source, {enemy, results, damage})
---onThisEvadeAttempt(source, {enemy})
---onThisEvaded(source, {enemy, results})
-
-// Locations
-onThisInvestigationAttempt(source, {location, clues})
-onThisInvestigated(source, {location, success, clues})
