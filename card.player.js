@@ -1,59 +1,82 @@
-// Identities
+const CardTheCatalyst = new EventData("the_catalyst", {
+  title: "The Catalyst",
+  text: "Start the game with a random deck of cards containing no duplicates.",
+  subtypes: ["natural"],
+  faction: FACTION_NEUTRAL,
+  image: "img/card/identity/theCatalyst.png",
+  influence: 4,
+  mu: 4,
+  strength: 4,
+  link: 4,
+});
 
-const CardTheCatalyst = new EventData("the_catalyst");
-CardTheCatalyst.title = "The Catalyst";
-CardTheCatalyst.text =
-  "Start the game with a random deck of cards containing no duplicates.";
-CardTheCatalyst.subtypes = ["natural"];
-CardTheCatalyst.faction = FACTION_NEUTRAL;
-CardTheCatalyst.image = "img/card/theCatalyst.png";
-CardTheCatalyst.influence = 4;
-CardTheCatalyst.mu = 4;
-CardTheCatalyst.strength = 4;
-CardTheCatalyst.link = 4;
+const CardTopan = new EventData("topan", {
+  title: "Topan: Vigilante Enforcer",
+  text: "Once per turn → {click}: Install a card from your hand, paying 2{c} less, then discard a random card.",
+  subtypes: ["natural"],
+  faction: FACTION_ANARCH,
+  image: "img/card/identity/topan.png",
+  influence: 4,
+  mu: 3,
+  strength: 4,
+  link: 3,
+});
 
-// Constructed cards
+const CardBaz = new EventData("baz", {
+  title: "Baz: Mob Boss",
+  text: "The first time each turn an enemy is summoned, you may install a card.",
+  subtypes: ["cyborg"],
+  faction: FACTION_CRIMINAL,
+  image: "img/card/identity/baz.png",
+  influence: 4,
+  mu: 3,
+  strength: 3,
+  link: 4,
+});
 
-const CardOffSureFund = new EventData("off_shore_fund");
-CardOffSureFund.title = "Off-Shore Fund";
-CardOffSureFund.text = "Gain 9{c}.";
-CardOffSureFund.subtypes = ["familiar", "gambit"];
-CardOffSureFund.faction = FACTION_NEUTRAL;
-CardOffSureFund.image = "img/card/offShoreFund.png";
-CardOffSureFund.cost = 5;
-CardOffSureFund.onPlay = async (card) => {
-  await Stats.addCredits(9);
-};
-
-const CardFruitJuice = new EventData("fruit_juice");
-CardFruitJuice.title = "Fruit Juice";
-CardFruitJuice.text = "Draw 3 cards.";
-CardFruitJuice.subtypes = ["familiar"];
-CardFruitJuice.faction = FACTION_SHAPER;
-CardFruitJuice.image = "img/card/fruitJuice.png";
-CardFruitJuice.cost = 0;
-CardFruitJuice.onPlay = async (card) => {
-  await Cards.draw(3);
-};
+const CardDewi = new EventData("dewi", {
+  title: "Dewi: Puppeteer",
+  text: "When you move, and when your turn ends, flip this identity.",
+  subtypes: ["natural"],
+  faction: FACTION_SHAPER,
+  image: "img/card/identity/dewi.png",
+  influence: 5,
+  mu: 2,
+  strength: 5,
+  link: 2,
+});
+const CardDewiBack = new EventData("dewi_back", {
+  title: "Dewi: Puppet",
+  text: "When you move, and when your turn ends, flip this identity.",
+  subtypes: ["natural"],
+  faction: FACTION_SHAPER,
+  image: "img/card/identity/dewi_back.png",
+  influence: 2,
+  mu: 5,
+  strength: 2,
+  link: 5,
+});
 
 // Dev cards
 
-const CardSelfDamage = new EventData("self_damage");
-CardSelfDamage.title = "Self Damage";
-CardSelfDamage.text = "Suffer 1 damage.";
-CardSelfDamage.subtypes = ["dev", "test"];
-CardSelfDamage.faction = FACTION_ANARCH;
-CardSelfDamage.image = "img/card/selfDamage.png";
-CardSelfDamage.cost = 0;
-CardSelfDamage.onPlay = async (card) => {
-  await Game.sufferDamage(1);
-};
+const CardSelfDamage = new EventData("self_damage", {
+  title: "Self Damage",
+  text: "Suffer 1 damage.",
+  subtypes: ["dev", "test"],
+  faction: FACTION_ANARCH,
+  image: "img/card/event/bgAnarch.png",
+  cost: 0,
+  onPlay: async (card) => {
+    await Game.sufferDamage(1);
+  },
+});
 
-const CardUnderTheHood = new AssetData("under_the_hood");
-CardUnderTheHood.title = "Under the Hood";
-CardUnderTheHood.text = "This asset does nothing.";
-CardUnderTheHood.subtypes = ["dev", "test"];
-CardUnderTheHood.faction = FACTION_NEUTRAL;
-CardUnderTheHood.image = "img/card/assetPlaceholder.png";
-CardUnderTheHood.cost = 2;
-CardUnderTheHood.health = 2;
+const CardUnderTheHood = new AssetData("under_the_hood", {
+  title: "Under the Hood",
+  text: "This asset does nothing.",
+  subtypes: ["dev", "test"],
+  faction: FACTION_NEUTRAL,
+  image: "img/card/asset/bgNeutral.png",
+  cost: 2,
+  health: 2,
+});

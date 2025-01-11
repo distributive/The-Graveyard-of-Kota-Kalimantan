@@ -10,7 +10,7 @@ class Location {
     return $("#location-window");
   }
   static get root() {
-    return $("#location-map");
+    return $("#location-position");
   }
 
   static #mapOffsetX = 0;
@@ -25,16 +25,14 @@ class Location {
       .css("--local-y", `${this.#mapOffsetY}px`);
   }
   static adjustMapOffset(x, y) {
-    this.setMapOffset(this.#mapOffsetX + x, this.#mapOffsetY + y);
+    const zoom = LOCATION_ZOOMS[this.#zoomIndex];
+    this.setMapOffset(this.#mapOffsetX + x / zoom, this.#mapOffsetY + y / zoom);
     if (x != 0 || y != 0) {
       $("#map-reset").attr("disabled", false);
     }
   }
   static resetMapOffset(movePeriod) {
-    const window = this.window;
-    const x = window.innerWidth() / 2;
-    const y = window.innerHeight() / 2;
-    this.setMapOffset(x, y, movePeriod);
+    this.setMapOffset(0, 0, movePeriod);
     $("#map-reset").attr(
       "disabled",
       !this.currentLocation || this.currentLocation.pos == [0, 0]
@@ -44,14 +42,8 @@ class Location {
     if (!this.currentLocation) {
       return this.resetMapOffset();
     }
-    const window = this.window;
-    const x = window.innerWidth() / 2;
-    const y = window.innerHeight() / 2;
     const [dx, dy] = this.currentLocation.pos;
-    this.setMapOffset(
-      x - this.xCoordToPos(dx) / 2,
-      y - this.yCoordToPos(dy) / 2
-    );
+    this.setMapOffset(-this.xCoordToPos(dx) / 2, -this.yCoordToPos(dy) / 2);
     $("#map-reset").attr("disabled", true);
   }
 
@@ -128,6 +120,11 @@ class Location {
         </div>
       </div>`);
     this.#jObj = jObj;
+    Cards.populateData(
+      jObj.find(".card-image-container"),
+      this.#cardData,
+      "10px"
+    );
     jObj.data("location-id", this.#id);
     jObj.data("card-id", cardId);
     Location.root.append(jObj);
@@ -229,9 +226,7 @@ class Location {
       return this;
     }
     if (Location.currentLocation) {
-      Location.currentLocation.#jObj
-        .removeClass("current-location")
-        .off("hover");
+      Location.currentLocation.#jObj.removeClass("current-location");
     }
     Location.currentLocation = this;
     this.#jObj.addClass("current-location");
@@ -250,6 +245,7 @@ class Location {
     $("#current-location-marker")
       .css("--x-pos", `${Location.xCoordToPos(this.#x)}px`)
       .css("--y-pos", `${Location.yCoordToPos(this.#y)}px`);
+    $(".location-container").unbind("mouseenter mouseleave");
     this.#jObj.hover(
       function () {
         $("#current-location-marker").addClass("hover");

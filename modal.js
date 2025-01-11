@@ -27,8 +27,8 @@ class Modal {
     });
     $("#modal").modal("show");
   }
-  static hide() {
-    $("#modal").modal("hide");
+  static async hide() {
+    await $("#modal").modal("hide");
   }
 
   static instances = {};

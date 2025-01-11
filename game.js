@@ -8,7 +8,7 @@ class Game {
 
     // TODO read decklist for given ID
     let xs = [];
-    for (let i = 0; i < 22; i++) {
+    for (let i = 0; i < 11; i++) {
       xs.push(CardOffSureFund);
       xs.push(CardUnderTheHood);
       xs.push(CardFruitJuice);
@@ -30,16 +30,18 @@ class Game {
     Agenda.setDoom(0);
   }
 
-  static startTurn() {
+  static async startTurn() {
     UiMode.setMode(UIMODE_SELECT_ACTION);
-    Stats.setClicks(7);
     animateTurnBanner("runner");
+    await Broadcast.signal("onTurnStart");
+    await Stats.setClicks(3);
   }
-  static endTurn() {
+  static async endTurn() {
     UiMode.setMode(UIMODE_CORP_TURN);
-    Stats.setClicks(0);
-    Agenda.addDoom(1);
     animateTurnBanner("corp");
+    await Stats.setClicks(0);
+    await Agenda.addDoom(1);
+    await Broadcast.signal("onTurnEnd");
 
     // TEMP //
     setTimeout(() => {
@@ -55,9 +57,18 @@ class Game {
     return false;
   }
 
-  static actionMoveTo(location) {
+  static async actionMoveTo(location, allowAttackOfOpportunity = true) {
+    await Stats.addClicks(-1);
+    if (allowAttackOfOpportunity) {
+      await Enemy.attackOfOpportunity();
+    }
+    const oldLocation = Location.getCurrentLocation();
     location.setCurrentLocation();
-    Stats.addClicks(-1);
+    await Enemy.moveEngagedEnemies();
+    await Broadcast.signal("onPlayerMoves", {
+      fromLocation: oldLocation,
+      toLocation: location,
+    });
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }
@@ -83,6 +94,7 @@ class Game {
     // Play/install the card
     await Stats.addClicks(-1);
     await Stats.addCredits(-cost);
+    await Enemy.attackOfOpportunity();
     if (cardData.type == TYPE_ASSET) {
       const rigCard = Cards.install(cardData.id);
       await cardData.onPlay(rigCard);
@@ -103,7 +115,8 @@ class Game {
     if (!location) {
       location = Location.getCurrentLocation();
     }
-    await location.cardData.onThisInvestigationAttempt({ location: location });
+    await Clicks.addClicks(-1);
+    await Enemy.attackOfOpportunity();
     await Broadcast.signal("onInvestigationAttempt", { location: location });
     const results = await Chaos.runModal(
       "mu",
@@ -123,10 +136,6 @@ class Game {
       Stats.addClues(1);
     }
     UiMode.setFlag("can-investigate", Location.getCurrentLocation().clues > 0);
-    await location.cardData.onThisInvestigationAttempt({
-      location: location,
-      clues: clues,
-    });
     await Broadcast.signal("onInvestigation", {
       location: location,
       results: results,
@@ -181,12 +190,13 @@ $(document).ready(function () {
     }
   });
 
-  $("#action-draw").click(() => {
+  $("#action-draw").click(async () => {
     if (Stats.clicks <= 0 || !Cards.canDraw()) {
       return;
     }
+    await Enemy.attackOfOpportunity();
+    await Stats.addClicks(-1);
     Cards.draw(1);
-    Stats.addClicks(-1);
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }
@@ -208,15 +218,11 @@ $(document).ready(function () {
       return;
     }
     await Game.actionInvestigate(1);
-    await Stats.addClicks(-1);
   });
 
   $("#action-engage").click(async () => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
       const { success, enemy } = await Enemy.actionEngage();
-      if (success) {
-        await Stats.addClicks(-1);
-      }
     } else if (Enemy.mode == ENEMY_MODE_ENGAGE) {
       Enemy.cancelAction();
     }
@@ -227,9 +233,6 @@ $(document).ready(function () {
   $("#action-fight").click(async () => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
       const { results, enemy } = await Enemy.actionFight(1);
-      if (results) {
-        await Stats.addClicks(-1);
-      }
     } else if (Enemy.mode == ENEMY_MODE_FIGHT) {
       Enemy.cancelAction();
     }
@@ -240,9 +243,6 @@ $(document).ready(function () {
   $("#action-evade").click(async () => {
     if (Enemy.mode == ENEMY_MODE_NONE) {
       const { results, enemy } = await Enemy.actionEvade();
-      if (results) {
-        await Stats.addClicks(-1);
-      }
     } else if (Enemy.mode == ENEMY_MODE_EVADE) {
       Enemy.cancelAction();
     }

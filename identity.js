@@ -18,6 +18,7 @@ class Identity {
 
   static setCard(cardId, doAnimate = true) {
     this.#cardData = CardData.getCard(cardId);
+    $("#runner-id").data("card-id", cardId);
     if (doAnimate) {
       Cards.flip($("#runner-id .card-image"), this.#cardData.image);
     } else {
@@ -65,6 +66,7 @@ class Identity {
 ///////////////////////////////////////////////////////////////////////////////
 
 $(document).ready(function () {
+  Identity.setCard("the_catalyst", false);
   Identity.setDamage(Identity.damage);
   Identity.setDoom(Identity.doom);
 });

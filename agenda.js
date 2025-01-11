@@ -12,6 +12,7 @@ class Agenda {
 
   static setCard(cardId, doAnimate = true) {
     this.#cardData = CardData.getCard(cardId);
+    $("#agenda").data("card-id", cardId);
     if (doAnimate) {
       Cards.flip($("#agenda .card-image"), this.#cardData.image);
     } else {
@@ -33,12 +34,19 @@ class Agenda {
     this.#doom = value;
     return this;
   }
-  static addDoom(value, doAnimate = true) {
+  static async addDoom(value, doAnimate = true) {
     this.setDoom(this.#doom + value, doAnimate);
   }
 
-  static advance() {
-    // TODO - implement advancing
-    this.setDoom(0);
+  static async advance() {
+    await this.#cardData.advance();
+    await this.setDoom(0);
+    Broadcast.signal("onAgendaAdvanced", {});
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+$(document).ready(function () {
+  // Agenda.setCard("the_catalyst", false);
+});

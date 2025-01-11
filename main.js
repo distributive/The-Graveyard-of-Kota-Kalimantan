@@ -29,7 +29,7 @@ $(document).ready(function () {
   l4.addNeighbour(l7);
   l4.addNeighbour(l8);
 
-  let enemy = new Enemy("example", l5).setDamage(1);
+  let enemy = new Enemy("example", l5);
   new Enemy("example", l5).setDamage(1);
   new Enemy("example", l0).setDamage(1);
   // setTimeout(() => enemy.moveTo(l2), 1 * 800);

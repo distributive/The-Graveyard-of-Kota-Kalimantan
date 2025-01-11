@@ -1,6 +1,6 @@
 // Global
---onTurnStart(source)
---onTurnEnd(source)
+onTurnStart(source)
+onTurnEnd(source)
 
 onGainCredits(source, {old, new, increase})
 onLoseCredits(source, {old, new, decrease})
@@ -8,31 +8,43 @@ onGainClicks(source, {oldValue, newValue})
 onLoseClicks(source, {oldValue, newValue})
 
 onCardsDrawn(source, {number})
-onCardPlayed(source, {}) // Conflates playing events with installing assets
-onCardInstalled(source, {})
---onCardDiscarded(source, {})
---onAssetTrashed(source, {})
+onCardPlayed(source, {card}) // Conflates playing events with installing assets
+onCardInstalled(source, {card})
+onCardDiscarded(source, {cardData})
+onAssetTrashed(source, {card})
 
---onActAdvanced(source, {})
---onAgendaAdvanced(source, {})
---onAgendaDoomPlaced(source, {doom})
+onTestAttempted(source, {stat})
+onTestCompleted(source, {stat, results})
 
---onPlayerMoves(source, {fromLocation, toLocation})
---onPlayerAttackAttempt(source, {enemy, damage})
---onPlayerAttacks(source, {enemy, results, damage})
---onPlayerKills(source, {enemy})
---onPlayerEvadeAttempt(source, {enemy})
---onPlayerEvades(source, {enemy, results})
---onPlayerAttacked(source, {enemy})
+onActAdvanced(source, {})
+onAgendaAdvanced(source, {})
+--onDoomPlaced(source, {doom, card, cardData}) // card can be null (acts/agendas/identities)
 
---onEnemyMoves(source, {enemy, fromLocation, toLocation})
+onPlayerMoves(source, {fromLocation, toLocation})
+onPlayerEngages(source, {enemy})
+onPlayerAttackAttempt(source, {enemy, damage})
+onPlayerAttacks(source, {enemy, results, damage})
+onPlayerKills(source, {enemy, results, damage})
+onPlayerEvadeAttempt(source, {enemy})
+onPlayerEvades(source, {enemy, results})
+
+onEnemyMoves(source, {enemy, fromLocation, toLocation})
+onEnemyAttacks(source, {enemy})
+onEnemyDies(source, {enemy})
 
 onInvestigationAttempt(source, {location})
 onInvestigation(source, {location, results, clues})
 
 // Playable cards
---calculateCost(source, {})
---canPlay(source, {})
+calculateCost(source, {})
+canPlay(source, {})
+
+// Asset
+canUse(source, {}) // Optional
+onUse(source, {}) // Optional
+
+// Act/agenda
+advance(source, {})
 
 // Enemies
---attack(source, {enemy})
+attack(source, {})

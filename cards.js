@@ -11,11 +11,16 @@ class Cards {
 
   static focusCard(jCardImage) {
     $("#card-focused-image")
-      // .attr("src", jCardImage.attr("src").replace(".png", "_full.png"))
-      .attr("src", jCardImage.attr("src"))
+      .attr("src", jCardImage.find(".card-image").attr("src"))
+      // .attr("src", jCardImage.attr("src").replace(".png", "_full.png")) // TODO
       .removeClass("unfocused")
       .addClass("focused");
     this.focusedCardId = jCardImage.parent().data("card-id");
+    Cards.populateData(
+      $("#card-focused-image").parent(),
+      CardData.getCard(this.focusedCardId),
+      "10px"
+    );
   }
   static unfocusCard() {
     $("#card-focused-image").removeClass("focused").addClass("unfocused");
@@ -32,6 +37,14 @@ class Cards {
       }
       jCardImage.removeClass("flipping");
     }, 1000); // CSS currently takes 1s to flip a card halfway
+  }
+
+  static populateData(jObj, cardData, fontSize) {
+    jObj.find(".card-text").remove();
+    cardData.populate(jObj);
+    if (fontSize) {
+      jObj.find(".card-text").css("font-size", fontSize);
+    }
   }
 
   ///////////////////////////////////////////////
@@ -84,6 +97,11 @@ class Cards {
           </div>
         </div>`
       );
+      Cards.populateData(
+        jCard.find(".card-image-container"),
+        cardData,
+        "7.25px"
+      );
       jCard.data("card-id", cardData.id);
       this.grip.push(new GripCard(cardData.id, jCard));
       setTimeout(() => {
@@ -96,11 +114,18 @@ class Cards {
     return n - i;
   }
 
-  static discard(card) {
-    const index = typeof card == "object" ? this.grip.indexOf(card) : card;
-    if (this.removeGripCard(index)) {
+  static async discard(card) {
+    const cardData = this.removeGripCard(card);
+    if (cardData) {
       this.updateStackHeapHeights();
       this.determineCanDraw();
+      await Broadcast.signal("onCardDiscarded", { cardData: cardData });
+    }
+  }
+
+  static async discardRandom(number) {
+    for (let i = 0; i < number; i++) {
+      await this.discard(Math.floor(Math.random() * Cards.grip.length));
     }
   }
 
@@ -117,24 +142,31 @@ class Cards {
   static removeGripCard(card) {
     const index = typeof card == "object" ? this.grip.indexOf(card) : card;
     if (index >= 0 && index < this.grip.length) {
+      const cardData = this.grip[index].cardData;
       this.grip[index].remove();
       this.grip.splice(index, 1);
       this.updateHandPositions();
       setTimeout(function () {
         Cards.updateHandPositions();
       }, 210);
-      return true;
+      return cardData;
     }
     return false;
+  }
+
+  static async trashInstalledCard(card) {
+    await Broadcast.signal("onAssetTrashed", { card: card });
+    const cardData = this.removeInstalledCard(card);
   }
 
   static removeInstalledCard(card) {
     const index =
       typeof card == "object" ? this.installedCards.indexOf(card) : card;
     if (index >= 0 && index < this.installedCards.length) {
+      const cardData = this.installedCards[index].cardData;
       this.installedCards[index].remove();
       this.installedCards.splice(index, 1);
-      return true;
+      return cardData;
     }
     return false;
   }
@@ -412,6 +444,11 @@ class RigCard {
           <div class="doom shake-counter"></div>
         </div>
       </div>`);
+    Cards.populateData(
+      this.#jObj.find(".card-image-container"),
+      this.#cardData,
+      "6px"
+    );
     this.#jObj.data("card-id", this.#cardData.id);
     $("#rig").append(this.#jObj);
 
@@ -472,7 +509,7 @@ class RigCard {
       this.setPerceivedDamage(value, doAnimate);
       this.#damage = value;
     } else {
-      Cards.removeInstalledCard(this);
+      Cards.trashInstalledCard(this);
     }
     return this;
   }
@@ -577,26 +614,27 @@ $(document).ready(function () {
     const options = [new Option("close", "Close", "close")];
     const modal = new Modal(null, null, body, options, true);
     await modal.display();
+    Modal.hide();
   };
 
   $("body")
     .on(
       "mouseenter",
-      ":not(.modal) .card-image:not(#card-focused-image, #card-modal-image)",
+      ":not(.modal) :not(#card-focused) > .card-image-container",
       function () {
         Cards.focusCard($(this));
       }
     )
     .on(
       "mouseleave",
-      ":not(.modal) .card-image:not(#card-focused-image, #card-modal-image)",
+      ":not(.modal) .card-image-container:not(#card-focused-image, #card-modal-image)",
       function () {
         Cards.unfocusCard($(this));
       }
     )
     .on(
       "dblclick",
-      ".card-image:not(#card-focused-image, #card-modal-image, .grip-card-image)",
+      ".card-image-container:not(#card-focused-image, #card-modal-image, .grip-card-image)",
       function () {
         if (
           (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD ||

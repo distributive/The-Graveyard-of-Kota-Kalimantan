@@ -187,11 +187,12 @@ button:disabled .inline-icon {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: calc(100% - 20px);
-  height: auto !important;
   transform: translate(-50%, -50%);
   opacity: 0;
-  transition: opacity 0.25s, transform 0.2s;
+  transition: opacity 0.25s;
+}
+#card-focused .card-image-container {
+  transition: transform 0.2s;
 }
 #card-focused-image.focused {
   opacity: 1;
@@ -199,9 +200,8 @@ button:disabled .inline-icon {
 #card-focused-image.unfocused {
   opacity: 0.75;
 }
-#card-focused-image.focused:hover,
-#card-focused-image.unfocused:hover {
-  transform: translate(-50%, -50%) scale(1.05);
+#card-focused .card-image-container:hover {
+  transform: scale(1.05);
   cursor: pointer;
   opacity: 1 !important;
 }
@@ -211,6 +211,7 @@ button:disabled .inline-icon {
 }
 
 .card-image-container {
+  position: relative;
   border-radius: 5px;
   transition: box-shadow 0.2s, scale 0.2s;
 }
@@ -502,14 +503,23 @@ button:disabled .inline-icon {
   }
 }
 #location-map {
-  --move-period: 0.2s; /* How long it takes to reach target location */
   position: relative;
-  transform: translate(var(--local-x), var(--local-y)) scale(var(--zoom));
-  width: 0px;
-  height: 0px;
+  transform: scale(var(--zoom));
+  width: 0;
+  height: 0;
   margin: 0;
   padding: 0;
-  transition: transform var(--move-period), --zoom 0.1s;
+  top: 50%;
+  left: 50%;
+  transition: --zoom 0.1s;
+}
+#location-position {
+  position: relative;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  transform: translate(var(--local-x), var(--local-y));
 }
 #location-map.dragged {
   transition: --zoom 0.1s;
@@ -695,7 +705,7 @@ button:disabled .inline-icon {
   );
   width: 145px;
   transition: transform 0.5s ease-out;
-  z-index: calc(50 + 0.01 * var(--index));
+  z-index: calc(50 + var(--index));
 }
 .enemy-image {
   width: 100%;
@@ -767,6 +777,7 @@ button:disabled .inline-icon {
   height: 100%;
   width: 0;
   transition: all 0.2s;
+  user-select: none;
 }
 #agenda .hosted-counters {
   height: 57%;
@@ -813,6 +824,204 @@ button:disabled .inline-icon {
   color: white;
   border-color: #4e357a;
   background-color: #4e357a;
+}
+
+/* Card text */
+
+.card-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  font-size: 10px; /* Overwrite to change font size */
+  pointer-events: none;
+  user-select: none;
+}
+.card-text > * {
+  position: absolute;
+}
+.card-text * {
+  color: black;
+}
+.card-text .card-text-text {
+  line-height: normal;
+}
+.card-text .inline-icon {
+  transform: translate(0.015em, -0.08em);
+}
+
+.asset .card-text-cost {
+  top: 0.35%;
+  left: 5.6%;
+  color: white;
+  font-size: 2em;
+}
+.asset .card-text-title {
+  top: 3.59%;
+  left: 25%;
+  right: 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700;
+  font-size: 1em;
+}
+.asset .card-text-subtypes {
+  top: 57.65%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 1em;
+}
+.asset .card-text-text {
+  top: 65%;
+  bottom: 5%;
+  left: 5%;
+  right: 5%;
+  font-size: 1em;
+}
+.asset .card-text-health {
+  color: white;
+  text-shadow: -1px -1px 0 #ca4343, 1px -1px 0 #ca4343, -1px 1px 0 #ca4343,
+    1px 1px 0 #ca4343, -1px 0 0 #ca4343, 1px 0 0 #ca4343;
+  bottom: 0%;
+  left: 0%;
+  right: 0%;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.event .card-text-cost {
+  top: 0%;
+  left: 5.2%;
+  color: white;
+  text-align: center;
+  font-size: 2em;
+}
+.event .card-text-title {
+  top: 0.45%;
+  left: 20%;
+  right: 0;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+.event .card-text-subtypes {
+  top: 56.7%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 1em;
+}
+.event .card-text-text {
+  top: 63.5%;
+  bottom: 5%;
+  left: 5%;
+  right: 5%;
+  font-size: 1em;
+}
+
+.location .card-text-title {
+  top: 0.45%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+.location .card-text-subtypes {
+  top: 57%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 1em;
+}
+.location .card-text-text {
+  top: 63.5%;
+  bottom: 5%;
+  left: 5%;
+  right: 5%;
+  font-size: 1em;
+}
+.location .card-text-shroud {
+  top: 49%;
+  left: 6.5%;
+  color: white;
+  font-size: 1.6em;
+}
+.location .card-text-clues {
+  top: 49%;
+  right: 6.5%;
+  text-align: right;
+  font-size: 1.6em;
+}
+.location.alt * {
+  color: white;
+}
+.location.alt .inline-icon {
+  filter: invert(1);
+}
+
+.enemy .card-text-title {
+  top: -0.15%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700;
+  font-size: 1.2em;
+}
+.enemy.alt .card-text-title {
+  color: white;
+}
+.enemy .card-text-box {
+  top: 18%;
+  left: 10%;
+  right: 10%;
+}
+.enemy .card-text-subtypes {
+  text-align: center;
+  font-size: 0.9em;
+  font-weight: 900;
+}
+.enemy .card-text-text {
+  font-size: 0.9em;
+}
+.enemy .card-text-strength {
+  top: 9%;
+  left: 25.5%;
+  color: white;
+  text-shadow: -1px -1px 0 #181613, 1px -1px 0 #181613, -1px 1px 0 #181613,
+    1px 1px 0 #181613, -1px 0 0 #181613, 1px 0 0 #181613;
+  font-size: 1em;
+  font-weight: 900;
+}
+.enemy .card-text-link {
+  top: 9%;
+  right: 25.5%;
+  text-align: right;
+  color: white;
+  text-shadow: -1px -1px 0 #181613, 1px -1px 0 #181613, -1px 1px 0 #181613,
+    1px 1px 0 #181613, -1px 0 0 #181613, 1px 0 0 #181613;
+  font-size: 1em;
+  font-weight: 900;
+}
+.enemy .card-text-health {
+  top: 9.75%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: white;
+  text-shadow: -1px -1px 0 #181613, 1px -1px 0 #181613, -1px 1px 0 #181613,
+    1px 1px 0 #181613, -1px 0 0 #181613, 1px 0 0 #181613;
+  font-size: 1.2em;
+  font-weight: 900;
+}
+
+.card-text-text.short {
+  /* font-size: 20px;
+  text-align: center; */
 }
 
 /* Modal */

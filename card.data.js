@@ -40,6 +40,15 @@ FACTION_TO_TEXT[FACTION_ICE]  = "Netspace";
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class CardDataDuplicateIdError extends Error {
+  constructor(id) {
+    super(
+      `A card has already been registered with the ID '${id}'. CardData IDs must be unique.`
+    );
+    this.name = "CardDataWriteError";
+  }
+}
+
 class CardDataWriteError extends Error {
   static throwIfSet(obj, property) {
     if (obj[property]) {
@@ -77,7 +86,10 @@ class CardData {
   #faction;
   #image;
 
-  constructor(id) {
+  constructor(id, data) {
+    if (CardData.#instances[id]) {
+      throw new CardDataDuplicateIdError(id);
+    }
     this.#id = id;
     CardData.#instances[id] = this;
   }
@@ -85,16 +97,32 @@ class CardData {
   get id() { return this.#id; }
 
   get title() { return this.#title; }
+  get formattedTitle() { return this.unique ? "♦ " + this.#title : this.#title; }
   set title(value) {
     CardDataWriteError.throwIfSet(this, "title");
     this.#title = value;
   }
   get text() { return this.#text; }
+  get jText() {
+    return `
+      <div>
+        ${this.#text.replace("{c}", "{credit}").replaceAll(/\{.*\}/g, function (match) {
+          const flag = match.slice(1, -1);
+          return `<img src="img/game/${flag}.png" class="inline-icon" title="${flag}" />`;
+        })}
+      </div>`;
+  }
   set text(value) {
     CardDataWriteError.throwIfSet(this, "text");
     this.#text = value;
   }
   get subtypes() { return this.#subtypes; }
+  get displaySubtypes() {
+    return this.#subtypes
+      .join(" - ")
+      .replace(/\w\S*/g,
+        (match) => match.charAt(0).toUpperCase() + match.substring(1).toLowerCase());
+  }
   set subtypes(value) {
     CardDataWriteError.throwIfSet(this, "subtypes");
     this.#subtypes = value;
@@ -124,17 +152,25 @@ class CardData {
   async onCardDiscarded(source, data) {CardData.log("onCardDiscarded", data)} // Trashing from hand is the same as discarding
   async onAssetTrashed(source, data) {CardData.log("onAssetTrashed", data)} // Trashing means specifically while installed
 
+  async onTestAttempted(source, data) {CardData.log("onTestAttempted")}
+  async onTestCompleted(source, data) {CardData.log("onTestCompleted")}
+
   async onActAdvanced(source, data) {CardData.log("onActAdvanced", data)}
   async onAgendaAdvanced(source, data) {CardData.log("onAgendaAdvanced", data)}
-  async onDoomPlaced(source, data) {CardData.log("onAgendaDoomPlaced", data)}
-  async onPlayerMoved(source, data) {CardData.log("onPlayerMoved", data)}
-  async onEnemyMoved(source, data) {CardData.log("onEnemyMoved", data)}
+  async onDoomPlaced(source, data) {CardData.log("onDoomPlaced", data)}
+  
+  async onPlayerMoves(source, data) {CardData.log("onPlayerMoves", data)}
+  async onPlayerEngages(source, data) {CardData.log("onPlayerEngages", data)}
   async onPlayerAttackAttempt(source, data) {CardData.log("onPlayerAttackAttempt", data)}
   async onPlayerAttacks(source, data) {CardData.log("onPlayerAttacks", data)}
   async onPlayerKills(source, data) {CardData.log("onPlayerKills", data)}
   async onPlayerEvadeAttempt(source, data) {CardData.log("onPlayerEvadeAttempt", data)}
   async onPlayerEvades(source, data) {CardData.log("onPlayerEvades", data)}
-  async onPlayerAttacked(source, data) {CardData.log("onPlayerAttacked", data)}
+  
+  async onEnemyMoves(source, data) {CardData.log("onEnemyMoves", data)}
+  async onEnemyAttacks(source, data) {CardData.log("onEnemyAttacks", data)}
+  async onEnemyDies(source, data) {CardData.log("onEnemyDies", data)}
+
   async onInvestigationAttempt(source, data) {CardData.log("onInvestigationAttempt", data)}
   async onInvestigation(source, data) {CardData.log("onInvestigation", data)}
 }
@@ -146,6 +182,15 @@ class IdentityData extends CardData {
   #link;
 
   get type() { return TYPE_IDENTITY; }
+
+  constructor(id, data) {
+    super(id, data);
+     if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+  }
 
   get influence() { return this.#influence; }
   set influence(value) {
@@ -166,6 +211,15 @@ class IdentityData extends CardData {
   set link(value) {
     CardDataWriteError.throwIfSet(this, "link");
     this.#link = value;
+  }
+
+  // TODO - complete
+  populate(jObj) {
+    const jCardText = $(`
+      <div class="card-text identity">
+      </div>
+    `)
+    jObj.append(jCardText);
   }
 }
 
@@ -189,18 +243,70 @@ class PlayableCardData extends CardData {
 
 class AssetData extends PlayableCardData {
   #health;
+  #unique
 
   get type() { return TYPE_ASSET; }
+
+  constructor(id, data) {
+    super(id, data);
+     if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+  }
 
   get health() { return this.#health; }
   set health(value) {
     CardDataWriteError.throwIfSet(this, "health");
     this.#health = value;
   }
+
+  get unique() { return this.#unique; }
+  set unique(value) {
+    CardDataWriteError.throwIfSet(this, "unique");
+    this.#unique = value;
+  }
+
+  populate(jObj) {
+    const jCardText = $(`
+      <div class="card-text asset">
+        <div class="card-text-cost">${this.cost}</div>
+        <div class="card-text-title">${this.formattedTitle}</div>
+        <div class="card-text-subtypes">${this.displaySubtypes}</div>
+        <div class="card-text-text"></div>
+        ${this.health ? `<div class="card-text-health">${this.health}</div>` : ""}
+      </div>
+    `)
+    jCardText.find(".card-text-text").append(this.jText);
+    jObj.append(jCardText);
+  }
 }
 
 class EventData extends PlayableCardData {
   get type() { return TYPE_EVENT; }
+
+  constructor(id, data) {
+    super(id, data);
+     if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+  }
+
+  populate(jObj) {
+    const jCardText = $(`
+      <div class="card-text event">
+        <div class="card-text-cost">${this.cost}</div>
+        <div class="card-text-title">${this.formattedTitle}</div>
+        <div class="card-text-subtypes">${this.displaySubtypes}</div>
+        <div class="card-text-text short"></div>
+      </div>
+    `)
+    jCardText.find(".card-text-text").append(this.jText);
+    jObj.append(jCardText);
+  }
 }
 
 class EnemyData extends CardData {
@@ -209,6 +315,15 @@ class EnemyData extends CardData {
   #link;
 
   get type() { return TYPE_ENEMY; }
+
+  constructor(id, data) {
+    super(id, data);
+     if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+  }
 
   get health() { return this.#health; }
   set health(value) {
@@ -227,10 +342,45 @@ class EnemyData extends CardData {
   }
 
   async attack(source, data) {CardData.log("attack", data)}
+
+  populate(jObj) {
+    const jCardText = $(`
+      <div class="card-text enemy ${this.faction == FACTION_ICE ? "alt" : ""}">
+        <div class="card-text-title">${this.formattedTitle}</div>
+        <div class="card-text-strength">${this.strength}</div>
+        <div class="card-text-health">${this.health}</div>
+        <div class="card-text-link">${this.link}</div>
+        <div class="card-text-box">
+          ${this.subtypes ? `<div class="card-text-subtypes">${this.displaySubtypes}</div>` : ""}
+          <div class="card-text-text"></div>
+        </div>
+      </div>
+    `);
+    jCardText.find(".card-text-text").append(this.jText);
+    jObj.append(jCardText);
+  }
 }
 
 class ActData extends CardData {
   get type() { return TYPE_ACT; }
+
+  constructor(id, data) {
+    super(id, data);
+     if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+  }
+
+  async advance(source, data) {CardData.log("advanceAct", data)}
+
+  // TODO
+  populate(jObj) {
+    const jCardText = $(`
+    `)
+    jObj.append(jCardText);
+  }
 }
 
 class AgendaData extends CardData {
@@ -238,10 +388,28 @@ class AgendaData extends CardData {
 
   get type() { return TYPE_AGENDA; }
 
+  constructor(id, data) {
+    super(id, data);
+     if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+  }
+
   get requirement() { return this.#requirement; }
   set requirement(value) {
     CardDataWriteError.throwIfSet(this, "requirement");
     this.#requirement = value;
+  }
+
+  async advance(source, data) {CardData.log("advanceAgenda", data)}
+
+  // TODO
+  populate(jObj) {
+    const jCardText = $(`
+    `)
+    jObj.append(jCardText);
   }
 }
 
@@ -250,6 +418,15 @@ class LocationData extends CardData {
   #clues;
 
   get type() { return TYPE_LOCATION; }
+
+  constructor(id, data) {
+    super(id, data);
+     if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+  }
 
   get shroud() { return this.#shroud; }
   set shroud(value) {
@@ -260,5 +437,19 @@ class LocationData extends CardData {
   set clues(value) {
     CardDataWriteError.throwIfSet(this, "clues");
     this.#clues = value;
+  }
+
+  populate(jObj) {
+    const jCardText = $(`
+      <div class="card-text location ${this.faction == FACTION_ICE ? "alt" : ""}">
+        <div class="card-text-title">${this.formattedTitle}</div>
+        <div class="card-text-shroud">${this.shroud}</div>
+        <div class="card-text-clues">${this.clues}</div>
+        <div class="card-text-subtypes">${this.displaySubtypes}</div>
+        <div class="card-text-text"></div>
+      </div>
+    `);
+    jCardText.find(".card-text-text").append(this.jText);
+    jObj.append(jCardText);
   }
 }

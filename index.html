@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Anta&family=Eagle+Lake&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Anta&family=Eagle+Lake&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
     <link href="fa/css/all.css" rel="stylesheet" />
@@ -34,6 +34,10 @@
     <script src="cards.js"></script>
     <script src="card.data.js"></script>
     <script src="card.player.js"></script>
+    <script src="card.anarch.js"></script>
+    <script src="card.criminal.js"></script>
+    <script src="card.shaper.js"></script>
+    <script src="card.neutral.js"></script>
     <script src="card.enemy.js"></script>
     <script src="card.location.js"></script>
     <script src="card.act.js"></script>
@@ -77,12 +81,14 @@
 
         <!-- Focused card -->
         <div id="card-focused">
-          <img class="card-padding" src="img/card/placeholder.png" />
-          <img
-            id="card-focused-image"
-            class="card-image h-100"
-            src="img/card/placeholder.png"
-          />
+          <div class="card-image-container">
+            <img class="card-padding h-100" src="img/card/placeholder.png" />
+            <img
+              id="card-focused-image"
+              class="card-image h-100"
+              src="img/card/placeholder.png"
+            />
+          </div>
         </div>
 
         <!-- Game -->
@@ -91,22 +97,24 @@
             <div class="col-6 col-lg-5 p-0">
               <div id="location-window">
                 <div id="location-map">
-                  <div id="current-location-marker">
-                    <img
-                      id="current-location-frame"
-                      src="img/game/currentLocation.png"
-                    />
-                    <img
-                      id="current-location-inner"
-                      src="img/game/currentLocationInner.png"
-                    />
-                    <img
-                      id="current-location-padding"
-                      class="h-100"
-                      src="img/game/currentLocationBlank.png"
-                    />
+                  <div id="location-position">
+                    <div id="current-location-marker">
+                      <img
+                        id="current-location-frame"
+                        src="img/game/currentLocation.png"
+                      />
+                      <img
+                        id="current-location-inner"
+                        src="img/game/currentLocationInner.png"
+                      />
+                      <img
+                        id="current-location-padding"
+                        class="h-100"
+                        src="img/game/currentLocationBlank.png"
+                      />
+                    </div>
+                    <div id="enemy-container"></div>
                   </div>
-                  <div id="enemy-container"></div>
                 </div>
                 <div id="location-buttons" class="d-flex flex-column gap-1">
                   <button id="map-zoom-in">
@@ -124,18 +132,22 @@
             <div class="col-6 col-lg-7 d-flex h-100">
               <div class="h-100 d-flex flex-column py-1 gap-1">
                 <div id="act" class="h-50">
-                  <img
-                    id="act-image"
-                    class="card-image h-100"
-                    src="img/card/actPlaceholder.png"
-                  />
+                  <div class="card-image-container h-100">
+                    <img
+                      id="act-image"
+                      class="card-image h-100"
+                      src="img/card/actPlaceholder.png"
+                    />
+                  </div>
                 </div>
                 <div id="agenda" class="h-50">
-                  <img
-                    id="agenda-image"
-                    class="card-image h-100"
-                    src="img/card/agendaPlaceholder.png"
-                  />
+                  <div class="card-image-container h-100">
+                    <img
+                      id="agenda-image"
+                      class="card-image h-100"
+                      src="img/card/agendaPlaceholder.png"
+                    />
+                  </div>
                   <div class="hosted-counters">
                     <div class="doom shake-counter" style="display: none"></div>
                   </div>
@@ -178,11 +190,13 @@
                   />
                 </div>
                 <div id="runner-id" class="mx-2 h-100">
-                  <img
-                    id="runner-id-image"
-                    class="card-image h-100"
-                    src="img/card/theCatalyst.png"
-                  />
+                  <div class="card-image-container h-100">
+                    <img
+                      id="runner-id-image"
+                      class="card-image h-100"
+                      src="img/card/identity/theCatalyst.png"
+                    />
+                  </div>
                   <div class="hosted-counters">
                     <div
                       class="damage shake-counter"

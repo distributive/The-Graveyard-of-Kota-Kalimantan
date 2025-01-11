@@ -41,6 +41,7 @@ class Chaos {
       success: success,
       token: token,
       value: value,
+      target: target,
     };
   }
 
@@ -93,6 +94,8 @@ class Chaos {
     if (response == "cancel") {
       return;
     }
+    // TODO: the modal won't close to show the affects of this broadcast - willfix?
+    await Broadcast.signal("onTestAttempted", { stat: stat });
 
     // Second panel
     {
@@ -173,6 +176,7 @@ class Chaos {
       Modal.hide();
     }
 
+    await Broadcast.signal("onTestCompleted", { stat: stat, results: results });
     return results;
   }
 }

@@ -18,12 +18,17 @@ class Enemy {
   }
   static canEngageFightEvade() {
     const localEnemies = this.getEnemiesAtCurrentLocation();
-    const engagedEnemies = localEnemies.filter((enemy) => enemy.engaged);
+    const engagedEnemies = this.getEngagedEnemies();
     const canEngage = engagedEnemies.length < localEnemies.length;
-    const canFightEvade = engagedEnemies.length > 0;
-    return [canEngage, canFightEvade, canFightEvade];
+    const canFight = localEnemies.length > 0;
+    const canEvade = engagedEnemies.length > 0;
+    return [canEngage, canFight, canEvade];
   }
 
+  static getEngagedEnemies() {
+    const localEnemies = this.getEnemiesAtCurrentLocation();
+    return localEnemies.filter((enemy) => enemy.engaged);
+  }
   static getEnemiesAtCurrentLocation() {
     return this.getEnemiesAtLocation(Location.getCurrentLocation());
   }
@@ -31,7 +36,7 @@ class Enemy {
     return this.instances.filter((enemy) => enemy.#currentLocation == location);
   }
 
-  static async actionEngage() {
+  static async actionEngage(canCancel = true, costsClick = true) {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canEngage) {
@@ -39,7 +44,9 @@ class Enemy {
     }
 
     // Update UI/enemy modes
-    UiMode.setFlag("can-cancel-engage", true);
+    if (canCancel) {
+      UiMode.setFlag("can-cancel-engage", true);
+    }
     UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_ENGAGE;
 
@@ -57,13 +64,16 @@ class Enemy {
       });
     });
 
+    if (costsClick) {
+      await Stats.addClicks(-1);
+    }
     await enemy.engage();
     this.cancelAction();
 
     return { success: true, enemy: enemy };
   }
 
-  static async actionFight(damage) {
+  static async actionFight(damage, canCancel = true, costsClick = true) {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canFight) {
@@ -71,7 +81,9 @@ class Enemy {
     }
 
     // Update UI/enemy modes
-    UiMode.setFlag("can-cancel-fight", true);
+    if (canCancel) {
+      UiMode.setFlag("can-cancel-fight", true);
+    }
     UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_FIGHT;
 
@@ -79,8 +91,7 @@ class Enemy {
     const currentLocation = Location.getCurrentLocation();
     const enemy = await new Promise((resolve) => {
       this.instances.forEach((enemy) => {
-        enemy.selectable =
-          enemy.#currentLocation == currentLocation && enemy.engaged;
+        enemy.selectable = enemy.#currentLocation == currentLocation;
         if (enemy.selectable) {
           enemy.click(async function () {
             resolve(enemy);
@@ -90,7 +101,13 @@ class Enemy {
     });
 
     // Trigger events
-    await Broadcast.signal("onPlayerAttackAttempt");
+    if (costsClick) {
+      await Stats.addClicks(-1);
+    }
+    await Broadcast.signal("onPlayerAttackAttempt", {
+      enemy: enemy,
+      damage: damage,
+    });
 
     // Run the modal
     const results = await Chaos.runModal(
@@ -103,9 +120,12 @@ class Enemy {
     Modal.hide();
 
     // Apply effects/triggers
-    // TODO - add trigger for succeeding/failing tests
     if (results.success) {
-      await Broadcast.signal("onPlayerAttacks");
+      await Broadcast.signal("onPlayerAttacks", {
+        enemy: enemy,
+        results: results,
+        damage: damage,
+      });
       await enemy.addDamage(damage);
     }
     Enemy.cancelAction();
@@ -113,7 +133,7 @@ class Enemy {
     return { results: results, enemy: enemy };
   }
 
-  static async actionEvade() {
+  static async actionEvade(canCancel = true, costsClick = true) {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canEvade) {
@@ -121,7 +141,9 @@ class Enemy {
     }
 
     // Update UI/enemy modes
-    UiMode.setFlag("can-cancel-evade", true);
+    if (canCancel) {
+      UiMode.setFlag("can-cancel-evade", true);
+    }
     UiMode.setMode(UIMODE_SELECT_ENEMY);
     this.mode = ENEMY_MODE_EVADE;
 
@@ -140,7 +162,12 @@ class Enemy {
     });
 
     // Trigger events
-    await Broadcast.signal("onPlayerEvadeAttempt");
+    if (costsClick) {
+      await Stats.addClicks(-1);
+    }
+    await Broadcast.signal("onPlayerEvadeAttempt", {
+      enemy: enemy,
+    });
 
     // Run the modal
     const results = await Chaos.runModal(
@@ -153,9 +180,8 @@ class Enemy {
     Modal.hide();
 
     // Apply effects/triggers
-    // TODO - add trigger for succeeding/failing tests
     if (results.success) {
-      await enemy.disengage();
+      await enemy.evade(results);
     }
     Enemy.cancelAction();
 
@@ -174,8 +200,21 @@ class Enemy {
 
   // Call this whenever there should be an attack of opportunity
   // i.e. before any action that isn't fighting, evading, or parleying
-  static attackOfOpportunity() {
-    // TODO
+  static async attackOfOpportunity() {
+    for (const enemy of this.instances) {
+      if (enemy.engaged) {
+        await enemy.attack();
+      }
+    }
+  }
+
+  // Moves all engaged enemies to the current location
+  static async moveEngagedEnemies() {
+    for (const enemy of this.instances) {
+      if (enemy.engaged) {
+        await enemy.moveTo(Location.getCurrentLocation());
+      }
+    }
   }
 
   // INSTANCE
@@ -212,6 +251,11 @@ class Enemy {
           <div class="doom shake-counter"></div>
         </div>
       </div>`);
+    Cards.populateData(
+      this.#jObj.find(".card-image-container"),
+      this.#cardData,
+      "9px"
+    );
     this.#jObj.data("card-id", cardId);
     Location.root.append(this.#jObj);
 
@@ -222,7 +266,7 @@ class Enemy {
     this.setClues(0);
     this.setDoom(0);
 
-    this.moveTo(location);
+    this.setLocation(location);
   }
 
   get cardData() {
@@ -230,6 +274,10 @@ class Enemy {
   }
   get health() {
     return this.cardData.health;
+  }
+
+  get engaged() {
+    return this.#engaged;
   }
 
   remove() {
@@ -247,7 +295,21 @@ class Enemy {
     return false;
   }
 
-  moveTo(location) {
+  async moveTo(location) {
+    const oldLocation = this.#currentLocation;
+    if (this.setLocation(location)) {
+      Broadcast.signal("onEnemyMoves", {
+        enemy: this,
+        fromLocation: oldLocation,
+        toLocation: location,
+      });
+    }
+  }
+
+  setLocation(location) {
+    if (location == this.#currentLocation) {
+      return false;
+    }
     if (this.#currentLocation) {
       this.#currentLocation.removeEnemy(this);
     }
@@ -256,6 +318,7 @@ class Enemy {
     const [x, y] = location.pos;
     this.#jObj.css("--x-pos", `${Location.xCoordToPos(x)}px`);
     this.#jObj.css("--y-pos", `${Location.yCoordToPos(y)}px`);
+    return true;
   }
 
   // Ensures enemies at the same location don't fully overlap
@@ -268,7 +331,7 @@ class Enemy {
     }
   }
 
-  setDamage(value, doAnimate = true) {
+  async setDamage(value, doAnimate = true) {
     if (value == 0 || value >= this.health) {
       this.#jDamage.hide();
     } else {
@@ -281,13 +344,14 @@ class Enemy {
         animate(jDamage, 500);
       }
     } else {
+      await Broadcast.signal("onEnemyDies", { enemy: this });
       this.remove();
     }
     this.#damage = value;
     return this;
   }
-  addDamage(value, doAnimate = true) {
-    this.setDamage(this.#damage + value, doAnimate);
+  async addDamage(value, doAnimate = true) {
+    await this.setDamage(this.#damage + value, doAnimate);
   }
 
   setClues(value, doAnimate = true) {
@@ -326,28 +390,38 @@ class Enemy {
     this.setDoom(this.#doom + value, doAnimate);
   }
 
-  get engaged() {
-    return this.#engaged;
-  }
-
   // if not in the current location, move there (maybe this behaviour is not wanted)
   async engage() {
     if (this.#currentLocation != Location.getCurrentLocation()) {
-      this.moveTo(Location.getCurrentLocation());
+      await this.moveTo(Location.getCurrentLocation());
     }
-    // TODO - add triggers for engaging enemies
+    Broadcast.signal("onPlayerEngages", { enemy: this });
     this.#engaged = true;
     this.#jObj.addClass("engaged");
     Enemy.determineCanEngageFightEvade();
     return this;
   }
 
+  // If the evasion was not as part of a skill test, results will be null
+  async evade(results) {
+    this.disengage();
+    await Broadcast.signal("onPlayerEvades", {
+      enemy: this,
+      results: results,
+    });
+  }
+
   async disengage() {
-    await Broadcast.signal("onPlayerEvades");
+    console.log("!");
     this.#engaged = false;
     this.#jObj.removeClass("engaged");
     Enemy.determineCanEngageFightEvade();
     return this;
+  }
+
+  async attack() {
+    await this.#cardData.attack(this);
+    await Broadcast.signal("onEnemyAttacks", { enemy: this });
   }
 
   click(func) {
