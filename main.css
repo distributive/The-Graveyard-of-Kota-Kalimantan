@@ -127,12 +127,12 @@ button:disabled .inline-icon {
 
 #ui-mode:not(
     .uimode-select-action,
-    .uimode-movement,
+    .uimode-select-location,
     .uimode-select-enemy,
     .uimode-end-turn
   )
   .action-button,
-#ui-mode.uimode-movement .action-button:not(#action-move),
+#ui-mode.uimode-select-location .action-button:not(#action-move),
 #ui-mode.uimode-select-enemy
   .action-button:not(#action-engage, #action-fight, #action-evade),
 #ui-mode.uimode-end-turn .action-button:not(#action-end-turn),
@@ -141,22 +141,23 @@ button:disabled .inline-icon {
 #ui-flags:not(.can-investigate) #action-investigate,
 #ui-flags:not(.can-engage, .can-cancel-engage) #action-engage,
 #ui-flags:not(.can-fight, .can-cancel-fight) #action-fight,
-#ui-flags:not(.can-evade, .can-cancel-evade) #action-evade {
+#ui-flags:not(.can-evade, .can-cancel-evade) #action-evade,
+#ui-mode.ui-mode-select-location #ui-flags:not(.can-cancel-move) #action-move {
   pointer-events: none;
 
   color: #888888 !important;
   border: 2px solid #ababab !important;
   background-color: #ababab !important;
 }
-#ui-mode:not(.uimode-select-action, .uimode-movement)
+#ui-mode:not(.uimode-select-action, .uimode-select-location)
   .action-button
   .inline-icon,
-#ui-mode.uimode-movement .action-button:not(#action-move) .inline-icon {
+#ui-mode.uimode-select-location .action-button:not(#action-move) .inline-icon {
   filter: invert() brightness(0.5) !important;
 }
 
-#ui-mode.uimode-movement #action-move-default,
-#ui-mode:not(.uimode-movement) #action-move-cancel,
+#ui-mode.uimode-select-location #action-move-default,
+#ui-mode:not(.uimode-select-location) #action-move-cancel,
 #ui-flags.can-cancel-engage #action-engage-default,
 #ui-flags:not(.can-cancel-engage) #action-engage-cancel,
 #ui-flags.can-cancel-fight #action-fight-default,
@@ -174,6 +175,9 @@ button:disabled .inline-icon {
 .card-image.flipping {
   scale: 0 1;
   filter: brightness(0.5);
+}
+.card-image.fast {
+  transition: scale 0.25s linear, filter 0.25s;
 }
 
 #card-focused {
@@ -335,13 +339,6 @@ button:disabled .inline-icon {
   transform: translate(0, -50px) rotate(0) scale(1.2) !important;
 }
 
-.grip-card.transition-out {
-  transform: translateX(
-      calc(-50% + 90px * (var(--index) - (var(--hand-size) - 1) / 2))
-    )
-    scale(0);
-}
-
 .grip-card.selected-card {
   rotate: 0deg;
   z-index: 90;
@@ -387,6 +384,13 @@ button:disabled .inline-icon {
   }
 }
 
+.grip-card.transition-out {
+  transform: translateX(
+      calc(-50% + 90px * (var(--index) - (var(--hand-size) - 1) / 2))
+    )
+    scale(0);
+}
+
 /* Installed cards */
 #rig {
   overflow-y: none;
@@ -396,6 +400,7 @@ button:disabled .inline-icon {
   height: 32%;
   aspect-ratio: 160/224 !important;
   animation: install 0.2s;
+  transition: transform 0.2s;
 }
 @keyframes install {
   from {
@@ -411,20 +416,20 @@ button:disabled .inline-icon {
   top: 0;
   transition: transform 0.2s, scale 0.2s;
 }
+.installed-card .hosted-counters {
+  transform: scale(0.75);
+}
 .installed-card:hover .card-image-container {
   transform: scale(1.01);
 }
-.uimode-select-installed-card .installed-card:hover .card-image {
+.uimode-select-installed-card .installed-card:hover .card-image-container {
   transform: translateY(-20px);
 }
-.installed-card.selected-card .card-image {
+.installed-card.selected-card .card-image-container {
   box-shadow: 0 0 15px white;
 }
-.installed-card.selected-card .card-image {
+.installed-card.selected-card .card-image-container {
   scale: 1.05;
-}
-.installed-card.selected-card .card-image:not(:hover) {
-  transform: translateY(-10px);
 }
 
 .installed-card.perceived-trashed .card-image {
@@ -444,6 +449,10 @@ button:disabled .inline-icon {
   background: url("img/card/trashedCardOverlay.png") no-repeat;
   background-size: 100% 100%;
   z-index: 10000;
+}
+
+.installed-card.tapped:not(.selectable, .transition-out) {
+  transform: rotate(4deg);
 }
 
 .installed-card .card-image-container {
@@ -547,7 +556,7 @@ button:disabled .inline-icon {
   filter: saturate(1);
 }
 
-.uimode-movement
+.uimode-select-location
   .location-container:not(.valid-destination, .current-location)
   .location-image {
   filter: saturate(0) blur(1px) brightness(0.25);
@@ -571,7 +580,7 @@ button:disabled .inline-icon {
   border: 2px dotted #7887ab;
   z-index: 5;
 }
-.uimode-movement .location-connector.valid-connection {
+.uimode-select-location .location-connector.valid-connection {
   border: 3px solid #fceda6;
 }
 
@@ -859,9 +868,8 @@ button:disabled .inline-icon {
 }
 .asset .card-text-title {
   top: 3.59%;
-  left: 25%;
+  left: 27%;
   right: 0;
-  text-align: center;
   font-family: "Montserrat", sans-serif !important;
   font-weight: 700;
   font-size: 1em;
@@ -894,6 +902,7 @@ button:disabled .inline-icon {
 .event .card-text-cost {
   top: 0%;
   left: 5.2%;
+  width: 0.6em;
   color: white;
   text-align: center;
   font-size: 2em;

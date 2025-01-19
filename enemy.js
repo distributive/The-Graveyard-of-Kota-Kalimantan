@@ -1,21 +1,7 @@
-const ENEMY_MODE_NONE = 0;
-const ENEMY_MODE_ENGAGE = 1;
-const ENEMY_MODE_FIGHT = 2;
-const ENEMY_MODE_EVADE = 3;
-
-///////////////////////////////////////////////////////////////////////////////
-
 class Enemy {
   // STATIC
   static instances = [];
-  static mode = ENEMY_MODE_NONE;
 
-  static determineCanEngageFightEvade() {
-    const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
-    UiMode.setFlag("can-engage", canEngage);
-    UiMode.setFlag("can-fight", canFight);
-    UiMode.setFlag("can-evade", canEvade);
-  }
   static canEngageFightEvade() {
     const localEnemies = this.getEnemiesAtCurrentLocation();
     const engagedEnemies = this.getEngagedEnemies();
@@ -29,11 +15,19 @@ class Enemy {
     const localEnemies = this.getEnemiesAtCurrentLocation();
     return localEnemies.filter((enemy) => enemy.engaged);
   }
-  static getEnemiesAtCurrentLocation() {
-    return this.getEnemiesAtLocation(Location.getCurrentLocation());
-  }
   static getEnemiesAtLocation(location) {
     return this.instances.filter((enemy) => enemy.#currentLocation == location);
+  }
+  static getUnengagedEnemiesAtLocation(location) {
+    return this.instances.filter(
+      (enemy) => !enemy.engaged && enemy.#currentLocation == location
+    );
+  }
+  static getUnengagedEnemiesAtCurrentLocation() {
+    return this.getUnengagedEnemiesAtLocation(Location.getCurrentLocation());
+  }
+  static getEnemiesAtCurrentLocation() {
+    return this.getEnemiesAtLocation(Location.getCurrentLocation());
   }
 
   static async actionEngage(canCancel = true, costsClick = true) {
@@ -43,62 +37,63 @@ class Enemy {
       return {};
     }
 
-    // Update UI/enemy modes
-    if (canCancel) {
-      UiMode.setFlag("can-cancel-engage", true);
-    }
-    UiMode.setMode(UIMODE_SELECT_ENEMY);
-    this.mode = ENEMY_MODE_ENGAGE;
-
-    // Make all valid targets selectable and set up their click callbacks
-    const currentLocation = Location.getCurrentLocation();
-    const enemy = await new Promise((resolve) => {
-      this.instances.forEach((enemy) => {
-        enemy.selectable =
-          enemy.#currentLocation == currentLocation && !enemy.engaged;
-        if (enemy.selectable) {
-          enemy.click(async function () {
-            resolve(enemy);
-          });
-        }
-      });
+    // Get selection
+    await UiMode.setMode(UIMODE_SELECT_ENEMY, {
+      validTargets: Enemy.getUnengagedEnemiesAtCurrentLocation(),
+      canCancel: true,
+      reason: "engage",
     });
 
-    if (costsClick) {
-      await Stats.addClicks(-1);
+    // Resolve effects
+    if (UiMode.data.success) {
+      if (costsClick) {
+        await Stats.addClicks(-1);
+      }
+      await UiMode.data.selectedEnemy.engage();
+      return { success: true, enemy: UiMode.data.selectedEnemy };
+    } else {
+      return { success: false };
     }
-    await enemy.engage();
-    this.cancelAction();
-
-    return { success: true, enemy: enemy };
   }
 
-  static async actionFight(damage, canCancel = true, costsClick = true) {
+  static async actionFight(data) {
+    let {
+      damage = 1,
+      canCancel = true,
+      costsClick = true,
+      stat = "strength",
+      base,
+      target,
+    } = data;
+
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canFight) {
       return {};
     }
 
-    // Update UI/enemy modes
-    if (canCancel) {
-      UiMode.setFlag("can-cancel-fight", true);
-    }
-    UiMode.setMode(UIMODE_SELECT_ENEMY);
-    this.mode = ENEMY_MODE_FIGHT;
-
-    // Make all valid targets selectable and set up their click callbacks
-    const currentLocation = Location.getCurrentLocation();
-    const enemy = await new Promise((resolve) => {
-      this.instances.forEach((enemy) => {
-        enemy.selectable = enemy.#currentLocation == currentLocation;
-        if (enemy.selectable) {
-          enemy.click(async function () {
-            resolve(enemy);
-          });
-        }
-      });
+    // Get selection
+    await UiMode.setMode(UIMODE_SELECT_ENEMY, {
+      validTargets: Enemy.getEnemiesAtCurrentLocation(),
+      canCancel: canCancel,
+      reason: "fight",
     });
+    const enemy = UiMode.data.selectedEnemy;
+
+    // Set default target
+    if (target == null) {
+      target = enemy.cardData.strength;
+    }
+
+    // Exit early if cancelled
+    if (!UiMode.data.success) {
+      return { results: { success: false } };
+    }
+
+    // Engage the enemy if they are not already engaged
+    if (!UiMode.data.selectedEnemy.engaged) {
+      await UiMode.data.selectedEnemy.engage();
+    }
 
     // Trigger events
     if (costsClick) {
@@ -110,13 +105,13 @@ class Enemy {
     });
 
     // Run the modal
-    const results = await Chaos.runModal(
-      "strength",
-      enemy.cardData.strength,
-      false,
-      "Fight!",
-      `<p>If successful, you will do ${damage} damage to this enemy.</p>`
-    );
+    const results = await Chaos.runModal({
+      stat: stat,
+      base: base,
+      target: target,
+      title: "Fight!",
+      description: `<p>If successful, you will do ${damage} damage to this enemy.</p>`,
+    });
     Modal.hide();
 
     // Apply effects/triggers
@@ -128,38 +123,30 @@ class Enemy {
       });
       await enemy.addDamage(damage);
     }
-    Enemy.cancelAction();
 
     return { results: results, enemy: enemy };
   }
 
-  static async actionEvade(canCancel = true, costsClick = true) {
+  static async actionEvade(data) {
+    const { canCancel = true, costsClick = true } = data;
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
     if (!canEvade) {
       return false;
     }
 
-    // Update UI/enemy modes
-    if (canCancel) {
-      UiMode.setFlag("can-cancel-evade", true);
-    }
-    UiMode.setMode(UIMODE_SELECT_ENEMY);
-    this.mode = ENEMY_MODE_EVADE;
-
-    // Make all valid targets selectable and set up their click callbacks
-    const currentLocation = Location.getCurrentLocation();
-    const enemy = await new Promise((resolve) => {
-      this.instances.forEach((enemy) => {
-        enemy.selectable =
-          enemy.#currentLocation == currentLocation && enemy.engaged;
-        if (enemy.selectable) {
-          enemy.click(async function () {
-            resolve(enemy);
-          });
-        }
-      });
+    // Get selection
+    await UiMode.setMode(UIMODE_SELECT_ENEMY, {
+      validTargets: Enemy.getEngagedEnemies(),
+      canCancel: true,
+      reason: "evade",
     });
+    const enemy = UiMode.data.selectedEnemy;
+
+    // Exit early if cancelled
+    if (!UiMode.data.success) {
+      return { results: { success: false } };
+    }
 
     // Trigger events
     if (costsClick) {
@@ -170,32 +157,20 @@ class Enemy {
     });
 
     // Run the modal
-    const results = await Chaos.runModal(
-      "link",
-      enemy.cardData.link,
-      false,
-      "Evade!",
-      `<p>If successful, you will evade this enemy.</p>`
-    );
+    const results = await Chaos.runModal({
+      stat: "link",
+      target: enemy.cardData.link,
+      title: "Evade!",
+      description: `<p>If successful, you will evade this enemy.</p>`,
+    });
     Modal.hide();
 
     // Apply effects/triggers
     if (results.success) {
       await enemy.evade(results);
     }
-    Enemy.cancelAction();
 
     return { results: results, enemy: enemy };
-  }
-
-  static cancelAction() {
-    // Relies on the calling function to reset the UI mode
-    UiMode.setFlag("can-cancel-engage", false);
-    UiMode.setFlag("can-cancel-fight", false);
-    UiMode.setFlag("can-cancel-evade", false);
-    this.mode = ENEMY_MODE_NONE;
-    // Remove click callbacks
-    $(".enemy-container").off("click");
   }
 
   // Call this whenever there should be an attack of opportunity
@@ -398,7 +373,6 @@ class Enemy {
     Broadcast.signal("onPlayerEngages", { enemy: this });
     this.#engaged = true;
     this.#jObj.addClass("engaged");
-    Enemy.determineCanEngageFightEvade();
     return this;
   }
 
@@ -409,13 +383,12 @@ class Enemy {
       enemy: this,
       results: results,
     });
+    Game.logTurnEvent("evaded");
   }
 
   async disengage() {
-    console.log("!");
     this.#engaged = false;
     this.#jObj.removeClass("engaged");
-    Enemy.determineCanEngageFightEvade();
     return this;
   }
 
@@ -426,9 +399,11 @@ class Enemy {
 
   click(func) {
     this.#jObj.click(func);
+    return this;
   }
   removeClick() {
     this.#jObj.off("click");
+    return this;
   }
 
   get selectable() {

@@ -5,3 +5,15 @@ function shuffle(array) {
   }
   return array;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+function randomIndex(array) {
+  return Math.floor(Math.random() * array.length);
+}
+
+function randomElement(array) {
+  return array[randomIndex(array)];
+}
+
+///////////////////////////////////////////////////////////////////////////////

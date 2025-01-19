@@ -2,7 +2,7 @@ let uiMode_i = 0;
 const UIMODE_NON_GAME = uiMode_i++;
 const UIMODE_CORP_TURN = uiMode_i++;
 const UIMODE_SELECT_ACTION = uiMode_i++;
-const UIMODE_MOVEMENT = uiMode_i++;
+const UIMODE_SELECT_LOCATION = uiMode_i++;
 const UIMODE_SELECT_GRIP_CARD = uiMode_i++;
 const UIMODE_SELECT_INSTALLED_CARD = uiMode_i++;
 const UIMODE_ASSIGN_DAMAGE = uiMode_i++;
@@ -15,7 +15,7 @@ const UIMODE_TO_CLASS = {};
 UIMODE_TO_CLASS[UIMODE_NON_GAME] = "uimode-non-game";
 UIMODE_TO_CLASS[UIMODE_CORP_TURN] = "uimode-corp-turn";
 UIMODE_TO_CLASS[UIMODE_SELECT_ACTION] = "uimode-select-action";
-UIMODE_TO_CLASS[UIMODE_MOVEMENT] = "uimode-movement";
+UIMODE_TO_CLASS[UIMODE_SELECT_LOCATION] = "uimode-select-location";
 UIMODE_TO_CLASS[UIMODE_SELECT_GRIP_CARD] = "uimode-select-grip-card";
 UIMODE_TO_CLASS[UIMODE_SELECT_INSTALLED_CARD] = "uimode-select-installed-card";
 UIMODE_TO_CLASS[UIMODE_ASSIGN_DAMAGE] = "uimode-assign-damage";
@@ -74,8 +74,8 @@ class UiMode {
       case UIMODE_SELECT_ACTION:
         await this.exitSelectAction();
         break;
-      case UIMODE_MOVEMENT:
-        await this.exitMovement();
+      case UIMODE_SELECT_LOCATION:
+        await this.exitSelectLocation();
         break;
       case UIMODE_SELECT_GRIP_CARD:
         await this.exitSelectGripCard();
@@ -108,8 +108,8 @@ class UiMode {
       case UIMODE_SELECT_ACTION:
         await this.enterSelectAction();
         break;
-      case UIMODE_MOVEMENT:
-        await this.enterMovement();
+      case UIMODE_SELECT_LOCATION:
+        await this.enterSelectLocation();
         break;
       case UIMODE_SELECT_GRIP_CARD:
         await this.enterSelectGripCard();
@@ -148,17 +148,70 @@ class UiMode {
   // UIMODE_SELECT_ACTION
   static async enterSelectAction() {
     GripCard.markPlayableCards();
+    RigCard.markUsableCards();
+    Identity.markUsable();
+
+    UiMode.setFlag("can-investigate", Location.getCurrentLocation().clues > 0);
+    const [canEngage, canFight, canEvade] = Enemy.canEngageFightEvade();
+    UiMode.setFlag("can-engage", canEngage);
+    UiMode.setFlag("can-fight", canFight);
+    UiMode.setFlag("can-evade", canEvade);
   }
   static async exitSelectAction() {
     GripCard.markAllCardsUnplayable();
+    RigCard.markAllCardsUnusable();
+    Identity.markUnusable();
   }
 
-  // UIMODE_MOVEMENT
-  static async enterMovement() {
-    $(".valid-destination").addClass("selectable");
+  // UIMODE_SELECT_LOCATION
+  // data {
+  //  validTargets, // Optional (if unset, use valid move destinations)
+  //  message, // Optional (if set, display a message until the selection is complete)
+  //  canCancel,
+  // [Assigned by enterSelectLocation]
+  //  success,
+  //  selectedLocation,
+  // }
+  static async enterSelectLocation() {
+    const data = this.data;
+    const alert = Alert.send(
+      data.message ? data.message : "Pick a location",
+      ALERT_INFO,
+      false,
+      true
+    );
+    const selectedLocation = await new Promise(function (resolve) {
+      const targets = data.validTargets
+        ? data.validTargets
+        : Location.getValidDestinations();
+      targets.forEach((location) => {
+        location.selectable = true;
+        location.removeClick().click(() => {
+          resolve(location);
+        });
+      });
+      $("#action-move").off("click");
+      UiMode.setFlag("can-cancel-move", data.canCancel);
+      if (data.canCancel) {
+        $("#action-move").click(function () {
+          resolve();
+        });
+      }
+    });
+
+    if (alert) {
+      alert.close();
+    }
+
+    this.data.success = !!selectedLocation;
+    this.data.selectedLocation = selectedLocation;
   }
-  static async exitMovement() {
-    $(".location-container").removeClass("selectable");
+  static async exitSelectLocation() {
+    Location.instances.forEach((location) => {
+      location.selectable = false;
+    });
+    Game.resetMoveButton();
+    UiMode.setFlag("can-cancel-move", false);
   }
 
   // UIMODE_SELECT_GRIP_CARD
@@ -167,11 +220,18 @@ class UiMode {
   //  minCards,
   //  maxCards,
   //  canCancel,
+  //  validTargets, // Optional (if unset, all cards are valid)
   // [Assigned by enterSelectGripCard]
   //  success,
   //  selectedCards,
   // }
   static async enterSelectGripCard() {
+    // Highlight valid targets
+    Cards.grip.forEach((card) => {
+      card.selectable =
+        !this.data.validTargets || this.data.validTargets.includes(card);
+    });
+
     // Create alert
     const message = this.data.message
       ? this.data.message
@@ -216,6 +276,7 @@ class UiMode {
   }
   static async exitSelectGripCard() {
     GripCard.deselectAll();
+    GripCard.markAllCardsUnselectable();
   }
 
   // UIMODE_SELECT_INSTALLED_CARD
@@ -227,6 +288,9 @@ class UiMode {
   //  success,
   // }
   static async enterSelectInstalledCard() {
+    // Highlight damageable cards
+    RigCard.highlightSelectableCards();
+
     // Create alert
     const message =
       this.data.minCards != this.data.maxCards
@@ -241,11 +305,32 @@ class UiMode {
     const alert = Alert.send(message, ALERT_PRIMARY, false, true, options);
 
     // Wait for the selection to be approved or cancelled
-    const optionId = await alert.waitForOption();
+    let optionId;
+    let validSelection = false;
+    while (!validSelection) {
+      optionId = await alert.waitForOption();
+      if (
+        optionId == "cancel" ||
+        (RigCard.selectedCards.size >= this.data.minCards &&
+          RigCard.selectedCards.size <= this.data.maxCards)
+      ) {
+        validSelection = true;
+      } else {
+        Alert.send(
+          `You must select at least ${this.data.minCards} ${
+            this.data.minCards == 1 ? "card" : "cards"
+          }`,
+          ALERT_WARNING
+        );
+      }
+    }
     alert.close();
 
-    // Declare if the selection went ahead
-    this.data.success = optionId == "accept"; // TODO - record the selected cards?
+    // Record the outcome
+    this.data.success = optionId == "accept";
+    if (this.data.success) {
+      this.data.selectedCards = Array.from(RigCard.selectedCards);
+    }
   }
   static async exitSelectInstalledCard() {
     RigCard.deselectAll();
@@ -290,10 +375,89 @@ class UiMode {
   static async exitAssignDamage() {}
 
   // UIMODE_SELECT_ENEMY
-  static async enterSelectEnemy() {}
-  static async exitSelectEnemy() {
-    $(".enemy-container").removeClass("selectable");
+  // data {
+  //  validTargets,
+  //  canCancel,
+  //  reason, // ["engage", "fight", "evade"] // Any other string will be posted to the user in an alert
+  // [Assigned by enterSelectEnemy]
+  //  success,
+  //  selectedEnemy,
+  // }
+  static async enterSelectEnemy() {
+    // Disable enemy-related action buttons
+    UiMode.setFlag("can-engage", false);
+    UiMode.setFlag("can-fight", false);
+    UiMode.setFlag("can-evade", false);
+
+    // Wait for selection or cancellation
+    const data = this.data;
+    let alert;
+    const selectedEnemy = await new Promise(async function (resolve) {
+      // Highlight targets
+      data.validTargets.forEach((enemy) => {
+        enemy.selectable = true;
+        enemy.removeClick().click(() => {
+          resolve(enemy);
+        });
+      });
+      // Cancel buttons for the enemy-based actions
+      if (data.canCancel) {
+        if (data.reason == "engage") {
+          UiMode.setFlag("can-cancel-engage", true);
+          $("#action-engage").click(function () {
+            resolve();
+          });
+        } else if (data.reason == "fight") {
+          UiMode.setFlag("can-cancel-fight", true);
+          $("#action-fight").click(function () {
+            resolve();
+          });
+        } else if (data.reason == "evade") {
+          UiMode.setFlag("can-cancel-evade", true);
+          $("#action-evade").click(function () {
+            resolve();
+          });
+        }
+      }
+      // Send an alert for other actions
+      if (!["engage", "fight", "evade"].includes(data.reason)) {
+        const options = [];
+        if (data.canCancel) {
+          options.push(new Option("cancel", "Cancel", "warning"));
+        }
+        alert = Alert.send(
+          data.reason ? data.reason : "Pick 1 enemy.",
+          ALERT_PRIMARY,
+          false,
+          true,
+          options
+        );
+        const optionId = await alert.waitForOption();
+        if (optionId == "cancel") {
+          resolve();
+        }
+      }
+    });
+
+    // Reset UI
+    UiMode.setFlag("can-cancel-engage", false);
+    UiMode.setFlag("can-cancel-fight", false);
+    UiMode.setFlag("can-cancel-evade", false);
+    Game.resetEngageButton();
+    Game.resetFightButton();
+    Game.resetEvadeButton();
+    Enemy.instances.forEach((enemy) => {
+      enemy.removeClick().selectable = false;
+    });
+    if (alert) {
+      alert.close();
+    }
+
+    // Output
+    this.data.success = !!selectedEnemy;
+    this.data.selectedEnemy = selectedEnemy;
   }
+  static async exitSelectEnemy() {}
 
   // UIMODE_END_TURN
   static async enterEndTurn() {}

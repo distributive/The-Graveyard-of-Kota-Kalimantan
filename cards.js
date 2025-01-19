@@ -29,19 +29,32 @@ class Cards {
     $("#card-focused-image").removeClass("focused").removeClass("unfocused");
   }
 
-  static flip(jCardImage, newImage) {
+  static flip(jCardImage, newImage, fast = false) {
     jCardImage.addClass("flipping");
-    setTimeout(() => {
-      if (newImage) {
-        jCardImage.attr("src", newImage);
-      }
-      jCardImage.removeClass("flipping");
-    }, 1000); // CSS currently takes 1s to flip a card halfway
+    if (fast) {
+      jCardImage.addClass("fast");
+    }
+    setTimeout(
+      () => {
+        if (newImage) {
+          jCardImage.attr("src", newImage);
+        }
+        jCardImage.removeClass("flipping");
+      },
+      fast ? 250 : 1000 // CSS currently takes 1s to flip a card halfway (0.25s if fast)
+    );
+    if (fast) {
+      setTimeout(() => {
+        jCardImage.removeClass("fast");
+      }, 500);
+    }
   }
 
   static populateData(jObj, cardData, fontSize) {
     jObj.find(".card-text").remove();
-    cardData.populate(jObj);
+    if (cardData) {
+      cardData.populate(jObj);
+    }
     if (fontSize) {
       jObj.find(".card-text").css("font-size", fontSize);
     }
@@ -66,7 +79,7 @@ class Cards {
 
   // cardData may be an array of classes
   static addToHeap(cardData, shuffleInto = false) {
-    if (typeof cardData == "object") {
+    if (cardData.length != null) {
       this.heap.push(...cardData);
     } else {
       this.heap.push(cardData);
@@ -117,15 +130,16 @@ class Cards {
   static async discard(card) {
     const cardData = this.removeGripCard(card);
     if (cardData) {
+      this.addToHeap(cardData);
       this.updateStackHeapHeights();
       this.determineCanDraw();
       await Broadcast.signal("onCardDiscarded", { cardData: cardData });
     }
   }
 
-  static async discardRandom(number) {
+  static async discardRandom(number = 1) {
     for (let i = 0; i < number; i++) {
-      await this.discard(Math.floor(Math.random() * Cards.grip.length));
+      await this.discard(randomIndex(Cards.grip));
     }
   }
 
@@ -212,8 +226,8 @@ class Cards {
   ///////////////////////////////////////////////
   // Rig
 
-  static install(cardId) {
-    const rigCard = new RigCard(cardId);
+  static install(cardData) {
+    const rigCard = new RigCard(cardData);
     this.installedCards.push(rigCard);
     return rigCard;
   }
@@ -232,13 +246,22 @@ class GripCard {
   static markPlayableCards() {
     Cards.grip.forEach((gripCard) => {
       gripCard.playable =
-        Stats.credits >= gripCard.cardData.cost &&
-        gripCard.cardData.canPlay(gripCard);
+        Stats.credits >= gripCard.cost &&
+        gripCard.cardData.canPlay(gripCard) &&
+        !(
+          gripCard.cardData.unique &&
+          RigCard.isCardDataInstalled(gripCard.cardData)
+        );
     });
   }
   static markAllCardsUnplayable() {
     Cards.grip.forEach((gripCard) => {
       gripCard.playable = false;
+    });
+  }
+  static markAllCardsUnselectable() {
+    Cards.grip.forEach((gripCard) => {
+      gripCard.selectable = false;
     });
   }
 
@@ -267,6 +290,11 @@ class GripCard {
             );
           } else if (reason == "type") {
             Alert.send("This card is not a playable type.", ALERT_WARNING);
+          } else if (reason == "unique") {
+            Alert.send(
+              "You cannot install another copy of a unique card.",
+              ALERT_WARNING
+            );
           } else if (reason == "credits") {
             Alert.send(
               "You do not have enough credits to play this card.",
@@ -280,26 +308,38 @@ class GripCard {
           }
         }
       } else if (UiMode.uiMode == UIMODE_SELECT_GRIP_CARD) {
-        if (GripCard.selectedCards.has(instance)) {
-          instance.deselect();
-        } else if (UiMode.data.maxCards == 1) {
-          GripCard.deselectAll();
-          instance.select();
-        } else if (GripCard.selectedCards.size < UiMode.data.maxCards) {
-          instance.select();
-        } else {
-          const message =
-            UiMode.data.minCards != UiMode.data.maxCards
-              ? `You must select between ${UiMode.data.minCards} and ${UiMode.data.maxCards} cards, inclusive.`
-              : `You must select ${UiMode.data.maxCards} cards.`;
-          Alert.send(message, ALERT_WARNING, true, false);
+        if (instance.selectable) {
+          if (GripCard.selectedCards.has(instance)) {
+            instance.deselect();
+          } else if (UiMode.data.maxCards == 1) {
+            GripCard.deselectAll();
+            instance.select();
+          } else if (GripCard.selectedCards.size < UiMode.data.maxCards) {
+            instance.select();
+          } else {
+            const message =
+              UiMode.data.minCards != UiMode.data.maxCards
+                ? `You must select between ${UiMode.data.minCards} and ${UiMode.data.maxCards} cards, inclusive.`
+                : `You must select ${UiMode.data.maxCards} cards.`;
+            Alert.send(message, ALERT_WARNING, true, false);
+          }
         }
       }
     });
   }
 
+  get installed() {
+    return false;
+  }
+
   get cardData() {
     return this.#cardData;
+  }
+  get cost() {
+    return this.#cardData.calculateCost(this);
+  }
+  get printedCost() {
+    return this.#cardData.cost;
   }
 
   get playable() {
@@ -325,6 +365,17 @@ class GripCard {
     GripCard.selectedCards.delete(this);
     this.#jObj.removeClass("selected-card");
     Cards.updateHandPositions();
+  }
+
+  get selectable() {
+    return this.#jObj.hasClass("selectable");
+  }
+  set selectable(value) {
+    if (value) {
+      this.#jObj.addClass("selectable");
+    } else {
+      this.#jObj.removeClass("selectable");
+    }
   }
 
   remove() {
@@ -381,32 +432,42 @@ class RigCard {
     return destroyedCardIds;
   }
 
-  static highlightPlayableCards() {
+  static markUsableCards() {
     Cards.installedCards.forEach((card) => {
-      if (card.cardData.canPlay(card)) {
-        card.#jObj.addClass("playable");
-      } else {
-        card.#jObj.removeClass("playable");
-      }
+      card.selectable = card.cardData.canUse && card.cardData.canUse(card);
     });
   }
+  static markAllCardsUnusable() {
+    Cards.installedCards.forEach((card) => {
+      card.selectable = false;
+    });
+  }
+
   static highlightDamageableCards() {
     Cards.installedCards.forEach((card) => {
-      if (card.health > 0) {
-        card.#jObj.addClass("selectable");
-      } else {
-        card.#jObj.removeClass("selectable");
-      }
+      card.selectable = card.health > 0;
+    });
+  }
+  static highlightSelectableCards(fFilter) {
+    Cards.installedCards.forEach((card) => {
+      card.selectable = !fFilter || fFilter(card);
     });
   }
   static unhighlightAllCards() {
-    Cards.installedCards.forEach((card) =>
-      card.#jObj.removeClass("playable").removeClass("selectable")
-    );
+    Cards.installedCards.forEach((card) => {
+      card.selectable = false;
+    });
   }
 
   static getDamageableCards() {
     return Cards.installedCards.filter((card) => card.health > 0);
+  }
+
+  static isCardDataInstalled(cardData) {
+    return (
+      Cards.installedCards.filter((card) => card.cardData.id == cardData.id)
+        .length > 0
+    );
   }
 
   // INSTANCE
@@ -422,9 +483,9 @@ class RigCard {
   #doom;
   #power;
 
-  constructor(cardId) {
+  constructor(cardData) {
     const instance = this;
-    this.#cardData = CardData.getCard(cardId);
+    this.#cardData = cardData;
 
     // card-padding is to make sure the parent class has the correct width
     this.#jObj = $(`
@@ -447,13 +508,17 @@ class RigCard {
     Cards.populateData(
       this.#jObj.find(".card-image-container"),
       this.#cardData,
-      "6px"
+      "5.75px"
     );
     this.#jObj.data("card-id", this.#cardData.id);
     $("#rig").append(this.#jObj);
 
-    this.#jObj.click(() => {
-      if (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD) {
+    this.#jObj.click(async () => {
+      if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
+        if (instance.cardData.canUse(instance)) {
+          await Game.actionUseCard(instance);
+        }
+      } else if (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD) {
         if (RigCard.selectedCards.has(instance)) {
           instance.deselect();
         } else if (UiMode.data.maxCards == 1) {
@@ -487,11 +552,43 @@ class RigCard {
     this.setPower(0);
   }
 
+  get installed() {
+    return true;
+  }
+
   get cardData() {
     return this.#cardData;
   }
+  get cost() {
+    return this.#cardData.calculateCost(this);
+  }
+  get printedCost() {
+    return this.#cardData.cost;
+  }
   get health() {
     return this.cardData.health;
+  }
+
+  get selectable() {
+    return this.#jObj.hasClass("selectable");
+  }
+  set selectable(value) {
+    if (value) {
+      this.#jObj.addClass("selectable");
+    } else {
+      this.#jObj.removeClass("selectable");
+    }
+  }
+
+  get tapped() {
+    return this.#jObj.hasClass("tapped");
+  }
+  set tapped(value) {
+    if (value) {
+      this.#jObj.addClass("tapped");
+    } else {
+      this.#jObj.removeClass("tapped");
+    }
   }
 
   get damage() {
@@ -505,6 +602,13 @@ class RigCard {
   }
 
   setDamage(value, doAnimate = true) {
+    if (!this.health) {
+      this.setPerceivedDamage(0);
+      return; // Assets with no health cannot be damaged
+    }
+    if (value < 0) {
+      value = 0;
+    }
     if (value < this.health) {
       this.setPerceivedDamage(value, doAnimate);
       this.#damage = value;
@@ -513,12 +617,18 @@ class RigCard {
     }
     return this;
   }
+  addDamage(value, doAnimate = true) {
+    this.setDamage(this.#damage + value, doAnimate);
+  }
   setPerceivedDamage(value, doAnimate = false) {
     const jDamage = this.#jDamage;
     if (value == 0) {
       this.#jDamage.hide();
     } else {
       this.#jDamage.show();
+    }
+    if (!this.health) {
+      return; // Assets with no health cannot be damaged
     }
     jDamage.html(value);
     if (value != this.#damage && doAnimate) {
@@ -534,6 +644,9 @@ class RigCard {
   }
 
   setDoom(value, doAnimate = true) {
+    if (value < 0) {
+      value = 0;
+    }
     const jDoom = this.#jDoom;
     if (value == 0) {
       this.#jDoom.hide();
@@ -547,8 +660,14 @@ class RigCard {
     this.#doom = value;
     return this;
   }
+  addDoom(value, doAnimate = true) {
+    this.setDoom(this.#doom + value, doAnimate);
+  }
 
   setPower(value, doAnimate = true) {
+    if (value < 0) {
+      value = 0;
+    }
     const jPower = this.#jPower;
     if (value == 0) {
       this.#jPower.hide();
@@ -561,6 +680,9 @@ class RigCard {
     }
     this.#power = value;
     return this;
+  }
+  addPower(value, doAnimate = true) {
+    this.setPower(this.#power + value, doAnimate);
   }
 
   select() {
@@ -575,7 +697,11 @@ class RigCard {
 
   remove() {
     let jObj = this.#jObj;
-    jObj.addClass("transition-out").removeClass("perceived-trashed");
+    jObj
+      .addClass("transition-out")
+      .removeClass("perceived-trashed")
+      .removeClass("selectable")
+      .removeClass("selected-card");
     setTimeout(function () {
       jObj.remove();
     }, 200);

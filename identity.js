@@ -16,13 +16,13 @@ class Identity {
     return this.#doom;
   }
 
-  static setCard(cardId, doAnimate = true) {
-    this.#cardData = CardData.getCard(cardId);
-    $("#runner-id").data("card-id", cardId);
+  static setCard(cardData, doAnimate = true, fast = true) {
+    this.#cardData = cardData;
+    $("#runner-id").data("card-id", cardData.id);
     if (doAnimate) {
-      Cards.flip($("#runner-id .card-image"), this.#cardData.image);
+      Cards.flip($("#runner-id .card-image"), cardData.image, fast);
     } else {
-      $("#runner-id .card-image").attr("src", this.#cardData.image);
+      $("#runner-id .card-image").attr("src", cardData.image, fast);
     }
   }
 
@@ -61,12 +61,33 @@ class Identity {
   static addDoom(value, doAnimate = true) {
     this.setDoom(this.#doom + value, doAnimate);
   }
+
+  // Does nothing if the ID is unusable
+  static markUsable() {
+    const cardData = this.cardData;
+    if (this.cardData.canUse(this)) {
+      $("#runner-id")
+        .addClass("selectable")
+        .off("click")
+        .click(async function () {
+          await cardData.onUse(this);
+          if (!Game.checkTurnEnd()) {
+            UiMode.setMode(UIMODE_SELECT_ACTION);
+          }
+        });
+    } else {
+      $("#runner-id").removeClass("selectable").off("click");
+    }
+  }
+
+  static markUnusable() {
+    $("#runner-id").removeClass("selectable").off("click");
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 $(document).ready(function () {
-  Identity.setCard("the_catalyst", false);
   Identity.setDamage(Identity.damage);
   Identity.setDoom(Identity.doom);
 });

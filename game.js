@@ -1,20 +1,65 @@
 class Game {
   static initGameState() {
-    // TODO read ID for stats
-    Stats.influence = 3;
-    Stats.mu = 3;
-    Stats.strength = 3;
-    Stats.link = 3;
+    // TODO let the user choose the ID
+    const identity = CardDewi;
+    Identity.setCard(identity, false);
 
-    // TODO read decklist for given ID
-    let xs = [];
-    for (let i = 0; i < 11; i++) {
-      xs.push(CardOffSureFund);
-      xs.push(CardUnderTheHood);
-      xs.push(CardFruitJuice);
-      xs.push(CardSelfDamage);
+    Stats.influence = identity.influence;
+    Stats.mu = identity.mu;
+    Stats.strength = identity.strength;
+    Stats.link = identity.link;
+
+    // TODO unhardcode the decks
+    const xs = [];
+    if (identity.faction == FACTION_ANARCH) {
+      for (let i = 0; i < 2; i++) {
+        xs.push(CardUnsureGamble);
+        xs.push(CardIllHaveWorse);
+        xs.push(CardNol);
+        xs.push(CardSifar);
+        xs.push(CardIceCarver);
+        xs.push(CardMeniru);
+        xs.push(CardTormentNexus);
+        xs.push(CardBackAway);
+        xs.push(CardKickItDown);
+        xs.push(CardDownloadTheSigns);
+        xs.push(CardGritAndDetermination);
+        xs.push(CardLastDitch);
+        xs.push(CardRepurpose);
+        xs.push(CardTakeInspiration);
+      }
+      xs.push(CardMakeAnEntrance);
+      xs.push(CardProjectile);
+    } else if (identity.faction == FACTION_CRIMINAL) {
+      for (let i = 0; i < 2; i++) {
+        xs.push(CardUnsureGamble);
+        xs.push(CardDocklandsPass);
+        xs.push(CardPennyearner);
+        xs.push(CardAkauntan);
+        xs.push(CardForgedDocuments);
+        xs.push(CardCrowbar);
+        xs.push(CardShiv);
+        xs.push(CardSpike);
+        xs.push(CardBackflip);
+        xs.push(CardDifficultJohn);
+        xs.push(CardJackOfAll);
+        xs.push(CardEmpDevice);
+        xs.push(CardInsideJob);
+        xs.push(CardTreadLightly);
+      }
+      xs.push(CardInfiltrate);
+      xs.push(CardPush);
+    } else {
+      const cardPool = CardData.getAllCards().filter(
+        (cardData) => cardData.type == TYPE_ASSET || cardData.type == TYPE_EVENT
+      );
+      for (let i = 0; i < 30 && cardPool.length; i++) {
+        const index = randomIndex(cardPool);
+        xs.push(cardPool[index]);
+        cardPool.splice(index, 1);
+      }
     }
-    Cards.addToStack(xs);
+    Cards.addToStack(xs, true);
 
     Cards.draw(5);
 
@@ -30,6 +75,15 @@ class Game {
     Agenda.setDoom(0);
   }
 
+  // For logging events that happened this turn for card conditions
+  static #turnEvents = {};
+  static logTurnEvent(event) {
+    this.#turnEvents[event] = true;
+  }
+  static getTurnEvent(event) {
+    return this.#turnEvents[event] ? true : false;
+  }
+
   static async startTurn() {
     UiMode.setMode(UIMODE_SELECT_ACTION);
     animateTurnBanner("runner");
@@ -37,11 +91,16 @@ class Game {
     await Stats.setClicks(3);
   }
   static async endTurn() {
+    this.#turnEvents = {};
+
     UiMode.setMode(UIMODE_CORP_TURN);
     animateTurnBanner("corp");
     await Stats.setClicks(0);
     await Agenda.addDoom(1);
     await Broadcast.signal("onTurnEnd");
+
+    await Stats.addCredits(1);
+    await Cards.draw(1);
 
     // TEMP //
     setTimeout(() => {
@@ -57,10 +116,10 @@ class Game {
     return false;
   }
 
-  static async actionMoveTo(location, allowAttackOfOpportunity = true) {
-    await Stats.addClicks(-1);
-    if (allowAttackOfOpportunity) {
-      await Enemy.attackOfOpportunity();
+  static async actionMoveTo(location, data) {
+    const { costsClick, enemiesCanEngage = true } = data;
+    if (costsClick) {
+      await Stats.addClicks(-1);
     }
     const oldLocation = Location.getCurrentLocation();
     location.setCurrentLocation();
@@ -84,6 +143,13 @@ class Game {
     if (cardData.type != TYPE_ASSET && cardData.type != TYPE_EVENT) {
       return { success: false, reason: "type" };
     }
+    if (
+      cardData.type == TYPE_ASSET &&
+      cardData.unique &&
+      RigCard.isCardDataInstalled(cardData)
+    ) {
+      return { success: false, reason: "unique" };
+    }
     if (Stats.credits < cardData.cost) {
       return { success: false, reason: "credits" };
     }
@@ -96,12 +162,12 @@ class Game {
     await Stats.addCredits(-cost);
     await Enemy.attackOfOpportunity();
     if (cardData.type == TYPE_ASSET) {
-      const rigCard = Cards.install(cardData.id);
-      await cardData.onPlay(rigCard);
+      const rigCard = Cards.install(cardData);
+      await cardData.onPlay(rigCard); // TODO - move to Cards.install
       await Broadcast.signal("onCardInstalled", { card: rigCard });
     } else {
       await cardData.onPlay(gripCard);
-      await Broadcast.signal("onCardPlayed", { card: gripCard });
+      await Broadcast.signal("onCardPlayed", { card: gripCard }); // TODO - ditto
       Cards.addToHeap(gripCard.cardData.id);
     }
     if (!Game.checkTurnEnd()) {
@@ -110,37 +176,52 @@ class Game {
     return { success: true };
   }
 
-  // If location isn't set, use the current location
-  static async actionInvestigate(clues, location) {
-    if (!location) {
-      location = Location.getCurrentLocation();
+  static async actionUseCard(rigCard) {
+    await rigCard.cardData.onUse(rigCard);
+    if (!Game.checkTurnEnd()) {
+      UiMode.setMode(UIMODE_SELECT_ACTION);
     }
-    await Clicks.addClicks(-1);
+  }
+
+  // If location isn't set, use the current location
+  static async actionInvestigate(data) {
+    let {
+      clues = 1,
+      location = Location.getCurrentLocation(),
+      costsClick = true,
+      stat = "mu",
+      base,
+      target = location.cardData.shroud,
+    } = data;
+    // Run test
+    if (costsClick) {
+      await Stats.addClicks(-1);
+    }
     await Enemy.attackOfOpportunity();
     await Broadcast.signal("onInvestigationAttempt", { location: location });
-    const results = await Chaos.runModal(
-      "mu",
-      location.cardData.shroud,
-      false,
-      "Jacking in...",
-      `<p>If successful, you will download ${clues} data from ${
+    const results = await Chaos.runModal({
+      stat: stat,
+      base: base,
+      target: target,
+      title: "Jacking in...",
+      description: `<p>If successful, you will download ${clues} data from ${
         location == Location.getCurrentLocation()
           ? "your current location"
           : "the target location"
-      }.</p>`
-    );
+      }.</p>`,
+    });
 
     const { success } = results;
     if (success) {
-      Location.getCurrentLocation().removeClues(clues);
+      location.addClues(-clues);
       Stats.addClues(1);
     }
-    UiMode.setFlag("can-investigate", Location.getCurrentLocation().clues > 0);
     await Broadcast.signal("onInvestigation", {
       location: location,
       results: results,
       clues: clues,
     });
+    Game.logTurnEvent(success ? "investigateSuccess" : "investigateFail");
 
     return results;
   }
@@ -154,6 +235,74 @@ class Game {
     } else {
       Identity.addDamage(damage);
     }
+  }
+
+  static resetMoveButton() {
+    $("#action-move")
+      .off("click")
+      .click(async () => {
+        if (Stats.clicks <= 0) {
+          return;
+        }
+        if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
+          await UiMode.setMode(UIMODE_SELECT_LOCATION, { canCancel: true });
+          if (UiMode.data.success) {
+            await Enemy.attackOfOpportunity();
+            Game.actionMoveTo(UiMode.data.selectedLocation, {
+              costsClick: true,
+            });
+          }
+          if (!Game.checkTurnEnd()) {
+            UiMode.setMode(UIMODE_SELECT_ACTION);
+          }
+        }
+      });
+  }
+
+  static resetEngageButton() {
+    $("#action-engage")
+      .off("click")
+      .click(async () => {
+        if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
+          await Enemy.actionEngage();
+          if (!Game.checkTurnEnd()) {
+            UiMode.setMode(UIMODE_SELECT_ACTION);
+          }
+        }
+      });
+  }
+
+  static resetFightButton() {
+    $("#action-fight")
+      .off("click")
+      .click(async () => {
+        if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
+          await Enemy.actionFight({
+            damage: 1,
+            canCancel: true,
+            costsClick: true,
+          });
+          if (!Game.checkTurnEnd()) {
+            UiMode.setMode(UIMODE_SELECT_ACTION);
+          }
+        }
+      });
+  }
+
+  static resetEvadeButton() {
+    $("#action-evade")
+      .off("click")
+      .click(async () => {
+        if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
+          await Enemy.actionEvade({
+            canCancel: true,
+            costsClicks: true,
+          });
+          if (!Game.checkTurnEnd()) {
+            UiMode.setMode(UIMODE_SELECT_ACTION);
+          }
+        }
+      });
   }
 }
 
@@ -202,51 +351,19 @@ $(document).ready(function () {
     }
   });
 
-  $("#action-move").click(() => {
-    if (Stats.clicks <= 0) {
-      return;
-    }
-    if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
-      UiMode.setMode(UIMODE_MOVEMENT);
-    } else if (UiMode.uiMode == UIMODE_MOVEMENT) {
-      UiMode.setMode(UIMODE_SELECT_ACTION);
-    }
-  });
+  Game.resetMoveButton();
 
   $("#action-investigate").click(async () => {
     if (Stats.clicks <= 0 || UiMode.uiMode != UIMODE_SELECT_ACTION) {
       return;
     }
-    await Game.actionInvestigate(1);
+    await Game.actionInvestigate({ clues: 1 });
+    if (!Game.checkTurnEnd()) {
+      UiMode.setMode(UIMODE_SELECT_ACTION);
+    }
   });
 
-  $("#action-engage").click(async () => {
-    if (Enemy.mode == ENEMY_MODE_NONE) {
-      const { success, enemy } = await Enemy.actionEngage();
-    } else if (Enemy.mode == ENEMY_MODE_ENGAGE) {
-      Enemy.cancelAction();
-    }
-    UiMode.setMode(UIMODE_SELECT_ACTION);
-    Game.checkTurnEnd();
-  });
-
-  $("#action-fight").click(async () => {
-    if (Enemy.mode == ENEMY_MODE_NONE) {
-      const { results, enemy } = await Enemy.actionFight(1);
-    } else if (Enemy.mode == ENEMY_MODE_FIGHT) {
-      Enemy.cancelAction();
-    }
-    UiMode.setMode(UIMODE_SELECT_ACTION);
-    Game.checkTurnEnd();
-  });
-
-  $("#action-evade").click(async () => {
-    if (Enemy.mode == ENEMY_MODE_NONE) {
-      const { results, enemy } = await Enemy.actionEvade();
-    } else if (Enemy.mode == ENEMY_MODE_EVADE) {
-      Enemy.cancelAction();
-    }
-    UiMode.setMode(UIMODE_SELECT_ACTION);
-    Game.checkTurnEnd();
-  });
+  Game.resetEngageButton();
+  Game.resetFightButton();
+  Game.resetEvadeButton();
 });

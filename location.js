@@ -83,6 +83,12 @@ class Location {
     return this.idToInstance[id];
   }
 
+  static getValidDestinations() {
+    return this.instances.filter((location) =>
+      location.#jObj.hasClass("valid-destination")
+    );
+  }
+
   // INSTANCE
   #id = -1;
   #cardData;
@@ -129,18 +135,6 @@ class Location {
     jObj.data("card-id", cardId);
     Location.root.append(jObj);
     this.setPos(x, y);
-    jObj.click(() => {
-      if (UiMode.uiMode != UIMODE_MOVEMENT) {
-        return;
-      }
-      if (jObj.hasClass("valid-destination")) {
-        let id = jObj.data("location-id");
-        let location = Location.getInstance(id);
-        if (location) {
-          Game.actionMoveTo(location);
-        }
-      }
-    });
 
     this.#jClues = this.#jObj.find(".clues");
     this.#jDoom = this.#jObj.find(".doom");
@@ -162,6 +156,23 @@ class Location {
     return this.#doom;
   }
 
+  get selectable() {
+    this.#jObj.hasClass("selectable");
+    return this;
+  }
+  set selectable(value) {
+    if (value) {
+      this.#jObj.addClass("selectable");
+    } else {
+      this.#jObj.removeClass("selectable");
+    }
+    return this;
+  }
+
+  get neighbours() {
+    return this.#neighbours.filter(() => true);
+  }
+
   setClues(value, doAnimate = true) {
     if (value == 0) {
       this.#jClues.hide();
@@ -175,6 +186,14 @@ class Location {
     }
     this.#clues = value;
     return this;
+  }
+  addClues(number) {
+    if (this.#clues + number < 0) {
+      this.setClues(0);
+      return false;
+    }
+    this.setClues(this.#clues + number);
+    return true;
   }
 
   setDoom(value, doAnimate = true) {
@@ -191,22 +210,12 @@ class Location {
     this.#doom = value;
     return this;
   }
-
-  removeClues(number) {
-    if (number > this.#clues) {
-      this.setClues(0);
-      return false;
-    }
-    this.setClues(this.#clues - number);
-    return true;
-  }
-
-  removeDoom(number) {
-    if (number > this.#doom) {
+  addDoom(number) {
+    if (this.#doom + number < 0) {
       this.setDoom(0);
       return false;
     }
-    this.setDoom(this.#doom - number);
+    this.setDoom(this.#doom + number);
     return true;
   }
 
@@ -270,7 +279,6 @@ class Location {
     // Update UI buttons
     $("#map-reset").attr("disabled", false);
     UiMode.setFlag("can-investigate", this.#clues > 0);
-    Enemy.determineCanEngageFightEvade();
 
     return this;
   }
@@ -323,7 +331,6 @@ class Location {
       }, 250); // Timing chosen based on the enemy movement speed of 0.2s
     }
     this.#enemies.push(enemy);
-    Enemy.determineCanEngageFightEvade();
     this.setEnemyIndices();
     return true;
   }
@@ -331,7 +338,6 @@ class Location {
     const index = this.#enemies.indexOf(enemy);
     if (index >= 0) {
       this.#enemies.splice(index, 1);
-      Enemy.determineCanEngageFightEvade();
       this.setEnemyIndices();
       if (this.#enemies.length == 0) {
         this.uncover();
@@ -354,6 +360,15 @@ class Location {
   }
   uncover() {
     this.#jObj.find(".hosted-counters").removeClass("covered");
+  }
+
+  click(func) {
+    this.#jObj.click(func);
+    return this;
+  }
+  removeClick() {
+    this.#jObj.off("click");
+    return this;
   }
 
   set image(path) {}

@@ -8,7 +8,23 @@ class BroadcastError extends Error {
 ///////////////////////////////////////////////////////////////////////////////
 
 class Broadcast {
+  static #disabled = true;
+
   static async signal(trigger, data) {
+    if (this.#disabled) {
+      return;
+    }
+
+    // Broadcast to cards in hand that have active effects
+    for (const source of Cards.grip) {
+      if (source.cardData.activeInHand) {
+        if (!source.cardData[trigger]) {
+          throw new BroadcastError(trigger, "grip card");
+        }
+        await source.cardData[trigger](source, data);
+      }
+    }
+
     // Broadcast to all installed cards
     for (const source of Cards.installedCards) {
       if (!source.cardData[trigger]) {
@@ -37,6 +53,14 @@ class Broadcast {
     // These are unique in that they do not provide a source as there is only ever one active
     // await Act.cardData[trigger](data);
     // await Agenda.cardData[trigger](data);
-    // await Identity.cardData[trigger](data);
+    await Identity.cardData[trigger](Identity, data);
+  }
+
+  static enable() {
+    this.#disabled = false;
+  }
+
+  static disable() {
+    this.#disabled = true;
   }
 }

@@ -1,7 +1,8 @@
 $(document).ready(function () {
+  Broadcast.disable();
+
   Location.resetMapOffset();
   Location.resetZoom();
-  Stats.setClicks(0);
 
   const l0 = new Location("room", 0, 0).setCurrentLocation(true);
   const l1 = new Location("room", 0, 1);
@@ -54,6 +55,8 @@ $(document).ready(function () {
   ];
   let modalA = new Modal("a", headerA, bodyA, optionsA);
   // modalA.display();
+
+  Broadcast.enable();
 
   Game.initGameState();
   setTimeout(function () {

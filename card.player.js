@@ -1,4 +1,4 @@
-const CardTheCatalyst = new EventData("the_catalyst", {
+const CardTheCatalyst = new IdentityData("the_catalyst", {
   title: "The Catalyst",
   text: "Start the game with a random deck of cards containing no duplicates.",
   subtypes: ["natural"],
@@ -10,9 +10,9 @@ const CardTheCatalyst = new EventData("the_catalyst", {
   link: 4,
 });
 
-const CardTopan = new EventData("topan", {
+const CardTopan = new IdentityData("topan", {
   title: "Topan: Vigilante Enforcer",
-  text: "Once per turn → {click}: Install a card from your hand, paying 2{c} less, then discard a random card.",
+  text: "Once per turn → {click}: Install a card from your hand, paying 2{c} less. Then, discard a card from your hand.",
   subtypes: ["natural"],
   faction: FACTION_ANARCH,
   image: "img/card/identity/topan.png",
@@ -20,9 +20,55 @@ const CardTopan = new EventData("topan", {
   mu: 3,
   strength: 4,
   link: 3,
+  canUse(source) {
+    return (
+      !source.tapped &&
+      Cards.grip.some(
+        (card) =>
+          card.cardData.type == TYPE_ASSET &&
+          Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits
+      )
+    );
+  },
+  async onUse(source) {
+    source.tapped = true;
+    await Stats.addClicks(-1);
+
+    await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
+      message: `Topan: Select 1 card to install.`,
+      minCards: 1,
+      maxCards: 1,
+      canCancel: false,
+      validTargets: Cards.grip.filter(
+        (card) =>
+          card.cardData.type == TYPE_ASSET &&
+          Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits
+      ),
+    });
+    const rigCard = Cards.install(UiMode.data.selectedCards[0].cardData);
+    await Stats.addCredits(
+      -Math.max(0, UiMode.data.selectedCards[0].cardData.cost - 2)
+    );
+    Cards.removeGripCard(UiMode.data.selectedCards[0]);
+
+    if (Cards.grip.length == 0) {
+      return;
+    }
+
+    await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
+      message: `Topan: Select 1 card to discard.`,
+      minCards: 1,
+      maxCards: 1,
+      canCancel: false,
+    });
+    await Cards.discard(UiMode.data.selectedCards[0]);
+  },
+  async onTurnEnd(source) {
+    source.tapped = false;
+  },
 });
 
-const CardBaz = new EventData("baz", {
+const CardBaz = new IdentityData("baz", {
   title: "Baz: Mob Boss",
   text: "The first time each turn an enemy is summoned, you may install a card.",
   subtypes: ["cyborg"],
@@ -30,11 +76,11 @@ const CardBaz = new EventData("baz", {
   image: "img/card/identity/baz.png",
   influence: 4,
   mu: 3,
-  strength: 3,
-  link: 4,
+  strength: 2,
+  link: 5,
 });
 
-const CardDewi = new EventData("dewi", {
+const CardDewi = new IdentityData("dewi", {
   title: "Dewi: Puppeteer",
   text: "When you move, and when your turn ends, flip this identity.",
   subtypes: ["natural"],
@@ -44,8 +90,21 @@ const CardDewi = new EventData("dewi", {
   mu: 2,
   strength: 5,
   link: 2,
+  async flip() {
+    Stats.influence -= 3;
+    Stats.mu += 3;
+    Stats.strength -= 3;
+    Stats.link += 3;
+    Identity.setCard(CardDewiBack);
+  },
+  async onPlayerMoves(data, source) {
+    this.flip();
+  },
+  async onTurnEnd(data, source) {
+    this.flip();
+  },
 });
-const CardDewiBack = new EventData("dewi_back", {
+const CardDewiBack = new IdentityData("dewi_back", {
   title: "Dewi: Puppet",
   text: "When you move, and when your turn ends, flip this identity.",
   subtypes: ["natural"],
@@ -55,28 +114,17 @@ const CardDewiBack = new EventData("dewi_back", {
   mu: 5,
   strength: 2,
   link: 5,
-});
-
-// Dev cards
-
-const CardSelfDamage = new EventData("self_damage", {
-  title: "Self Damage",
-  text: "Suffer 1 damage.",
-  subtypes: ["dev", "test"],
-  faction: FACTION_ANARCH,
-  image: "img/card/event/bgAnarch.png",
-  cost: 0,
-  onPlay: async (card) => {
-    await Game.sufferDamage(1);
+  async flip() {
+    Stats.influence += 3;
+    Stats.mu -= 3;
+    Stats.strength += 3;
+    Stats.link -= 3;
+    Identity.setCard(CardDewi);
   },
-});
-
-const CardUnderTheHood = new AssetData("under_the_hood", {
-  title: "Under the Hood",
-  text: "This asset does nothing.",
-  subtypes: ["dev", "test"],
-  faction: FACTION_NEUTRAL,
-  image: "img/card/asset/bgNeutral.png",
-  cost: 2,
-  health: 2,
+  async onPlayerMoves(data, source) {
+    this.flip();
+  },
+  async onTurnEnd(data, source) {
+    this.flip();
+  },
 });

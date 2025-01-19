@@ -18,14 +18,37 @@ class Chaos {
   ];
 
   static randomToken() {
-    return this.#chaosTokens[
-      Math.floor(Math.random() * this.#chaosTokens.length)
-    ];
+    return randomElement(this.#chaosTokens);
+  }
+  static randomSuccessToken(minimum) {
+    const successfulTokens = this.#chaosTokens.filter(
+      (token) =>
+        token == "elder" ||
+        (minimum <= 0 && "skull") ||
+        (typeof token == "number" && token >= minimum)
+    );
+    return randomElement(successfulTokens);
+  }
+  static randomFailToken(minimum) {
+    const failingTokens = this.#chaosTokens.filter(
+      (token) =>
+        token == "fail" ||
+        (minimum > 0 && "skull") ||
+        (typeof token == "number" && token < minimum)
+    );
+    return randomElement(failingTokens);
   }
 
-  static performCheck(stat, target) {
-    const base = Stats.getBase(stat);
-    const token = this.randomToken();
+  static performCheck(stat, base, target, forceOutcome) {
+    if (base == null) {
+      base = Stats.getBase(stat);
+    }
+    const token =
+      forceOutcome == "success"
+        ? this.randomSuccessToken(target - base)
+        : forceOutcome == "fail"
+        ? this.randomFailToken(target - base)
+        : this.randomToken();
     let value;
     if (token == "fail") {
       value = 0;
@@ -45,8 +68,12 @@ class Chaos {
     };
   }
 
-  static async runModal(stat, target, canCancel, title, description) {
-    const base = Stats.getBase(stat);
+  static async runModal(data) {
+    let { stat, base, target, canCancel, title, description, forceOutcome } =
+      data;
+    if (base == null) {
+      base = Stats.getBase(stat);
+    }
     const chaosTokens = this.#chaosTokens;
     let intervalID;
     let response; // The option ID selected in each modal
@@ -57,7 +84,7 @@ class Chaos {
       const body = `
       <p>You are rolling ${Stats.getName(
         stat
-      )} with a target of ${target}. Your base ${Stats.getName(
+      )} with a target of ${target}. Your base &#160;${Stats.getSymbol(
         stat
       )} value is ${base}.</p>
       ${description ? description : ""}
@@ -132,7 +159,7 @@ class Chaos {
       await new Modal(null, header, body, options, false).display();
     }
 
-    const results = Chaos.performCheck("mu", target);
+    const results = Chaos.performCheck("mu", base, target, forceOutcome);
     const { success, token, value } = results;
 
     // Third panel
@@ -177,6 +204,7 @@ class Chaos {
     }
 
     await Broadcast.signal("onTestCompleted", { stat: stat, results: results });
+    Game.logTurnEvent(success ? "testSuccess" : "testFail");
     return results;
   }
 }

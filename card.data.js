@@ -74,6 +74,10 @@ class CardData {
     return this.#instances[id];
   }
 
+  static getAllCards() {
+    return Object.values(this.#instances);
+  }
+
   static log(trigger, data) {
     // console.log(trigger);
     // console.log(trigger, data);
@@ -106,7 +110,7 @@ class CardData {
   get jText() {
     return `
       <div>
-        ${this.#text.replace("{c}", "{credit}").replaceAll(/\{.*\}/g, function (match) {
+        ${this.#text.replaceAll("{c}", "{credit}").replaceAll("\n", "<br>").replaceAll(/\{.*?\}/g, function (match) {
           const flag = match.slice(1, -1);
           return `<img src="img/game/${flag}.png" class="inline-icon" title="${flag}" />`;
         })}
@@ -213,6 +217,10 @@ class IdentityData extends CardData {
     this.#link = value;
   }
 
+  // Determines if the identity can be used
+  canUse(source, data) { return this.onUse != null; }
+  // onUse(source, data) {} // Leave this unset for canUse
+
   // TODO - complete
   populate(jObj) {
     const jCardText = $(`
@@ -225,11 +233,25 @@ class IdentityData extends CardData {
 
 class PlayableCardData extends CardData {
   #cost;
+  #activeInHand;
+  #skipsAttackOfOpportunity;
 
   get cost() { return this.#cost; }
   set cost(value) {
     CardDataWriteError.throwIfSet(this, "cost");
     this.#cost = value;
+  }
+
+  get activeInHand() { return this.#activeInHand; }
+  set activeInHand(value) {
+    CardDataWriteError.throwIfSet(this, "activeInHand");
+    this.#activeInHand = value;
+  }
+
+  get skipsAttackOfOpportunity() { return this.#skipsAttackOfOpportunity; }
+  set skipsAttackOfOpportunity(value) {
+    CardDataWriteError.throwIfSet(this, "skipsAttackOfOpportunity");
+    this.#skipsAttackOfOpportunity = value;
   }
 
   // Adds any non-printed play/install costs
@@ -267,6 +289,10 @@ class AssetData extends PlayableCardData {
     CardDataWriteError.throwIfSet(this, "unique");
     this.#unique = value;
   }
+
+  // Determines if the asset can be used while installed
+  canUse(source, data) { return this.onUse != null; }
+  // onUse(source, data) {} // Leave this unset for canUse
 
   populate(jObj) {
     const jCardText = $(`

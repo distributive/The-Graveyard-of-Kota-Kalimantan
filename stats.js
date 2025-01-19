@@ -31,6 +31,10 @@ class Stats {
       : 0;
   }
 
+  static getSymbol(stat) {
+    return `<img src="img/game/${stat}.png" class="inline-icon" />`;
+  }
+
   static get link() {
     return this.#link;
   }
@@ -136,13 +140,13 @@ class Stats {
         $("#click-count").append(
           `<img src="img/game/${
             i < 3 ? "click" : "clickExtra"
-          }.png" class="${classes}" title="click" />`
+          }.png" class="${classes}" />`
         );
         $("#click-count").append(" ");
       }
       for (let i = value; i < 3; i++) {
         $("#click-count").append(
-          `<img src="img/game/clickSpent.png" class="${classes}" title="click" />`
+          `<img src="img/game/clickSpent.png" class="${classes}" />`
         );
         $("#click-count").append(" ");
       }
