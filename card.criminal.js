@@ -4,7 +4,7 @@
 CardDocklandsPass = new AssetData("docklands_pass", {
   title: "Docklands Pass",
   text: "The first time each turn you successfully jack in, download another data from the same location, or an adjacent location.",
-  subtypes: ["unique"],
+  subtypes: ["item", "unique"],
   unique: true,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/bgCriminal.png",
@@ -103,19 +103,20 @@ CardForgedDocuments = new AssetData("forged_documents", {
 
 CardCrowbar = new AssetData("crowbar", {
   title: "Crowbar",
-  text: "Uses 2 power counters. When this is empty, trash it.\n{click}, power counter: <b>Jack in.</b> During this skill test, add your {link} to your {mu}. If successful, download 1 additional data.",
+  text: "Uses 2 power counters.\n{click}, power counter: <b>Jack in.</b> During this skill test, add your {link} to your {mu}. If successful, download 1 additional data.",
   subtypes: ["item", "weapon"],
   unique: false,
   faction: FACTION_CRIMINAL,
-  image: "img/card/asset/bgCriminal.png",
+  image: "img/card/asset/crowbar.png",
   cost: 2,
   health: 1,
+  smallText: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
   },
   canUse(source) {
-    return Location.getCurrentLocation().clues > 0;
+    return source.power > 0 && Location.getCurrentLocation().clues > 0;
   },
   async onUse(source, data) {
     source.addPower(-1);
@@ -124,27 +125,28 @@ CardCrowbar = new AssetData("crowbar", {
       costsClick: false,
       base: Stats.link + Stats.mu,
     });
-    if (source.power <= 0) {
-      await Cards.trashInstalledCard(source);
-    }
+    // if (source.power <= 0) {
+    //   await Cards.trashInstalledCard(source);
+    // }
   },
 });
 
 CardShiv = new AssetData("shiv", {
   title: "Shiv",
-  text: "Uses 2 power counters. When this is empty, trash it.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.",
+  text: "Uses 2 power counters.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.",
   subtypes: ["item", "weapon"],
   unique: false,
   faction: FACTION_CRIMINAL,
-  image: "img/card/asset/bgCriminal.png",
+  image: "img/card/asset/shiv.png",
   cost: 3,
   health: 2,
+  smallText: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
   },
   canUse(source) {
-    return Enemy.getEnemiesAtCurrentLocation().length > 0;
+    return source.power > 0 && Enemy.getEnemiesAtCurrentLocation().length > 0;
   },
   async onUse(source, data) {
     source.addPower(-1);
@@ -154,24 +156,27 @@ CardShiv = new AssetData("shiv", {
       costsClick: false,
       base: Stats.link + Stats.strength,
     });
-    if (source.power <= 0) {
-      await Cards.trashInstalledCard(source);
-    }
+    // if (source.power <= 0) {
+    //   await Cards.trashInstalledCard(source);
+    // }
   },
 });
 
 CardSpike = new AssetData("spike", {
   title: "Spike",
-  text: "Uses 2 power counters. When this is empty, trash it.\n{click}, power counter: Move up to 2 locations. Enemies at those locations do not engage you.",
+  text: "Uses 2 power counters.\n{click}, power counter: Move up to 2 locations. Enemies at those locations do not engage you.",
   subtypes: ["item", "weapon"],
   unique: false,
   faction: FACTION_CRIMINAL,
-  image: "img/card/asset/bgCriminal.png",
+  image: "img/card/asset/spike.png",
   cost: 3,
   health: 2,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
+  },
+  canUse(source) {
+    return source.power > 0;
   },
   async onUse(source, data) {
     source.addPower(-1);
@@ -189,9 +194,9 @@ CardSpike = new AssetData("spike", {
       costsClick: false,
       enemiesCanEngage: false,
     });
-    if (source.power <= 0) {
-      await Cards.trashInstalledCard(source);
-    }
+    // if (source.power <= 0) {
+    //   await Cards.trashInstalledCard(source);
+    // }
   },
 });
 
@@ -206,7 +211,10 @@ CardBackflip = new EventData("backflip", {
   image: "img/card/event/bgCriminal.png",
   cost: 2,
   canPlay(source) {
-    return Location.getCurrentLocation().clues > 0;
+    return (
+      Location.getCurrentLocation().clues > 0 &&
+      Enemy.getEngagedEnemies().length > 0
+    );
   },
   async onPlay(source, data) {
     const { results } = await Enemy.actionEvade({
@@ -233,12 +241,12 @@ CardDifficultJohn = new EventData("difficult_john", {
   },
 });
 
-CardJackOfAll = new EventData("jack_of_all", {
-  title: "Jack of All",
+CardJackOfAll = new EventData("jack_of_all_trades", {
+  title: "Jack of All Trades",
   text: "Gain 2{c}. Draw 1 card. Move.",
   subtypes: ["talent"],
   faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
+  image: "img/card/event/jackOfAll.png",
   cost: 1,
   async onPlay(source, data) {
     await Stats.addCredits(2);

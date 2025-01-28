@@ -19,7 +19,7 @@ class Cards {
     Cards.populateData(
       $("#card-focused-image").parent(),
       CardData.getCard(this.focusedCardId),
-      "10px"
+      "16.5px"
     );
   }
   static unfocusCard() {
@@ -29,23 +29,35 @@ class Cards {
     $("#card-focused-image").removeClass("focused").removeClass("unfocused");
   }
 
-  static flip(jCardImage, newImage, fast = false) {
-    jCardImage.addClass("flipping");
-    if (fast) {
-      jCardImage.addClass("fast");
+  static flip(jCardContainer, newCardData, doAnimate = true, fast = false) {
+    if (doAnimate) {
+      jCardContainer.addClass("flipping");
+      if (fast) {
+        jCardContainer.addClass("fast");
+      }
+      setTimeout(
+        () => {
+          Cards.populateData(
+            jCardContainer,
+            newCardData,
+            jCardContainer.find(".card-text").css("font-size")
+          );
+        },
+        fast ? 240 : 990
+      );
     }
     setTimeout(
       () => {
-        if (newImage) {
-          jCardImage.attr("src", newImage);
+        if (newCardData) {
+          jCardContainer.find(".card-image").attr("src", newCardData.image);
         }
-        jCardImage.removeClass("flipping");
+        jCardContainer.removeClass("flipping");
       },
-      fast ? 250 : 1000 // CSS currently takes 1s to flip a card halfway (0.25s if fast)
+      doAnimate ? (fast ? 250 : 1000) : 0 // CSS currently takes 1s to flip a card halfway (0.25s if fast)
     );
-    if (fast) {
+    if (doAnimate && fast) {
       setTimeout(() => {
-        jCardImage.removeClass("fast");
+        jCardContainer.removeClass("fast");
       }, 500);
     }
   }
@@ -57,6 +69,11 @@ class Cards {
     }
     if (fontSize) {
       jObj.find(".card-text").css("font-size", fontSize);
+    }
+    if (cardData.largeText) {
+      jObj.find(".card-text-text").addClass("short");
+    } else if (cardData.smallText) {
+      jObj.find(".card-text-text").addClass("long");
     }
   }
 
@@ -104,7 +121,7 @@ class Cards {
       }
       const cardData = this.stack.pop();
       let jCard = $(
-        `<div class="grip-card h-100">
+        `<div class="grip-card">
           <div class="card-image-container h-100">
             <img class="grip-card-image card-image h-100" src="${cardData.image}" />
           </div>
@@ -113,7 +130,7 @@ class Cards {
       Cards.populateData(
         jCard.find(".card-image-container"),
         cardData,
-        "7.25px"
+        "12.1px"
       );
       jCard.data("card-id", cardData.id);
       this.grip.push(new GripCard(cardData.id, jCard));
@@ -191,14 +208,14 @@ class Cards {
     } else {
       $("#stack")
         .removeClass("empty")
-        .css("--size", `${this.stack.length / 3}px`);
+        .css("--size", `${this.stack.length / 2}px`);
     }
     if (this.heap.length == 0) {
       $("#heap").addClass("empty");
     } else {
       $("#heap")
         .removeClass("empty")
-        .css("--size", `${this.heap.length / 3}px`);
+        .css("--size", `${this.heap.length / 2}px`);
     }
   }
 
@@ -508,7 +525,7 @@ class RigCard {
     Cards.populateData(
       this.#jObj.find(".card-image-container"),
       this.#cardData,
-      "5.75px"
+      "9.75px"
     );
     this.#jObj.data("card-id", this.#cardData.id);
     $("#rig").append(this.#jObj);
@@ -738,7 +755,11 @@ $(document).ready(function () {
         </div>
       </div>`;
     const options = [new Option("close", "Close", "close")];
-    const modal = new Modal(null, null, body, options, true);
+    const modal = new Modal(null, {
+      body: body,
+      options: options,
+      canCancel: true,
+    });
     await modal.display();
     Modal.hide();
   };

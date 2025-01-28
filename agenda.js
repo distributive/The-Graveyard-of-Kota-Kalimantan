@@ -13,11 +13,7 @@ class Agenda {
   static setCard(cardId, doAnimate = true) {
     this.#cardData = CardData.getCard(cardId);
     $("#agenda").data("card-id", cardId);
-    if (doAnimate) {
-      Cards.flip($("#agenda .card-image"), this.#cardData.image);
-    } else {
-      $("#agenda .card-image").attr("src", this.#cardData.image);
-    }
+    Cards.flip($("#agenda .card-image-container"), this.#cardData, doAnimate);
   }
 
   static setDoom(value, doAnimate = true) {

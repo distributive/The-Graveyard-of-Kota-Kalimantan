@@ -1,7 +1,7 @@
 class Game {
   static initGameState() {
     // TODO let the user choose the ID
-    const identity = CardDewi;
+    const identity = CardBaz;
     Identity.setCard(identity, false);
 
     Stats.influence = identity.influence;
@@ -51,7 +51,9 @@ class Game {
       xs.push(CardPush);
     } else {
       const cardPool = CardData.getAllCards().filter(
-        (cardData) => cardData.type == TYPE_ASSET || cardData.type == TYPE_EVENT
+        (cardData) =>
+          (cardData.type == TYPE_ASSET || cardData.type == TYPE_EVENT) &&
+          cardData.faction != FACTION_ENCOUNTER
       );
       for (let i = 0; i < 30 && cardPool.length; i++) {
         const index = randomIndex(cardPool);
@@ -92,20 +94,29 @@ class Game {
   }
   static async endTurn() {
     this.#turnEvents = {};
-
     UiMode.setMode(UIMODE_CORP_TURN);
-    animateTurnBanner("corp");
-    await Stats.setClicks(0);
-    await Agenda.addDoom(1);
-    await Broadcast.signal("onTurnEnd");
 
+    await Stats.setClicks(0);
     await Stats.addCredits(1);
     await Cards.draw(1);
 
-    // TEMP //
-    setTimeout(() => {
-      this.startTurn();
-    }, 2000);
+    await wait(500);
+
+    animateTurnBanner("corp");
+
+    await wait(1500);
+
+    await Agenda.addDoom(1);
+
+    await wait(500);
+
+    await Enemy.readyAll();
+    await Broadcast.signal("onTurnEnd");
+
+    await wait(1000);
+    await Encounter.draw();
+
+    this.startTurn();
   }
 
   static checkTurnEnd() {
@@ -161,6 +172,7 @@ class Game {
     await Stats.addClicks(-1);
     await Stats.addCredits(-cost);
     await Enemy.attackOfOpportunity();
+    await UiMode.setMode(UIMODE_WAITING); // Prevent other actions being taken during resolution
     if (cardData.type == TYPE_ASSET) {
       const rigCard = Cards.install(cardData);
       await cardData.onPlay(rigCard); // TODO - move to Cards.install

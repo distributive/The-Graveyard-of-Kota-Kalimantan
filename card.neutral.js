@@ -1,6 +1,6 @@
 CardUnsureGamble = new EventData("unsureGamble", {
   title: "Unsure Gamble",
-  text: "Test 0{influence}. If successful, gain 4{c}.",
+  text: "Test 0{influence}. If successful, gain 4{c}",
   subtypes: ["familiar", "gambit"],
   faction: FACTION_NEUTRAL,
   image: "img/card/event/offShoreFund.png",

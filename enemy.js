@@ -30,6 +30,12 @@ class Enemy {
     return this.getEnemiesAtLocation(Location.getCurrentLocation());
   }
 
+  static readyAll() {
+    for (const enemy of this.instances) {
+      enemy.exhausted = false;
+    }
+  }
+
   static async actionEngage(canCancel = true, costsClick = true) {
     // Determine if there are valid targets
     const [canEngage, canFight, canEvade] = this.canEngageFightEvade();
@@ -78,6 +84,9 @@ class Enemy {
       canCancel: canCancel,
       reason: "fight",
     });
+    if (!UiMode.data.success) {
+      return;
+    }
     const enemy = UiMode.data.selectedEnemy;
 
     // Set default target
@@ -202,6 +211,7 @@ class Enemy {
 
   #currentLocation;
   #engaged = false;
+  #exhausted = false;
   #damage;
   #clues;
   #doom;
@@ -379,6 +389,7 @@ class Enemy {
   // If the evasion was not as part of a skill test, results will be null
   async evade(results) {
     this.disengage();
+    this.exhausted = true;
     await Broadcast.signal("onPlayerEvades", {
       enemy: this,
       results: results,
@@ -390,6 +401,18 @@ class Enemy {
     this.#engaged = false;
     this.#jObj.removeClass("engaged");
     return this;
+  }
+
+  get exhausted() {
+    return this.#exhausted;
+  }
+  set exhausted(value) {
+    this.#exhausted = value;
+    if (value) {
+      this.#jObj.addClass("tapped");
+    } else {
+      this.#jObj.removeClass("tapped");
+    }
   }
 
   async attack() {

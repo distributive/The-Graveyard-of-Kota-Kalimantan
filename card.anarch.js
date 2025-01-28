@@ -63,7 +63,7 @@ CardSifar = new AssetData("sifar", {
   faction: FACTION_ANARCH,
   image: "img/card/asset/bgAnarch.png",
   cost: 5,
-  health: 0,
+  health: 1,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     Stats.strength += 3; // Assumes it can only be installed on your turn
@@ -137,7 +137,7 @@ CardMeniru = new AssetData("meniru", {
 
 CardTormentNexus = new AssetData("torment_nexus", {
   title: "Torment Nexus",
-  text: "When you install this, place 1 damage on it. At the end of your turn, remove 1 damage from this.",
+  text: "When you install this, place 1 damage on it.\nAt the end of your turn, heal 1 damage from this.",
   subtypes: [],
   unique: false,
   faction: FACTION_ANARCH,
@@ -187,8 +187,10 @@ CardKickItDown = new EventData("kick_it_down", {
   onPlay: async (card) => {
     await UiMode.setMode(UIMODE_SELECT_LOCATION, { canCancel: false });
     const enemies = Enemy.getEnemiesAtLocation(UiMode.data.selectedLocation);
-    await randomElement(enemies).addDamage(1);
-    await randomElement(enemies).addDamage(1);
+    if (enemies.length) {
+      await randomElement(enemies).addDamage(1);
+      await randomElement(enemies).addDamage(1);
+    }
     Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
     });
@@ -304,11 +306,12 @@ CardMakeAnEntrance = new EventData("make_an_entrance", {
 
 CardProjectile = new EventData("projectile", {
   title: "Projectile",
-  text: "As an additional cost to play this, trash an installed card.\n<b>Fight.</b> During this fight, add the install cost of the trashed card to your {strength}.",
+  text: "As an additional cost to play this, trash an installed card.\n<b>Fight.</b> During this fight, add the cost of that card to your {strength}.\nIf successful, do 2 additional damage.",
   subtypes: [""],
   faction: FACTION_ANARCH,
   image: "img/card/event/projectile.png",
   cost: 1,
+  smallText: true,
   canPlay(source, data) {
     const [canEngage, canFight, canEvade] = Enemy.canEngageFightEvade();
     return canFight && Cards.installedCards.length > 0;

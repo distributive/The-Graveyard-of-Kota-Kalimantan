@@ -5,14 +5,10 @@ class Act {
     return this.#cardData;
   }
 
-  static setCard(cardId, doAnimate = true) {
+  static setCard(cardData, doAnimate = true) {
     this.#cardData = CardData.getCard(cardId);
     $("#act").data("card-id", cardId);
-    if (doAnimate) {
-      Cards.flip($("#act .card-image"), this.#cardData.image);
-    } else {
-      $("#act .card-image").attr("src", this.#cardData.image);
-    }
+    Cards.flip($("#act .card-image-container"), this.#cardData, doAnimate);
   }
 
   static async advance() {
@@ -24,5 +20,5 @@ class Act {
 ///////////////////////////////////////////////////////////////////////////////
 
 $(document).ready(function () {
-  // Act.setCard("the_catalyst", false);
+  // Act.setCard(CardTheCatalyst, false);
 });

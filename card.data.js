@@ -8,6 +8,7 @@ const TYPE_ENEMY = cardData_i++;
 const TYPE_ACT = cardData_i++;
 const TYPE_AGENDA = cardData_i++;
 const TYPE_LOCATION = cardData_i++;
+const TYPE_TREACHERY = cardData_i++;
 
 const FACTION_NONE = cardData_i++;
 const FACTION_ANARCH = cardData_i++;
@@ -15,7 +16,8 @@ const FACTION_CRIMINAL = cardData_i++;
 const FACTION_SHAPER = cardData_i++;
 const FACTION_NEUTRAL = cardData_i++;
 const FACTION_MEAT = cardData_i++; // Meatspace locations/enemies
-const FACTION_ICE = cardData_i++; // Netspace locations/enemies
+const FACTION_NET = cardData_i++; // Netspace locations/enemies
+const FACTION_ENCOUNTER = cardData_i++;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -28,6 +30,7 @@ TYPE_TO_TEXT[TYPE_ENEMY] = "Enemy";
 TYPE_TO_TEXT[TYPE_ACT] = "Act";
 TYPE_TO_TEXT[TYPE_AGENDA] = "Agenda";
 TYPE_TO_TEXT[TYPE_LOCATION] = "Location";
+TYPE_TO_TEXT[TYPE_TREACHERY] = "Treachery";
 
 const FACTION_TO_TEXT = {};
 FACTION_TO_TEXT[FACTION_NONE] = "NONE";
@@ -36,7 +39,7 @@ FACTION_TO_TEXT[FACTION_CRIMINAL]  = "Criminal";
 FACTION_TO_TEXT[FACTION_SHAPER]  = "Shaper";
 FACTION_TO_TEXT[FACTION_NEUTRAL]  = "Neutral";
 FACTION_TO_TEXT[FACTION_MEAT]  = "Corporeal";
-FACTION_TO_TEXT[FACTION_ICE]  = "Netspace"; 
+FACTION_TO_TEXT[FACTION_NET]  = "Netspace"; 
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -141,7 +144,10 @@ class CardData {
     CardDataWriteError.throwIfSet(this, "image");
     this.#image = value;
   }
+}
 
+// Treacheries should not inherit these
+class NonTreacheryData extends CardData {
   async onTurnStart(source, data) {CardData.log("onTurnStart", data)}
   async onTurnEnd(source, data) {CardData.log("onTurnEnd", data)}
   
@@ -179,7 +185,7 @@ class CardData {
   async onInvestigation(source, data) {CardData.log("onInvestigation", data)}
 }
 
-class IdentityData extends CardData {
+class IdentityData extends NonTreacheryData {
   #influence;
   #mu;
   #strength;
@@ -189,7 +195,7 @@ class IdentityData extends CardData {
 
   constructor(id, data) {
     super(id, data);
-     if (data) {
+    if (data) {
       for (const key of Object.keys(data)) {
         this[key] = data[key];
       }
@@ -231,7 +237,7 @@ class IdentityData extends CardData {
   }
 }
 
-class PlayableCardData extends CardData {
+class PlayableCardData extends NonTreacheryData {
   #cost;
   #activeInHand;
   #skipsAttackOfOpportunity;
@@ -271,7 +277,7 @@ class AssetData extends PlayableCardData {
 
   constructor(id, data) {
     super(id, data);
-     if (data) {
+    if (data) {
       for (const key of Object.keys(data)) {
         this[key] = data[key];
       }
@@ -314,7 +320,7 @@ class EventData extends PlayableCardData {
 
   constructor(id, data) {
     super(id, data);
-     if (data) {
+    if (data) {
       for (const key of Object.keys(data)) {
         this[key] = data[key];
       }
@@ -327,7 +333,7 @@ class EventData extends PlayableCardData {
         <div class="card-text-cost">${this.cost}</div>
         <div class="card-text-title">${this.formattedTitle}</div>
         <div class="card-text-subtypes">${this.displaySubtypes}</div>
-        <div class="card-text-text short"></div>
+        <div class="card-text-text"></div>
       </div>
     `)
     jCardText.find(".card-text-text").append(this.jText);
@@ -335,7 +341,7 @@ class EventData extends PlayableCardData {
   }
 }
 
-class EnemyData extends CardData {
+class EnemyData extends NonTreacheryData {
   #health;
   #strength;
   #link;
@@ -344,7 +350,7 @@ class EnemyData extends CardData {
 
   constructor(id, data) {
     super(id, data);
-     if (data) {
+    if (data) {
       for (const key of Object.keys(data)) {
         this[key] = data[key];
       }
@@ -371,7 +377,7 @@ class EnemyData extends CardData {
 
   populate(jObj) {
     const jCardText = $(`
-      <div class="card-text enemy ${this.faction == FACTION_ICE ? "alt" : ""}">
+      <div class="card-text enemy ${this.faction == FACTION_NET ? "alt" : ""}">
         <div class="card-text-title">${this.formattedTitle}</div>
         <div class="card-text-strength">${this.strength}</div>
         <div class="card-text-health">${this.health}</div>
@@ -387,12 +393,12 @@ class EnemyData extends CardData {
   }
 }
 
-class ActData extends CardData {
+class ActData extends NonTreacheryData {
   get type() { return TYPE_ACT; }
 
   constructor(id, data) {
     super(id, data);
-     if (data) {
+    if (data) {
       for (const key of Object.keys(data)) {
         this[key] = data[key];
       }
@@ -409,14 +415,14 @@ class ActData extends CardData {
   }
 }
 
-class AgendaData extends CardData {
+class AgendaData extends NonTreacheryData {
   #requirement;
 
   get type() { return TYPE_AGENDA; }
 
   constructor(id, data) {
     super(id, data);
-     if (data) {
+    if (data) {
       for (const key of Object.keys(data)) {
         this[key] = data[key];
       }
@@ -439,7 +445,7 @@ class AgendaData extends CardData {
   }
 }
 
-class LocationData extends CardData {
+class LocationData extends NonTreacheryData {
   #shroud;
   #clues;
 
@@ -447,7 +453,7 @@ class LocationData extends CardData {
 
   constructor(id, data) {
     super(id, data);
-     if (data) {
+    if (data) {
       for (const key of Object.keys(data)) {
         this[key] = data[key];
       }
@@ -467,10 +473,38 @@ class LocationData extends CardData {
 
   populate(jObj) {
     const jCardText = $(`
-      <div class="card-text location ${this.faction == FACTION_ICE ? "alt" : ""}">
+      <div class="card-text location ${this.faction == FACTION_NET ? "alt" : ""}">
         <div class="card-text-title">${this.formattedTitle}</div>
         <div class="card-text-shroud">${this.shroud}</div>
         <div class="card-text-clues">${this.clues}</div>
+        <div class="card-text-subtypes">${this.displaySubtypes}</div>
+        <div class="card-text-text"></div>
+      </div>
+    `);
+    jCardText.find(".card-text-text").append(this.jText);
+    jObj.append(jCardText);
+  }
+}
+
+class TreacheryData extends CardData {
+  get type() { return TYPE_TREACHERY; }
+
+  constructor(id, data) {
+    super(id, data);
+    if (data) {
+      for (const key of Object.keys(data)) {
+        this[key] = data[key];
+      }
+    }
+    this.faction = FACTION_ENCOUNTER;
+  }
+
+  async onEncounter() { }
+
+  populate(jObj) {
+    const jCardText = $(`
+      <div class="card-text treachery">
+        <div class="card-text-title">${this.formattedTitle}</div>
         <div class="card-text-subtypes">${this.displaySubtypes}</div>
         <div class="card-text-text"></div>
       </div>

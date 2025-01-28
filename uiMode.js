@@ -7,6 +7,7 @@ const UIMODE_SELECT_GRIP_CARD = uiMode_i++;
 const UIMODE_SELECT_INSTALLED_CARD = uiMode_i++;
 const UIMODE_ASSIGN_DAMAGE = uiMode_i++;
 const UIMODE_SELECT_ENEMY = uiMode_i++;
+const UIMODE_WAITING = uiMode_i++; // For misc pending interactions
 const UIMODE_END_TURN = uiMode_i++;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,6 +21,7 @@ UIMODE_TO_CLASS[UIMODE_SELECT_GRIP_CARD] = "uimode-select-grip-card";
 UIMODE_TO_CLASS[UIMODE_SELECT_INSTALLED_CARD] = "uimode-select-installed-card";
 UIMODE_TO_CLASS[UIMODE_ASSIGN_DAMAGE] = "uimode-assign-damage";
 UIMODE_TO_CLASS[UIMODE_SELECT_ENEMY] = "uimode-select-enemy";
+UIMODE_TO_CLASS[UIMODE_WAITING] = "uimode-waiting";
 UIMODE_TO_CLASS[UIMODE_END_TURN] = "uimode-end-turn";
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,6 +91,9 @@ class UiMode {
       case UIMODE_SELECT_ENEMY:
         await this.exitSelectEnemy();
         break;
+      case UIMODE_WAITING:
+        await this.exitWaiting();
+        break;
       case UIMODE_END_TURN:
         await this.exitEndTurn();
         break;
@@ -122,6 +127,9 @@ class UiMode {
         break;
       case UIMODE_SELECT_ENEMY:
         await this.enterSelectEnemy();
+        break;
+      case UIMODE_WAITING:
+        await this.enterWaiting();
         break;
       case UIMODE_END_TURN:
         await this.enterEndTurn();
@@ -458,6 +466,10 @@ class UiMode {
     this.data.selectedEnemy = selectedEnemy;
   }
   static async exitSelectEnemy() {}
+
+  // UIMODE_WAITING
+  static async enterWaiting() {}
+  static async exitWaiting() {}
 
   // UIMODE_END_TURN
   static async enterEndTurn() {}

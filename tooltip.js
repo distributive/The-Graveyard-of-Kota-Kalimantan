@@ -3,17 +3,17 @@ class Tooltip {
     if (typeof data == "string") {
       return {
         content: data,
-        delay: instant ? 0 : [1000, 0],
+        delay: instant ? 0 : [500, 0],
         duration: [500, 100],
       };
     } else if (typeof data == "function") {
       return {
         onShow: data,
-        delay: instant ? 0 : [1000, 0],
+        delay: instant ? 0 : [500, 0],
         duration: [500, 100],
       };
     } else {
-      data.delay = instant ? 0 : [1000, 0];
+      data.delay = instant ? 0 : [500, 0];
       data.duration = [500, 100];
       return data;
     }
@@ -27,7 +27,7 @@ $(document).ready(function () {
   tippy("#action-draw", Tooltip.make("Spend a click to draw a card"));
   tippy(
     "#action-end-turn",
-    Tooltip.make("You have no remaining clicks to spend; end your turn")
+    Tooltip.make("Discard down to your handsize (8) then end your turn")
   );
   tippy(
     "#action-move",
@@ -123,7 +123,7 @@ $(document).ready(function () {
     Tooltip.make(
       (instance) =>
         instance.setContent(
-          `Your deck (${Cards.stack.length} card${
+          `Your draw pile (${Cards.stack.length} card${
             Cards.stack.length == 1 ? "" : "s"
           })`
         ),

@@ -19,11 +19,12 @@ class Identity {
   static setCard(cardData, doAnimate = true, fast = true) {
     this.#cardData = cardData;
     $("#runner-id").data("card-id", cardData.id);
-    if (doAnimate) {
-      Cards.flip($("#runner-id .card-image"), cardData.image, fast);
-    } else {
-      $("#runner-id .card-image").attr("src", cardData.image, fast);
-    }
+    Cards.flip(
+      $("#runner-id .card-image-container"),
+      cardData,
+      doAnimate,
+      fast
+    );
   }
 
   static setDamage(value, doAnimate = true) {
@@ -65,12 +66,13 @@ class Identity {
   // Does nothing if the ID is unusable
   static markUsable() {
     const cardData = this.cardData;
+    const instance = this;
     if (this.cardData.canUse(this)) {
       $("#runner-id")
         .addClass("selectable")
         .off("click")
         .click(async function () {
-          await cardData.onUse(this);
+          await cardData.onUse(instance);
           if (!Game.checkTurnEnd()) {
             UiMode.setMode(UIMODE_SELECT_ACTION);
           }
@@ -82,6 +84,17 @@ class Identity {
 
   static markUnusable() {
     $("#runner-id").removeClass("selectable").off("click");
+  }
+
+  static get tapped() {
+    return $("#runner-id").hasClass("tapped");
+  }
+  static set tapped(value) {
+    if (value) {
+      $("#runner-id").addClass("tapped");
+    } else {
+      $("#runner-id").removeClass("tapped");
+    }
   }
 }
 

@@ -17,3 +17,9 @@ function randomElement(array) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+async function wait(ms) {
+  await new Promise(function (resolve) {
+    setTimeout(resolve, ms);
+  });
+}

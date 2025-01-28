@@ -109,13 +109,12 @@ class Chaos {
       if (canCancel) {
         options.push(new Option("cancel", "Cancel", "close", "warning w-100"));
       }
-      response = await new Modal(
-        null,
-        header,
-        body,
-        options,
-        canCancel
-      ).display();
+      response = await new Modal(null, {
+        header: header,
+        body: body,
+        options: options,
+        allowKeyboard: canCancel,
+      }).display();
     }
 
     if (response == "cancel") {
@@ -156,7 +155,12 @@ class Chaos {
         }
       }, 150);
 
-      await new Modal(null, header, body, options, false).display();
+      await new Modal(null, {
+        header: header,
+        body: body,
+        options: options,
+        allowKeyboard: false,
+      }).display();
     }
 
     const results = Chaos.performCheck("mu", base, target, forceOutcome);
@@ -199,7 +203,12 @@ class Chaos {
       `;
       const options = [new Option("continue", "Continue")];
 
-      await new Modal(null, header, body, options, false).display();
+      await new Modal(null, {
+        header: header,
+        body: body,
+        options: options,
+        allowKeyboard: false,
+      }).display();
       Modal.hide();
     }
 

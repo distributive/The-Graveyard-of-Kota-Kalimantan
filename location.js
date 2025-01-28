@@ -1,8 +1,8 @@
 const LOCATION_WIDTH = 160; //px
 const LOCATION_HEIGHT = 224; //px
-const LOCATION_GAP = 50; //px
+const LOCATION_GAP = 75; //px
 const LOCATION_ZOOMS = [0.3, 0.39, 0.5, 0.65, 0.85, 1.1, 1.5];
-const LOCATION_ZOOM_DEFAULT = 2; // index
+const LOCATION_ZOOM_DEFAULT = 3; // index
 
 class Location {
   // STATIC
@@ -43,7 +43,7 @@ class Location {
       return this.resetMapOffset();
     }
     const [dx, dy] = this.currentLocation.pos;
-    this.setMapOffset(-this.xCoordToPos(dx) / 2, -this.yCoordToPos(dy) / 2);
+    this.setMapOffset(-this.xCoordToPos(dx), -this.yCoordToPos(dy));
     $("#map-reset").attr("disabled", true);
   }
 
@@ -89,6 +89,14 @@ class Location {
     );
   }
 
+  static #coordToInstance = {};
+  static recordLocationByPosition(instance) {
+    this.#coordToInstance[instance.x * 10000 + instance.y] = instance;
+  }
+  static getLocationAtPosition(x, y) {
+    return this.#coordToInstance[x * 10000 + y];
+  }
+
   // INSTANCE
   #id = -1;
   #cardData;
@@ -107,11 +115,14 @@ class Location {
   #jClues = null;
   #jDoom = null;
 
-  constructor(cardId, x, y) {
+  constructor(cardData, x, y) {
     this.#id = Location.nextId++;
-    this.#cardData = CardData.getCard(cardId);
+    this.#cardData = cardData;
+    this.#x = x;
+    this.#y = y;
     Location.idToInstance[this.#id] = this;
     Location.instances.push(this);
+    Location.recordLocationByPosition(this);
 
     let jObj = $(`
       <div class="location-container">
@@ -132,13 +143,13 @@ class Location {
       "10px"
     );
     jObj.data("location-id", this.#id);
-    jObj.data("card-id", cardId);
+    jObj.data("card-id", this.#cardData.id);
     Location.root.append(jObj);
     this.setPos(x, y);
 
     this.#jClues = this.#jObj.find(".clues");
     this.#jDoom = this.#jObj.find(".doom");
-    this.setClues(1);
+    this.setClues(cardData.clues);
     this.setDoom(0);
   }
 
@@ -228,6 +239,12 @@ class Location {
   }
   get pos() {
     return [this.#x, this.#y];
+  }
+  get x() {
+    return this.#x;
+  }
+  get y() {
+    return this.#y;
   }
 
   setCurrentLocation(firstTime = false) {
@@ -352,6 +369,17 @@ class Location {
     this.#enemies.forEach(function (enemy, i, enemies) {
       enemy.setOffsetIndex(i, enemies.length);
     });
+  }
+
+  setCard(cardData, doAnimate = true, fast = true) {
+    this.#cardData = cardData;
+    this.#jObj.data("card-id", cardData.id);
+    Cards.flip(
+      this.#jObj.find(".card-image-container"),
+      cardData,
+      doAnimate,
+      fast
+    );
   }
 
   // Moves hosted counters out of the way of hosted enemies
