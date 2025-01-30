@@ -240,7 +240,7 @@ class IdentityData extends NonTreacheryData {
 class PlayableCardData extends NonTreacheryData {
   #cost;
   #activeInHand;
-  #skipsAttackOfOpportunity;
+  #preventAttacks;
 
   get cost() { return this.#cost; }
   set cost(value) {
@@ -254,10 +254,10 @@ class PlayableCardData extends NonTreacheryData {
     this.#activeInHand = value;
   }
 
-  get skipsAttackOfOpportunity() { return this.#skipsAttackOfOpportunity; }
-  set skipsAttackOfOpportunity(value) {
-    CardDataWriteError.throwIfSet(this, "skipsAttackOfOpportunity");
-    this.#skipsAttackOfOpportunity = value;
+  get preventAttacks() { return this.#preventAttacks; }
+  set preventAttacks(value) {
+    CardDataWriteError.throwIfSet(this, "preventAttacks");
+    this.#preventAttacks = value;
   }
 
   // Adds any non-printed play/install costs

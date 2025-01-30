@@ -121,9 +121,15 @@ class Cards {
       }
       const cardData = this.stack.pop();
       let jCard = $(
-        `<div class="grip-card">
+        `<div class="grip-card ${
+          cardData.type == TYPE_EVENT && cardData.preventAttacks
+            ? "prevent-attacks"
+            : ""
+        }">
           <div class="card-image-container h-100">
-            <img class="grip-card-image card-image h-100" src="${cardData.image}" />
+            <img class="grip-card-image card-image h-100" src="${
+              cardData.image
+            }" />
           </div>
         </div>`
       );
@@ -506,7 +512,9 @@ class RigCard {
 
     // card-padding is to make sure the parent class has the correct width
     this.#jObj = $(`
-      <div class="installed-card">
+      <div class="installed-card ${
+        cardData.preventAttacks ? "prevent-attacks" : ""
+      }">
         <div class="card-image-container h-100">
           <img class="card-padding h-100" src="img/card/placeholder.png" />
           <img class="installed-card-image card-image h-100" src="${

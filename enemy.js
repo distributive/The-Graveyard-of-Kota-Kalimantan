@@ -185,6 +185,13 @@ class Enemy {
   // Call this whenever there should be an attack of opportunity
   // i.e. before any action that isn't fighting, evading, or parleying
   static async attackOfOpportunity() {
+    if (this.getEngagedEnemies().length == 0) {
+      return;
+    }
+    Alert.send(
+      "You have invoked an attack of opportunity: all enemies engaged with you will attack.",
+      ALERT_DANGER
+    );
     for (const enemy of this.instances) {
       if (enemy.engaged) {
         await enemy.attack();
@@ -216,9 +223,9 @@ class Enemy {
   #clues;
   #doom;
 
-  constructor(cardId, location) {
+  constructor(cardData, location) {
     Enemy.instances.push(this);
-    this.#cardData = CardData.getCard(cardId);
+    this.#cardData = cardData;
 
     this.#jObj = $(`
       <div class="enemy-container">
@@ -241,7 +248,7 @@ class Enemy {
       this.#cardData,
       "9px"
     );
-    this.#jObj.data("card-id", cardId);
+    this.#jObj.data("card-id", cardData.id);
     Location.root.append(this.#jObj);
 
     this.#jDamage = this.#jObj.find(".damage");
@@ -331,6 +338,7 @@ class Enemy {
     } else {
       await Broadcast.signal("onEnemyDies", { enemy: this });
       this.remove();
+      UiMode.setFlag("engaged", Enemy.getEngagedEnemies().length > 0);
     }
     this.#damage = value;
     return this;
@@ -383,6 +391,7 @@ class Enemy {
     Broadcast.signal("onPlayerEngages", { enemy: this });
     this.#engaged = true;
     this.#jObj.addClass("engaged");
+    UiMode.setFlag("engaged", true);
     return this;
   }
 
@@ -400,6 +409,7 @@ class Enemy {
   async disengage() {
     this.#engaged = false;
     this.#jObj.removeClass("engaged");
+    UiMode.setFlag("engaged", Enemy.getEngagedEnemies().length > 0);
     return this;
   }
 
@@ -416,8 +426,10 @@ class Enemy {
   }
 
   async attack() {
+    this.#jObj.addClass("attacking");
     await this.#cardData.attack(this);
     await Broadcast.signal("onEnemyAttacks", { enemy: this });
+    this.#jObj.removeClass("attacking");
   }
 
   click(func) {

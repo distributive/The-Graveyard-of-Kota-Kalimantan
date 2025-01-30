@@ -163,6 +163,7 @@ CardBackAway = new EventData("back_away", {
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
   cost: 8,
+  preventAttacks: true,
   calculateCost(source, data) {
     return this.cost - Enemy.getEngagedEnemies().length * 2;
   },
@@ -242,6 +243,7 @@ CardLastDitch = new EventData("last_ditch", {
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
   cost: 0,
+  preventAttacks: true,
   calculateCost(source) {
     return this.cost + Cards.grip.length * 2 - 2;
   },
@@ -294,12 +296,13 @@ CardMakeAnEntrance = new EventData("make_an_entrance", {
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
   cost: 0,
+  preventAttacks: true,
   canPlay(source, data) {
     return Enemy.getUnengagedEnemiesAtCurrentLocation().length > 0;
   },
   async onPlay(source, data) {
     for (const enemy of Enemy.getUnengagedEnemiesAtCurrentLocation()) {
-      enemy.engage();
+      await enemy.engage();
     }
   },
 });
@@ -312,6 +315,7 @@ CardProjectile = new EventData("projectile", {
   image: "img/card/event/projectile.png",
   cost: 1,
   smallText: true,
+  preventAttacks: true,
   canPlay(source, data) {
     const [canEngage, canFight, canEvade] = Enemy.canEngageFightEvade();
     return canFight && Cards.installedCards.length > 0;

@@ -148,6 +148,8 @@ button:disabled .inline-icon {
   color: #888888 !important;
   border: 2px solid #ababab !important;
   background-color: #ababab !important;
+
+  box-shadow: none !important;
 }
 #ui-mode:not(.uimode-select-action, .uimode-select-location)
   .action-button
@@ -165,6 +167,19 @@ button:disabled .inline-icon {
 #ui-flags.can-cancel-evade #action-evade-default,
 #ui-flags:not(.can-cancel-evade) #action-evade-cancel {
   display: none;
+}
+
+/* Mark actions that invoke attacks of opportunity */
+#ui-flags.engaged #action-credit,
+#ui-flags.engaged #action-draw,
+#ui-flags.engaged #action-move,
+#ui-flags.engaged #action-investigate,
+#ui-flags.engaged #runner-id.selectable,
+#ui-flags.engaged .installed-card.selectable:not(.prevent-attacks),
+#ui-flags.engaged
+  .grip-card.playable:not(.prevent-attacks)
+  .card-image-container {
+  box-shadow: 0 0 20px red;
 }
 
 /* Cards */
@@ -457,7 +472,7 @@ button:disabled .inline-icon {
   width: 100%;
   background: url("img/card/trashedCardOverlay.png") no-repeat;
   background-size: 100% 100%;
-  z-index: 10000;
+  z-index: 5000;
 }
 
 .installed-card.tapped:not(.selectable, .transition-out) {
@@ -744,7 +759,11 @@ button:disabled .inline-icon {
   .enemy-container.engaged:not(.transition-out) {
   box-shadow: 0 0 20px red;
 }
-.enemy-container.engaged .card-image-container {
+
+.enemy-container.attacking .card-image-container {
+  scale: 1.1;
+}
+.enemy-container.engaged:not(.attacking) .card-image-container {
   animation: engaged-enemy 1s ease calc(-0.2s * var(--index)) infinite;
 }
 @keyframes engaged-enemy {
@@ -982,14 +1001,17 @@ button:disabled .inline-icon {
 }
 .location .card-text-shroud {
   top: 49%;
-  left: 6.5%;
+  left: 4.75%;
+  width: 1em;
   color: white;
+  text-align: center;
   font-size: 1.6em;
 }
 .location .card-text-clues {
   top: 49%;
-  right: 6.5%;
-  text-align: right;
+  right: 4.75%;
+  width: 1em;
+  text-align: center;
   font-size: 1.6em;
 }
 .location.alt * {

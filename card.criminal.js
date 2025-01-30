@@ -141,6 +141,7 @@ CardShiv = new AssetData("shiv", {
   cost: 3,
   health: 2,
   smallText: true,
+  preventAttacks: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
@@ -268,6 +269,7 @@ CardEmpDevice = new EventData("emp_device", {
   faction: FACTION_CRIMINAL,
   image: "img/card/event/bgCriminal.png",
   cost: 5,
+  preventAttacks: true,
   canPlay(source) {
     return Enemy.getEngagedEnemies().length > 0;
   },
@@ -325,6 +327,7 @@ CardPush = new EventData("push", {
   faction: FACTION_CRIMINAL,
   image: "img/card/event/bgCriminal.png",
   cost: 0,
+  preventAttacks: true,
   canPlay(source) {
     return Enemy.getEnemiesAtCurrentLocation().length > 0;
   },

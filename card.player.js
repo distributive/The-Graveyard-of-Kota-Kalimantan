@@ -75,7 +75,7 @@ const CardBaz = new IdentityData("baz", {
   faction: FACTION_CRIMINAL,
   image: "img/card/identity/baz.png",
   influence: 4,
-  mu: 3,
+  mu: 2,
   strength: 2,
   link: 5,
 });

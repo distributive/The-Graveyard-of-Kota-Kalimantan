@@ -31,11 +31,24 @@ const LocationUnknownNet = new LocationData("unknown_net", {
 
     // Reveal the location
     let cardData;
-    if (RANDOM_NET_LOCATIONS.length > 0) {
+    // After 4 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
+    if (
+      !SOURCE_HAS_BEEN_REVEALED &&
+      (RANDOM_NET_LOCATIONS.length == 0 ||
+        (RANDOM_NET_LOCATIONS_REVEALED > 4 && randomInt(0, 3) == 0))
+    ) {
+      cardData = LocationSource;
+      SOURCE_HAS_BEEN_REVEALED = true;
+    }
+    // Reveal a random netspace location from the pool
+    else if (RANDOM_NET_LOCATIONS.length > 0) {
       const index = randomIndex(RANDOM_NET_LOCATIONS);
       cardData = RANDOM_NET_LOCATIONS[index];
       RANDOM_NET_LOCATIONS.splice(index, 1);
-    } else {
+      RANDOM_NET_LOCATIONS_REVEALED++;
+    }
+    // When netspace locations are exhausted, reveal a void
+    else {
       cardData = LocationVoid;
     }
     source.setCard(cardData);
@@ -100,12 +113,14 @@ const LocationVoid = new LocationData("void", {
   subtypes: ["netspace"],
   faction: FACTION_NET,
   image: "img/card/location/void.png",
-  shroud: 4,
+  shroud: 0,
   clues: 0,
 });
 
 // Random netspace locations
 const RANDOM_NET_LOCATIONS = [];
+let RANDOM_NET_LOCATIONS_REVEALED = 0;
+let SOURCE_HAS_BEEN_REVEALED = false;
 
 const LocationCloister = new LocationData("cloister", {
   title: "Cloister",
@@ -140,17 +155,27 @@ const LocationDataWell = new LocationData("data_well", {
   image: "img/card/location/dataWell.png",
   shroud: 3,
   clues: 3,
+  async onInvestigation(source, data) {
+    if (data.location == source && source.clues == 0) {
+      Agenda.addDoom(1);
+    }
+  },
 });
 RANDOM_NET_LOCATIONS.push(LocationDataWell);
 
 const LocationTagStorm = new LocationData("tag_storm", {
   title: "Tag Storm",
-  text: "Whenever you successfully download data at this location, suffer 1 damage.",
+  text: "Whenever you successfully jack in while at this location, suffer 1 damage.",
   subtypes: ["netspace"],
   faction: FACTION_NET,
   image: "img/card/location/tagStorm.png",
   shroud: 1,
   clues: 2,
+  async onInvestigation(source, data) {
+    if (data.results.success && source == Location.getCurrentLocation()) {
+      await Game.sufferDamage(1);
+    }
+  },
 });
 RANDOM_NET_LOCATIONS.push(LocationTagStorm);
 RANDOM_NET_LOCATIONS.push(LocationTagStorm);
@@ -163,18 +188,34 @@ const LocationNest = new LocationData("nest", {
   image: "img/card/location/nest.png",
   shroud: 2,
   clues: 0,
+  onPlayerMoves(source, data) {
+    if (data.fromLocation == source) {
+      new Enemy(EnemyBurkeBug, source);
+    }
+  },
 });
 RANDOM_NET_LOCATIONS.push(LocationNest);
 
-const LocationEye = new LocationData("eye", {
-  title: "Eye",
+const LocationTheDestroyersEye = new LocationData("the_destroyers_eye", {
+  title: "The Destroyer's Eye",
   text: "If you end your turn at this location, discard 1 card from your hand.",
   subtypes: ["netspace", "observer"],
   faction: FACTION_NET,
   image: "img/card/location/eye.png",
   shroud: 2,
   clues: 0,
+  async onTurnEnd(source, data) {
+    if (source == Location.getCurrentLocation() && Cards.grip.length > 0) {
+      await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
+        message: `The Destroyer's Eye: Select 1 card to discard.`,
+        minCards: 1,
+        maxCards: 1,
+        canCancel: false,
+      });
+      await Cards.discard(UiMode.data.selectedCards[0]);
+    }
+  },
 });
-RANDOM_NET_LOCATIONS.push(LocationEye);
-RANDOM_NET_LOCATIONS.push(LocationEye);
-RANDOM_NET_LOCATIONS.push(LocationEye);
+RANDOM_NET_LOCATIONS.push(LocationTheDestroyersEye);
+RANDOM_NET_LOCATIONS.push(LocationTheDestroyersEye);
+RANDOM_NET_LOCATIONS.push(LocationTheDestroyersEye);

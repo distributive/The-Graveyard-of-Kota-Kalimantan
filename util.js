@@ -8,6 +8,11 @@ function shuffle(array) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// min is inclusive; max is exclusive
+function randomInt(min, max) {
+  return min + Math.floor(Math.random() * (max - min));
+}
+
 function randomIndex(array) {
   return Math.floor(Math.random() * array.length);
 }

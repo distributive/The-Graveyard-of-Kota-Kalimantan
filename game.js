@@ -99,6 +99,7 @@ class Game {
     await Stats.setClicks(0);
     await Stats.addCredits(1);
     await Cards.draw(1);
+    await Broadcast.signal("onTurnEnd");
 
     await wait(500);
 
@@ -111,7 +112,6 @@ class Game {
     await wait(500);
 
     await Enemy.readyAll();
-    await Broadcast.signal("onTurnEnd");
 
     await wait(1000);
     await Encounter.draw();
@@ -134,6 +134,11 @@ class Game {
     }
     const oldLocation = Location.getCurrentLocation();
     location.setCurrentLocation();
+    if (enemiesCanEngage) {
+      for (const enemy of Enemy.getEnemiesAtCurrentLocation()) {
+        await enemy.engage();
+      }
+    }
     await Enemy.moveEngagedEnemies();
     await Broadcast.signal("onPlayerMoves", {
       fromLocation: oldLocation,
@@ -171,7 +176,9 @@ class Game {
     // Play/install the card
     await Stats.addClicks(-1);
     await Stats.addCredits(-cost);
-    await Enemy.attackOfOpportunity();
+    if (cardData.type == TYPE_ASSET || !cardData.preventAttacks) {
+      await Enemy.attackOfOpportunity();
+    }
     await UiMode.setMode(UIMODE_WAITING); // Prevent other actions being taken during resolution
     if (cardData.type == TYPE_ASSET) {
       const rigCard = Cards.install(cardData);
@@ -257,10 +264,14 @@ class Game {
           return;
         }
         if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
-          await UiMode.setMode(UIMODE_SELECT_LOCATION, { canCancel: true });
+          await UiMode.setMode(UIMODE_SELECT_LOCATION, {
+            message: "Pick a location to move to.",
+            canCancel: true,
+          });
           if (UiMode.data.success) {
+            const toLocation = UiMode.data.selectedLocation;
             await Enemy.attackOfOpportunity();
-            Game.actionMoveTo(UiMode.data.selectedLocation, {
+            Game.actionMoveTo(toLocation, {
               costsClick: true,
             });
           }
@@ -340,12 +351,13 @@ $(document).ready(function () {
     Game.endTurn();
   });
 
-  $("#action-credit").click(() => {
+  $("#action-credit").click(async () => {
     if (Stats.clicks <= 0) {
       return;
     }
-    Stats.addCredits(1);
     Stats.addClicks(-1);
+    await Enemy.attackOfOpportunity();
+    Stats.addCredits(1);
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }
@@ -355,8 +367,8 @@ $(document).ready(function () {
     if (Stats.clicks <= 0 || !Cards.canDraw()) {
       return;
     }
-    await Enemy.attackOfOpportunity();
     await Stats.addClicks(-1);
+    await Enemy.attackOfOpportunity();
     Cards.draw(1);
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
