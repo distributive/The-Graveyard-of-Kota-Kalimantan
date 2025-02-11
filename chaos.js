@@ -1,19 +1,19 @@
 class Chaos {
   static #chaosTokens = [
-    1,
-    1,
-    0,
-    0,
-    0,
-    -1,
-    -1,
-    -1,
-    -2,
-    -2,
-    "skull",
-    "skull",
-    "skull",
-    "fail",
+    // 1,
+    // 1,
+    // 0,
+    // 0,
+    // 0,
+    // -1,
+    // -1,
+    // -1,
+    // -2,
+    // -2,
+    // "skull",
+    // "skull",
+    // "skull",
+    // "fail",
     "elder",
   ];
 
@@ -105,9 +105,12 @@ class Chaos {
         </span>
       </p>
       `;
-      const options = [new Option("close", "Continue", "close")];
+      const options = [
+        new Option("continue", "Continue"),
+        new Option("commit", "Commit Cards"),
+      ];
       if (canCancel) {
-        options.push(new Option("cancel", "Cancel", "close", "warning w-100"));
+        options.push(new Option("cancel", "Cancel", "warning w-100"));
       }
       response = await new Modal(null, {
         header: header,
@@ -119,7 +122,25 @@ class Chaos {
 
     if (response == "cancel") {
       return;
+    } else if (response == "commit") {
+      Modal.hide();
+      const prevUiMode = UiMode.uiMode;
+      const prevUiModeData = UiMode.data;
+      await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
+        message: `Select any number of cards to commit to this test. Each card committed with be discarded and grant you +1 strength to this skill test (base strength ${base}).`,
+        minCards: 0,
+        maxCards: Cards.grip.length,
+        canCancel: true,
+      });
+      if (UiMode.data.selectedCards) {
+        base += UiMode.data.selectedCards.length;
+        for (const card of UiMode.data.selectedCards) {
+          await Cards.discard(card);
+        }
+      }
+      await UiMode.setMode(prevUiMode, prevUiModeData);
     }
+
     // TODO: the modal won't close to show the affects of this broadcast - willfix?
     await Broadcast.signal("onTestAttempted", { stat: stat });
 
@@ -135,7 +156,7 @@ class Chaos {
         <img id="chaos-roll-skull" src="img/game/tokenSkull.png" />
       </div>
       `;
-      const options = [new Option("continue", "Pick a random token", "close")];
+      const options = [new Option("continue", "Pick a random token")];
 
       intervalID = setInterval(function () {
         const randomToken = Chaos.randomToken();

@@ -280,7 +280,7 @@ class Location {
         $("#current-location-marker").removeClass("hover");
       }
     );
-    if (!firstTime) {
+    if (!firstTime && this.#jObj.is(":hover")) {
       // This location is already being hovered
       $("#current-location-marker").addClass("hover");
     }

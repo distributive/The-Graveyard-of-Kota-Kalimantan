@@ -10,9 +10,9 @@ class Agenda {
     return this.#doom;
   }
 
-  static setCard(cardId, doAnimate = true) {
-    this.#cardData = CardData.getCard(cardId);
-    $("#agenda").data("card-id", cardId);
+  static setCard(cardData, doAnimate = true) {
+    this.#cardData = cardData;
+    $("#agenda").data("card-id", cardData.id);
     Cards.flip($("#agenda .card-image-container"), this.#cardData, doAnimate);
   }
 

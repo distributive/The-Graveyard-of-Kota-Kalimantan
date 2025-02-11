@@ -107,7 +107,9 @@ $(document).ready(function () {
     "#agenda",
     Tooltip.make((instance) =>
       instance.setContent(
-        `The current agenda; each turn 1 doom is placed on this until it reaches its threshold () and advances (bad)`
+        `The current agenda; each turn 1 doom is placed on this until it reaches its threshold () and advances (${
+          Agenda.cardData == Agenda4 ? "this time it's good" : "bad"
+        })`
       )
     )
   );

@@ -2,6 +2,11 @@ class Enemy {
   // STATIC
   static instances = [];
 
+  static async spawn(cardData, location) {
+    new Enemy(cardData, location);
+    await Broadcast.signal("onEnemySpawns", { enemy: this });
+  }
+
   static canEngageFightEvade() {
     const localEnemies = this.getEnemiesAtCurrentLocation();
     const engagedEnemies = this.getEngagedEnemies();
@@ -124,12 +129,12 @@ class Enemy {
     Modal.hide();
 
     // Apply effects/triggers
+    await Broadcast.signal("onPlayerAttacks", {
+      enemy: enemy,
+      results: results,
+      damage: damage,
+    });
     if (results.success) {
-      await Broadcast.signal("onPlayerAttacks", {
-        enemy: enemy,
-        results: results,
-        damage: damage,
-      });
       await enemy.addDamage(damage);
     }
 
@@ -175,9 +180,7 @@ class Enemy {
     Modal.hide();
 
     // Apply effects/triggers
-    if (results.success) {
-      await enemy.evade(results);
-    }
+    await enemy.evade(results);
 
     return { results: results, enemy: enemy };
   }
@@ -272,6 +275,16 @@ class Enemy {
     return this.#engaged;
   }
 
+  get damage() {
+    return this.#damage;
+  }
+  get clues() {
+    return this.#clues;
+  }
+  get doom() {
+    return this.#doom;
+  }
+
   remove() {
     const index = Enemy.instances.indexOf(this);
     if (index >= 0) {
@@ -310,6 +323,9 @@ class Enemy {
     const [x, y] = location.pos;
     this.#jObj.css("--x-pos", `${Location.xCoordToPos(x)}px`);
     this.#jObj.css("--y-pos", `${Location.yCoordToPos(y)}px`);
+    if (Location.getCurrentLocation() == location) {
+      this.engage();
+    }
     return true;
   }
 
@@ -385,6 +401,9 @@ class Enemy {
 
   // if not in the current location, move there (maybe this behaviour is not wanted)
   async engage() {
+    if (this.#engaged) {
+      return;
+    }
     if (this.#currentLocation != Location.getCurrentLocation()) {
       await this.moveTo(Location.getCurrentLocation());
     }
@@ -397,13 +416,17 @@ class Enemy {
 
   // If the evasion was not as part of a skill test, results will be null
   async evade(results) {
-    this.disengage();
-    this.exhausted = true;
+    if (results.success) {
+      this.disengage();
+      this.exhausted = true;
+    }
     await Broadcast.signal("onPlayerEvades", {
       enemy: this,
       results: results,
     });
-    Game.logTurnEvent("evaded");
+    if (results.success) {
+      Game.logTurnEvent("evaded");
+    }
   }
 
   async disengage() {
@@ -427,9 +450,12 @@ class Enemy {
 
   async attack() {
     this.#jObj.addClass("attacking");
+    UiMode.setMode(UIMODE_WAITING);
+    await wait(1000);
     await this.#cardData.attack(this);
     await Broadcast.signal("onEnemyAttacks", { enemy: this });
     this.#jObj.removeClass("attacking");
+    await wait(1000);
   }
 
   click(func) {

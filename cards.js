@@ -493,6 +493,12 @@ class RigCard {
     );
   }
 
+  static readyAll() {
+    for (const card of Cards.installedCards) {
+      card.tapped = false;
+    }
+  }
+
   // INSTANCE
   #cardData;
 
@@ -743,30 +749,60 @@ $(document).ready(function () {
     if (!cardData) {
       return;
     }
+
+    let stats;
+    if (cardData.type == TYPE_ASSET || cardData.type == TYPE_EVENT) {
+      stats = `Cost: ${cardData.cost}<img class="inline-icon" src="img/game/credit.png">`;
+    } else if (cardData.type == TYPE_IDENTITY) {
+      stats = `
+        <img class="inline-icon" src="img/game/influence.png"> Influence <span class="float-end">${cardData.influence}</span><br>
+        <img class="inline-icon" src="img/game/mu.png"> MU <span class="float-end">${cardData.mu}</span><br>
+        <img class="inline-icon" src="img/game/strength.png"> Strength <span class="float-end">${cardData.strength}</span><br>
+        <img class="inline-icon" src="img/game/link.png"> Link <span class="float-end">${cardData.link}</span><br>
+        Health <span class="float-end">${cardData.health}</span>`;
+    } else if (cardData.type == TYPE_LOCATION) {
+      stats = `
+        Shroud <span class="float-end">${cardData.shroud}</span><br>
+        Data <span class="float-end">${cardData.clues}</span>`;
+    } else if (cardData.type == TYPE_ENEMY) {
+      stats = `
+        <img class="inline-icon" src="img/game/strength.png"> Strength <span class="float-end">${cardData.strength}</span><br>
+        <img class="inline-icon" src="img/game/link.png"> Link <span class="float-end">${cardData.link}</span><br>
+        Health <span class="float-end">${cardData.health}</span><br>`;
+    }
+
     const body = `
-      <div>
-        ${cardData.title}
-      </div>
       <div class="row">
-        <div class="col-5">
-          <img class="card-image w-100" id="card-modal-image" src="${
-            cardData.image
-          }" />
+        <div class="font-size-32">
+          ${cardData.title}
         </div>
-        <div class="col-7">
-          <div>
-            ${FACTION_TO_TEXT[cardData.faction]} ${
+        <hr>
+        <div class="font-size-20">
+          <span class="fw-bold">${FACTION_TO_TEXT[cardData.faction]} ${
       TYPE_TO_TEXT[cardData.type]
-    } ${cardData.subtypes ? `: ${cardData.subtypes.join(" - ")}` : ""} 
-          </div>
-          <div>${cardData.text}</div>
+    }</span>${
+      cardData.subtypes
+        ? `: ${cardData.subtypes.join(" - ").toTitleCase()}`
+        : ""
+    } 
         </div>
+        ${stats ? `<hr><div class="font-size-18">${stats}</div>` : ""}
+        <hr>
+        <div class="quote">${cardData.formattedText}</div>
+        ${
+          cardData.flavour
+            ? `<hr><div class="fst-italic mt-2">${cardData.flavour}</div>`
+            : ""
+        }
       </div>`;
+
     const options = [new Option("close", "Close", "close")];
     const modal = new Modal(null, {
       body: body,
+      cardData: cardData,
       options: options,
-      canCancel: true,
+      allowKeyboard: false, // Causes async issues (TODO: mightfix)
+      size: "lg",
     });
     await modal.display();
     Modal.hide();
@@ -787,20 +823,16 @@ $(document).ready(function () {
         Cards.unfocusCard($(this));
       }
     )
-    .on(
-      "dblclick",
-      ".card-image-container:not(#card-focused-image, #card-modal-image, .grip-card-image)",
-      function () {
-        if (
-          (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD ||
-            UiMode.uiMode == UIMODE_ASSIGN_DAMAGE) &&
-          $(this).parent().hasClass("installed-card")
-        ) {
-          return;
-        }
-        displayCardModal($(this).parent().data("card-id"));
+    .on("dblclick", ":not(.grip-card) > .card-image-container", function () {
+      if (
+        (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD ||
+          UiMode.uiMode == UIMODE_ASSIGN_DAMAGE) &&
+        $(this).parent().hasClass("installed-card")
+      ) {
+        return;
       }
-    );
+      displayCardModal($(this).parent().data("card-id"));
+    });
 
   $("#card-focused-image").click(function () {
     displayCardModal(Cards.focusedCardId);

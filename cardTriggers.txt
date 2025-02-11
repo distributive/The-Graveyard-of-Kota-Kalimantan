@@ -28,6 +28,7 @@ onPlayerKills(source, {enemy, results, damage})
 onPlayerEvadeAttempt(source, {enemy})
 onPlayerEvades(source, {enemy, results})
 
+onEnemySpawns(source, {enemy})
 onEnemyMoves(source, {enemy, fromLocation, toLocation})
 onEnemyAttacks(source, {enemy})
 onEnemyDies(source, {enemy})

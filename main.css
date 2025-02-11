@@ -14,6 +14,10 @@ body,
   overflow: hidden;
 }
 
+hr {
+  margin: 0;
+}
+
 img {
   user-drag: none;
   user-select: none;
@@ -30,6 +34,10 @@ img {
 .inline-icon {
   height: 1em;
   transform: translate(-0.15em, -0.08em);
+}
+#modal .inline-icon {
+  height: 1em;
+  transform: translate(0, -0.08em);
 }
 .inline-token {
   height: 1em;
@@ -386,7 +394,8 @@ button:disabled .inline-icon {
 .uimode-select-grip-card .grip-card {
   cursor: pointer;
 }
-.grip-card.animate .card-image {
+.grip-card.animate .card-image,
+.grip-card.animate .card-text {
   animation: shake-card-unplayable 0.3s;
 }
 @keyframes shake-card-unplayable {
@@ -760,24 +769,30 @@ button:disabled .inline-icon {
   box-shadow: 0 0 20px red;
 }
 
-.enemy-container.attacking .card-image-container {
-  scale: 1.1;
-}
 .enemy-container.engaged:not(.attacking) .card-image-container {
   animation: engaged-enemy 1s ease calc(-0.2s * var(--index)) infinite;
 }
 @keyframes engaged-enemy {
-  0%,
-  100% {
+  75% {
     scale: 1;
   }
-  50% {
+  25% {
     scale: 1.04;
   }
 }
 
-.enemy-container .card-image-container {
+.enemy-container.attacking {
+  z-index: 1000;
+  transform: translate(
+      calc(var(--x-pos) - 50% + 40px + 45px * var(--index)),
+      calc(var(--y-pos) - 50% - 40px)
+    )
+    scale(1.1);
   transition: transform 0.2s;
+}
+
+.enemy-container .card-image-container {
+  transition: transform 0.2s, scale 0.5s;
 }
 .enemy-container.tapped:not(.selectable, .transition-out)
   .card-image-container {
@@ -932,7 +947,7 @@ button:disabled .inline-icon {
   bottom: 5%;
   left: 5%;
   right: 5%;
-  font-size: 1em;
+  font-size: 0.95em;
 }
 .asset .card-text-health {
   color: white;
@@ -973,7 +988,7 @@ button:disabled .inline-icon {
   bottom: 5%;
   left: 5%;
   right: 5%;
-  font-size: 1em;
+  font-size: 0.95em;
 }
 
 .location .card-text-title {
@@ -1044,7 +1059,7 @@ button:disabled .inline-icon {
   font-weight: 900;
 }
 .enemy .card-text-text {
-  font-size: 0.9em;
+  font-size: 0.8em;
 }
 .enemy .card-text-strength {
   top: 9%;
@@ -1108,6 +1123,9 @@ button:disabled .inline-icon {
 .card-text-text.long {
   font-size: 0.95em;
 }
+.enemy .card-text-text.long {
+  font-size: 0.7em;
+}
 
 /* Modal */
 
@@ -1119,8 +1137,16 @@ button:disabled .inline-icon {
 }
 #modal .card-image-container {
   width: 320px;
+  max-height: 80%;
+  max-width: 50%;
   margin-right: 1em;
   margin-bottom: 1em;
+}
+
+#modal .quote {
+  margin-top: 0.4em;
+  margin-bottom: 0.4em;
+  border-left: solid 3px black;
 }
 
 /* Alerts */
@@ -1220,6 +1246,13 @@ button:disabled .inline-icon {
   color: white;
   border: 2px solid #b65c80;
   background-color: #6c1236;
+}
+
+.alert-option.disabled {
+  color: #888888;
+  border: 2px solid #ababab;
+  background-color: #ababab;
+  pointer-events: none;
 }
 
 /* Chaos rolls */

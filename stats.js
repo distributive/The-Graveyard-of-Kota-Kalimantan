@@ -84,6 +84,8 @@ class Stats {
     await this.setCredits(this.#credits + value);
   }
   static async setCredits(value) {
+    value = Math.max(0, value);
+
     $("#credit-count").html(value);
     if (this.#credits != value) {
       animate($("#credit-count"));

@@ -122,8 +122,8 @@ class Modal {
         .append(bodyContainer);
     } else if (this.#cardData) {
       const imageContainer = $(
-        `<div class="card-image-container float-start">
-          <img class="card-image h-100" src="${this.#cardData.image}" />
+        `<div class="card-image-container h-100 float-start">
+          <img class="card-image w-100 h-100" src="${this.#cardData.image}" />
         </div>`
       );
       Cards.populateData(imageContainer, this.#cardData, "19.5px");

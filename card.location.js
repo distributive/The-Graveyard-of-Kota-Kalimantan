@@ -149,7 +149,7 @@ RANDOM_NET_LOCATIONS.push(LocationNebula);
 
 const LocationDataWell = new LocationData("data_well", {
   title: "Data Well",
-  text: "When the last clue is removed from this location, place 1 doom on the agenda.",
+  text: "When the last clue is removed from this location, heal 3 damage from your identity and place 1 doom on the agenda.",
   subtypes: ["netspace"],
   faction: FACTION_NET,
   image: "img/card/location/dataWell.png",
@@ -158,6 +158,7 @@ const LocationDataWell = new LocationData("data_well", {
   async onInvestigation(source, data) {
     if (data.location == source && source.clues == 0) {
       Agenda.addDoom(1);
+      Identity.addDamage(-3);
     }
   },
 });
@@ -188,9 +189,9 @@ const LocationNest = new LocationData("nest", {
   image: "img/card/location/nest.png",
   shroud: 2,
   clues: 0,
-  onPlayerMoves(source, data) {
+  async onPlayerMoves(source, data) {
     if (data.fromLocation == source) {
-      new Enemy(EnemyBurkeBug, source);
+      await Enemy.spawn(EnemyBurkeBug, source);
     }
   },
 });

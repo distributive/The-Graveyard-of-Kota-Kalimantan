@@ -23,6 +23,17 @@ function randomElement(array) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+Object.defineProperty(String.prototype, "toTitleCase", {
+  value: function (param) {
+    return this.replace(
+      /\w\S*/g,
+      (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+    );
+  },
+});
+
+///////////////////////////////////////////////////////////////////////////////
+
 async function wait(ms) {
   await new Promise(function (resolve) {
     setTimeout(resolve, ms);

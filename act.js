@@ -6,8 +6,8 @@ class Act {
   }
 
   static setCard(cardData, doAnimate = true) {
-    this.#cardData = CardData.getCard(cardId);
-    $("#act").data("card-id", cardId);
+    this.#cardData = cardData;
+    $("#act").data("card-id", cardData.id);
     Cards.flip($("#act .card-image-container"), this.#cardData, doAnimate);
   }
 

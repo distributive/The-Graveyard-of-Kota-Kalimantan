@@ -111,6 +111,7 @@ class Game {
 
     await wait(500);
 
+    await RigCard.readyAll();
     await Enemy.readyAll();
 
     await wait(1000);
@@ -334,6 +335,12 @@ class Game {
 $(document).ready(function () {
   // Action buttons
   $("#action-end-turn").click(async () => {
+    if (
+      UiMode.mode == UIMODE_CORP_TURN ||
+      UiMode.mode == UIMODE_SELECT_GRIP_CARD
+    ) {
+      return;
+    }
     if (Cards.grip.length > 8) {
       const difference = Cards.grip.length - 8;
       await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {

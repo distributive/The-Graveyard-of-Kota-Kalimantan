@@ -30,9 +30,9 @@ $(document).ready(function () {
   // l4.addNeighbour(l7);
   // l4.addNeighbour(l8);
 
-  // let enemy = new Enemy(EnemyExample, l5);
-  // new Enemy(EnemyExample, l5).setDamage(1);
-  // new Enemy(EnemyExample, l0).setDamage(1);
+  // let enemy = await Enemy.spawn(EnemyExample, l5);
+  // await Enemy.spawn(EnemyExample, l5).setDamage(1);
+  // await Enemy.spawn(EnemyExample, l0).setDamage(1);
   // setTimeout(() => enemy.moveTo(l2), 1 * 800);
   // setTimeout(() => enemy.moveTo(l0), 2 * 800);
   // setTimeout(() => enemy.moveTo(l4), 3 * 800);

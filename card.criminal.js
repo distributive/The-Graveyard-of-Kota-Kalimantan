@@ -263,12 +263,13 @@ CardJackOfAll = new EventData("jack_of_all_trades", {
 });
 
 CardEmpDevice = new EventData("emp_device", {
-  title: "EMP Device",
+  title: '"EMP" Device',
   text: "Evade all enemies. Move all evaded enemies to random adjacent locations.",
+  flavour: `<b>"Something</b> happens when it goes off. Want to find out what?"`,
   subtypes: ["tactic"],
   faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
-  cost: 5,
+  image: "img/card/event/empDevice.png",
+  cost: 4,
   preventAttacks: true,
   canPlay(source) {
     return Enemy.getEngagedEnemies().length > 0;
@@ -325,7 +326,7 @@ CardPush = new EventData("push", {
   text: "Spend up to 4{c}. <b>Fight.</b> During this fight, gain +1{strength} for each credit spent. If successful, evade all enemies.",
   subtypes: ["tactic"],
   faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
+  image: "img/card/event/push.png",
   cost: 0,
   preventAttacks: true,
   canPlay(source) {

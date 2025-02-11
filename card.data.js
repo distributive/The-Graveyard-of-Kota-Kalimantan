@@ -52,21 +52,6 @@ class CardDataDuplicateIdError extends Error {
   }
 }
 
-class CardDataWriteError extends Error {
-  static throwIfSet(obj, property) {
-    if (obj[property]) {
-      throw new CardDataWriteError(property);
-    }
-  }
-
-  constructor(property) {
-    super(
-      `CardData property '${property}' was set, but already has a value. CardData properties may not be assigned twice.`
-    );
-    this.name = "CardDataWriteError";
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 // type is not defined here at it should be defined in subclasses
@@ -86,63 +71,39 @@ class CardData {
     // console.log(trigger, data);
   }
 
-  #id;
-  #title;
-  #text;
-  #subtypes;
-  #faction;
-  #image;
+  id;
+  title;
+  text;
+  subtypes;
+  faction;
+  image;
 
   constructor(id, data) {
     if (CardData.#instances[id]) {
       throw new CardDataDuplicateIdError(id);
     }
-    this.#id = id;
+    this.id = id;
     CardData.#instances[id] = this;
   }
 
-  get id() { return this.#id; }
-
-  get title() { return this.#title; }
-  get formattedTitle() { return this.unique ? "♦ " + this.#title : this.#title; }
-  set title(value) {
-    CardDataWriteError.throwIfSet(this, "title");
-    this.#title = value;
-  }
-  get text() { return this.#text; }
+  get formattedTitle() { return this.unique ? "♦ " + this.title : this.title; }
   get jText() {
-    return `
-      <div>
-        ${this.#text.replaceAll("{c}", "{credit}").replaceAll("\n", "<br>").replaceAll(/\{.*?\}/g, function (match) {
-          const flag = match.slice(1, -1);
-          return `<img src="img/game/${flag}.png" class="inline-icon" title="${flag}" />`;
-        })}
-      </div>`;
+    return `<div>${this.formattedText}</div>`;
   }
-  set text(value) {
-    CardDataWriteError.throwIfSet(this, "text");
-    this.#text = value;
+  get formattedText() {
+    return this.text
+      .replaceAll("{c}", "{credit}")
+      .replaceAll("\n", "<br>")
+      .replaceAll(/\{.*?\}/g, function (match) {
+        const flag = match.slice(1, -1);
+        return `<img src="img/game/${flag}.png" class="inline-icon" title="${flag}" />`;
+      });
   }
-  get subtypes() { return this.#subtypes; }
   get displaySubtypes() {
-    return this.#subtypes
+    return this.subtypes
       .join(" - ")
       .replace(/\w\S*/g,
         (match) => match.charAt(0).toUpperCase() + match.substring(1).toLowerCase());
-  }
-  set subtypes(value) {
-    CardDataWriteError.throwIfSet(this, "subtypes");
-    this.#subtypes = value;
-  }
-  get faction() { return this.#faction; }
-  set faction(value) {
-    CardDataWriteError.throwIfSet(this, "faction");
-    this.#faction = value;
-  }
-  get image() { return this.#image; }
-  set image(value) {
-    CardDataWriteError.throwIfSet(this, "image");
-    this.#image = value;
   }
 }
 
@@ -177,6 +138,7 @@ class NonTreacheryData extends CardData {
   async onPlayerEvadeAttempt(source, data) {CardData.log("onPlayerEvadeAttempt", data)}
   async onPlayerEvades(source, data) {CardData.log("onPlayerEvades", data)}
   
+  async onEnemySpawns(source, data) {CardData.log("onEnemySpawns", data)}
   async onEnemyMoves(source, data) {CardData.log("onEnemyMoves", data)}
   async onEnemyAttacks(source, data) {CardData.log("onEnemyAttacks", data)}
   async onEnemyDies(source, data) {CardData.log("onEnemyDies", data)}
@@ -186,10 +148,11 @@ class NonTreacheryData extends CardData {
 }
 
 class IdentityData extends NonTreacheryData {
-  #influence;
-  #mu;
-  #strength;
-  #link;
+  influence;
+  mu;
+  strength;
+  link;
+  health;
 
   get type() { return TYPE_IDENTITY; }
 
@@ -200,27 +163,7 @@ class IdentityData extends NonTreacheryData {
         this[key] = data[key];
       }
     }
-  }
-
-  get influence() { return this.#influence; }
-  set influence(value) {
-    CardDataWriteError.throwIfSet(this, "influence");
-    this.#influence = value;
-  }
-  get mu() { return this.#mu; }
-  set mu(value) {
-    CardDataWriteError.throwIfSet(this, "mu");
-    this.#mu = value;
-  }
-  get strength() { return this.#strength; }
-  set strength(value) {
-    CardDataWriteError.throwIfSet(this, "strength");
-    this.#strength = value;
-  }
-  get link() { return this.#link; }
-  set link(value) {
-    CardDataWriteError.throwIfSet(this, "link");
-    this.#link = value;
+    Object.freeze(this);
   }
 
   // Determines if the identity can be used
@@ -238,27 +181,9 @@ class IdentityData extends NonTreacheryData {
 }
 
 class PlayableCardData extends NonTreacheryData {
-  #cost;
-  #activeInHand;
-  #preventAttacks;
-
-  get cost() { return this.#cost; }
-  set cost(value) {
-    CardDataWriteError.throwIfSet(this, "cost");
-    this.#cost = value;
-  }
-
-  get activeInHand() { return this.#activeInHand; }
-  set activeInHand(value) {
-    CardDataWriteError.throwIfSet(this, "activeInHand");
-    this.#activeInHand = value;
-  }
-
-  get preventAttacks() { return this.#preventAttacks; }
-  set preventAttacks(value) {
-    CardDataWriteError.throwIfSet(this, "preventAttacks");
-    this.#preventAttacks = value;
-  }
+  cost;
+  activeInHand;
+  preventAttacks;
 
   // Adds any non-printed play/install costs
   calculateCost(source, data) { return this.cost; }
@@ -270,8 +195,8 @@ class PlayableCardData extends NonTreacheryData {
 }
 
 class AssetData extends PlayableCardData {
-  #health;
-  #unique
+  health;
+  unique;
 
   get type() { return TYPE_ASSET; }
 
@@ -282,18 +207,7 @@ class AssetData extends PlayableCardData {
         this[key] = data[key];
       }
     }
-  }
-
-  get health() { return this.#health; }
-  set health(value) {
-    CardDataWriteError.throwIfSet(this, "health");
-    this.#health = value;
-  }
-
-  get unique() { return this.#unique; }
-  set unique(value) {
-    CardDataWriteError.throwIfSet(this, "unique");
-    this.#unique = value;
+    Object.freeze(this);
   }
 
   // Determines if the asset can be used while installed
@@ -325,6 +239,7 @@ class EventData extends PlayableCardData {
         this[key] = data[key];
       }
     }
+    Object.freeze(this);
   }
 
   populate(jObj) {
@@ -342,9 +257,9 @@ class EventData extends PlayableCardData {
 }
 
 class EnemyData extends NonTreacheryData {
-  #health;
-  #strength;
-  #link;
+  health;
+  strength;
+  link;
 
   get type() { return TYPE_ENEMY; }
 
@@ -355,22 +270,7 @@ class EnemyData extends NonTreacheryData {
         this[key] = data[key];
       }
     }
-  }
-
-  get health() { return this.#health; }
-  set health(value) {
-    CardDataWriteError.throwIfSet(this, "health");
-    this.#health = value;
-  }
-  get strength() { return this.#strength; }
-  set strength(value) {
-    CardDataWriteError.throwIfSet(this, "strength");
-    this.#strength = value;
-  }
-  get link() { return this.#link; }
-  set link(value) {
-    CardDataWriteError.throwIfSet(this, "link");
-    this.#link = value;
+    Object.freeze(this);
   }
 
   async attack(source, data) {CardData.log("attack", data)}
@@ -394,6 +294,8 @@ class EnemyData extends NonTreacheryData {
 }
 
 class ActData extends NonTreacheryData {
+  requirement; // String describing the required action to advance the act
+
   get type() { return TYPE_ACT; }
 
   constructor(id, data) {
@@ -403,6 +305,7 @@ class ActData extends NonTreacheryData {
         this[key] = data[key];
       }
     }
+    Object.freeze(this);
   }
 
   async advance(source, data) {CardData.log("advanceAct", data)}
@@ -416,7 +319,7 @@ class ActData extends NonTreacheryData {
 }
 
 class AgendaData extends NonTreacheryData {
-  #requirement;
+  requirement; // Number of doom required to advance the agenda
 
   get type() { return TYPE_AGENDA; }
 
@@ -427,12 +330,7 @@ class AgendaData extends NonTreacheryData {
         this[key] = data[key];
       }
     }
-  }
-
-  get requirement() { return this.#requirement; }
-  set requirement(value) {
-    CardDataWriteError.throwIfSet(this, "requirement");
-    this.#requirement = value;
+    Object.freeze(this);
   }
 
   async advance(source, data) {CardData.log("advanceAgenda", data)}
@@ -446,8 +344,8 @@ class AgendaData extends NonTreacheryData {
 }
 
 class LocationData extends NonTreacheryData {
-  #shroud;
-  #clues;
+  shroud;
+  clues;
 
   get type() { return TYPE_LOCATION; }
 
@@ -458,17 +356,7 @@ class LocationData extends NonTreacheryData {
         this[key] = data[key];
       }
     }
-  }
-
-  get shroud() { return this.#shroud; }
-  set shroud(value) {
-    CardDataWriteError.throwIfSet(this, "shroud");
-    this.#shroud = value;
-  }
-  get clues() { return this.#clues; }
-  set clues(value) {
-    CardDataWriteError.throwIfSet(this, "clues");
-    this.#clues = value;
+    Object.freeze(this);
   }
 
   populate(jObj) {
@@ -497,8 +385,10 @@ class TreacheryData extends CardData {
       }
     }
     this.faction = FACTION_ENCOUNTER;
+    Object.freeze(this);
   }
 
+  canEncounter() { return true; }
   async onEncounter() { }
 
   populate(jObj) {
