@@ -63,178 +63,193 @@
   <body>
     <div id="ui-mode">
       <div id="ui-flags">
-        <!-- Turn banners -->
-        <div id="corp-turn-banner" class="turn-banner" style="display: none">
-          <img src="img/game/turnCorp.png" class="w-100 m-auto" />
-        </div>
-        <div id="runner-turn-banner" class="turn-banner" style="display: none">
-          <img src="img/game/turnRunner.png" class="w-100 m-auto" />
-        </div>
+        <div id="tutorial-flags">
+          <!-- Turn banners -->
+          <div id="corp-turn-banner" class="turn-banner" style="display: none">
+            <img src="img/game/turnCorp.png" class="w-100 m-auto" />
+          </div>
+          <div
+            id="runner-turn-banner"
+            class="turn-banner"
+            style="display: none"
+          >
+            <img src="img/game/turnRunner.png" class="w-100 m-auto" />
+          </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="modal" tabindex="-1" role="dialog">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 id="modal-title" class="modal-title"></h5>
+          <!-- Modal -->
+          <div class="modal fade" id="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 id="modal-title" class="modal-title"></h5>
+                </div>
+                <div id="modal-body" class="modal-body"></div>
               </div>
-              <div id="modal-body" class="modal-body"></div>
             </div>
           </div>
-        </div>
 
-        <!-- Notifications/alerts -->
-        <div id="alert-container"></div>
+          <!-- Notifications/alerts -->
+          <div id="alert-container"></div>
 
-        <!-- Focused card -->
-        <div id="card-focused">
-          <div class="card-image-container h-100">
-            <img class="card-padding h-100" src="img/card/placeholder.png" />
-            <img
-              id="card-focused-image"
-              class="card-image h-100"
-              src="img/card/placeholder.png"
-            />
+          <!-- Focused card -->
+          <div id="card-focused">
+            <div class="card-image-container h-100">
+              <img class="card-padding h-100" src="img/card/placeholder.png" />
+              <img
+                id="card-focused-image"
+                class="card-image h-100"
+                src="img/card/placeholder.png"
+              />
+            </div>
           </div>
-        </div>
 
-        <!-- Game -->
-        <div class="container-fluid h-100">
-          <div class="row h-70">
-            <div class="col-6 col-lg-5 p-0">
-              <div id="location-window" class="h-90">
-                <div id="location-map">
-                  <div id="location-position">
-                    <div id="current-location-marker">
+          <!-- Game -->
+          <div class="container-fluid h-100">
+            <div class="row h-70">
+              <div class="col-6 col-lg-5 p-0">
+                <div id="location-window" class="h-90">
+                  <div id="location-map">
+                    <div id="location-position">
+                      <div id="current-location-marker">
+                        <img
+                          id="current-location-frame"
+                          src="img/game/currentLocation.png"
+                        />
+                        <img
+                          id="current-location-inner"
+                          src="img/game/currentLocationInner.png"
+                        />
+                        <img
+                          id="current-location-padding"
+                          class="h-100"
+                          src="img/game/currentLocationBlank.png"
+                        />
+                      </div>
+                      <div id="enemy-container"></div>
+                    </div>
+                  </div>
+                  <div id="location-buttons" class="d-flex flex-column gap-1">
+                    <button id="map-zoom-in">
+                      <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button id="map-zoom-out">
+                      <i class="fa-solid fa-magnifying-glass-minus"></i>
+                    </button>
+                    <button id="map-reset">
+                      <i class="fa-solid fa-arrows-to-dot"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-lg-7 d-flex h-100">
+                <div class="h-100 d-flex flex-column py-1 pe-2 gap-1">
+                  <div id="act" class="h-50">
+                    <div class="card-image-container h-100">
                       <img
-                        id="current-location-frame"
-                        src="img/game/currentLocation.png"
-                      />
-                      <img
-                        id="current-location-inner"
-                        src="img/game/currentLocationInner.png"
-                      />
-                      <img
-                        id="current-location-padding"
-                        class="h-100"
-                        src="img/game/currentLocationBlank.png"
+                        id="act-image"
+                        class="card-image h-100"
+                        src="img/card/actPlaceholder.png"
                       />
                     </div>
-                    <div id="enemy-container"></div>
+                  </div>
+                  <div id="agenda" class="h-50">
+                    <div class="card-image-container h-100">
+                      <img
+                        id="agenda-image"
+                        class="card-image h-100"
+                        src="img/card/agendaPlaceholder.png"
+                      />
+                    </div>
+                    <div class="hosted-counters">
+                      <div
+                        class="doom shake-counter"
+                        style="display: none"
+                      ></div>
+                    </div>
                   </div>
                 </div>
-                <div id="location-buttons" class="d-flex flex-column gap-1">
-                  <button id="map-zoom-in">
-                    <i class="fa-solid fa-magnifying-glass-plus"></i>
-                  </button>
-                  <button id="map-zoom-out">
-                    <i class="fa-solid fa-magnifying-glass-minus"></i>
-                  </button>
-                  <button id="map-reset">
-                    <i class="fa-solid fa-arrows-to-dot"></i>
-                  </button>
+                <div class="flex-grow-1">
+                  <div
+                    id="rig"
+                    class="h-100 w-100 d-flex flex-column align-content-start p-1 gap-1"
+                  ></div>
                 </div>
               </div>
             </div>
-            <div class="col-6 col-lg-7 d-flex h-100">
-              <div class="h-100 d-flex flex-column py-1 pe-2 gap-1">
-                <div id="act" class="h-50">
-                  <div class="card-image-container h-100">
+            <div class="row h-30">
+              <div class="col-9 h-100">
+                <div id="runner-cards" class="d-flex no-wrap py-2 h-100">
+                  <div id="stack" class="mx-2 h-100">
                     <img
-                      id="act-image"
-                      class="card-image h-100"
-                      src="img/card/actPlaceholder.png"
+                      id="stack-empty"
+                      class="h-100"
+                      src="img/card/emptyStack.png"
+                    />
+                    <img
+                      id="stack-top-card"
+                      class="h-100"
+                      src="img/card/backNeutral.png"
                     />
                   </div>
-                </div>
-                <div id="agenda" class="h-50">
-                  <div class="card-image-container h-100">
+                  <div id="grip" class="mx-2 flex-grow-1 h-100"></div>
+                  <div id="heap" class="mx-2 h-100">
                     <img
-                      id="agenda-image"
-                      class="card-image h-100"
-                      src="img/card/agendaPlaceholder.png"
+                      id="heap-empty"
+                      class="h-100"
+                      src="img/card/emptyHeap.png"
+                    />
+                    <img
+                      id="heap-top-card"
+                      class="h-100"
+                      src="img/card/backNeutral.png"
                     />
                   </div>
-                  <div class="hosted-counters">
-                    <div class="doom shake-counter" style="display: none"></div>
+                  <div id="runner-id" class="mx-2 h-100">
+                    <div class="card-image-container h-100">
+                      <img
+                        id="runner-id-image"
+                        class="card-image h-100"
+                        src=""
+                      />
+                    </div>
+                    <div class="hosted-counters">
+                      <div
+                        class="damage shake-counter"
+                        style="display: none"
+                      ></div>
+                      <div
+                        class="doom shake-counter"
+                        style="display: none"
+                      ></div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="flex-grow-1">
-                <div
-                  id="rig"
-                  class="h-100 w-100 d-flex flex-column align-content-start p-1 gap-1"
-                ></div>
-              </div>
-            </div>
-          </div>
-          <div class="row h-30">
-            <div class="col-9 h-100">
-              <div id="runner-cards" class="d-flex no-wrap py-2 h-100">
-                <div id="stack" class="mx-2 h-100">
-                  <img
-                    id="stack-empty"
-                    class="h-100"
-                    src="img/card/emptyStack.png"
-                  />
-                  <img
-                    id="stack-top-card"
-                    class="h-100"
-                    src="img/card/backNeutral.png"
-                  />
-                </div>
-                <div id="grip" class="mx-2 flex-grow-1 h-100"></div>
-                <div id="heap" class="mx-2 h-100">
-                  <img
-                    id="heap-empty"
-                    class="h-100"
-                    src="img/card/emptyHeap.png"
-                  />
-                  <img
-                    id="heap-top-card"
-                    class="h-100"
-                    src="img/card/backNeutral.png"
-                  />
-                </div>
-                <div id="runner-id" class="mx-2 h-100">
-                  <div class="card-image-container h-100">
-                    <img id="runner-id-image" class="card-image h-100" src="" />
-                  </div>
-                  <div class="hosted-counters">
-                    <div
-                      class="damage shake-counter"
-                      style="display: none"
-                    ></div>
-                    <div class="doom shake-counter" style="display: none"></div>
+              <div id="control-panel" class="col-3 d-flex flex-column">
+                <div id="stats">
+                  <div class="d-flex justify-content-center font-size-28">
+                    <div id="stat-influence" class="stat mx-2">
+                      <span id="influence-count" class="bouncy">3</span>
+                      <img class="skill-icon" src="img/game/influence.png" />
+                    </div>
+                    |
+                    <div id="stat-mu" class="stat mx-2">
+                      <span id="mu-count" class="bouncy">3</span>
+                      <img class="skill-icon" src="img/game/mu.png" />
+                    </div>
+                    |
+                    <div id="stat-strength" class="stat mx-2">
+                      <span id="strength-count" class="bouncy">3</span>
+                      <img class="skill-icon" src="img/game/strength.png" />
+                    </div>
+                    |
+                    <div id="stat-link" class="stat mx-2">
+                      <span id="link-count" class="bouncy">3</span>
+                      <img class="skill-icon" src="img/game/link.png" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div id="control-panel" class="col-3 d-flex flex-column">
-              <div id="stats">
-                <div class="d-flex justify-content-center font-size-28">
-                  <div id="stat-influence" class="stat mx-2">
-                    <span id="influence-count" class="bouncy">3</span>
-                    <img class="skill-icon" src="img/game/influence.png" />
-                  </div>
-                  |
-                  <div id="stat-mu" class="stat mx-2">
-                    <span id="mu-count" class="bouncy">3</span>
-                    <img class="skill-icon" src="img/game/mu.png" />
-                  </div>
-                  |
-                  <div id="stat-strength" class="stat mx-2">
-                    <span id="strength-count" class="bouncy">3</span>
-                    <img class="skill-icon" src="img/game/strength.png" />
-                  </div>
-                  |
-                  <div id="stat-link" class="stat mx-2">
-                    <span id="link-count" class="bouncy">3</span>
-                    <img class="skill-icon" src="img/game/link.png" />
-                  </div>
-                </div>
-              </div>
-              <!-- <div
+                <!-- <div
             id="chaos-legend"
             class="d-flex justify-content-evenly font-size-24"
           >
@@ -252,72 +267,73 @@
               <img src="skull.png" class="inline-icon" title="skull" />Skull
             </div>
           </div> -->
-              <div id="resources">
-                <div class="d-flex justify-content-between font-size-24">
-                  <div id="click-count"></div>
-                  <div>
-                    Data:
-                    <span id="clue-count" class="bouncy">0</span>
+                <div id="resources">
+                  <div class="d-flex justify-content-between font-size-24">
+                    <div id="click-count"></div>
+                    <div>
+                      Data:
+                      <span id="clue-count" class="bouncy">0</span>
+                    </div>
+                    <div>
+                      Credits:
+                      <span id="credit-count" class="bouncy">5</span>
+                    </div>
                   </div>
-                  <div>
-                    Credits:
-                    <span id="credit-count" class="bouncy">5</span>
+                </div>
+                <div id="basic-actions" class="flex-grow-1 font-size-20">
+                  <div
+                    class="col-4 w-100 d-flex justify-content-between gap-1 mt-1"
+                  >
+                    <button id="action-credit" class="action-button">
+                      Gain 1
+                      <img
+                        src="img/game/credit.png"
+                        class="inline-icon"
+                        title="credit"
+                      />
+                    </button>
+                    <button id="action-move" class="action-button">
+                      <span id="action-move-default">Move</span>
+                      <span id="action-move-cancel">Cancel</span>
+                    </button>
+                    <button id="action-engage" class="action-button">
+                      <span id="action-engage-default">Engage</span>
+                      <span id="action-engage-cancel">Cancel</span>
+                    </button>
                   </div>
-                </div>
-              </div>
-              <div id="basic-actions" class="flex-grow-1 font-size-20">
-                <div
-                  class="col-4 w-100 d-flex justify-content-between gap-1 mt-1"
-                >
-                  <button id="action-credit" class="action-button">
-                    Gain 1
-                    <img
-                      src="img/game/credit.png"
-                      class="inline-icon"
-                      title="credit"
-                    />
-                  </button>
-                  <button id="action-move" class="action-button">
-                    <span id="action-move-default">Move</span>
-                    <span id="action-move-cancel">Cancel</span>
-                  </button>
-                  <button id="action-engage" class="action-button">
-                    <span id="action-engage-default">Engage</span>
-                    <span id="action-engage-cancel">Cancel</span>
-                  </button>
-                </div>
-                <div
-                  class="col-4 w-100 d-flex justify-content-between gap-1 mt-2"
-                >
-                  <button id="action-draw" class="action-button">
-                    Draw 1 card
-                  </button>
-                  <button id="action-investigate" class="action-button">
-                    Jack in
-                  </button>
-                  <button id="action-fight" class="action-button">
-                    <span id="action-fight-default">Fight</span>
-                    <span id="action-fight-cancel">Cancel</span>
-                  </button>
-                </div>
-                <div
-                  class="col-4 w-100 d-flex justify-content-between gap-1 mt-2"
-                >
-                  <button
-                    id="action-end-turn"
-                    class="action-button"
-                    style="flex-basis: 66.666667%"
+                  <div
+                    class="col-4 w-100 d-flex justify-content-between gap-1 mt-2"
                   >
-                    End turn
-                  </button>
-                  <button
-                    id="action-evade"
-                    class="action-button"
-                    style="flex-basis: 33.3333333%"
+                    <button id="action-draw" class="action-button">
+                      Draw 1 card
+                    </button>
+                    <button id="action-investigate" class="action-button">
+                      Jack in
+                    </button>
+                    <button id="action-fight" class="action-button">
+                      <span id="action-fight-default">Fight</span>
+                      <span id="action-fight-cancel">Cancel</span>
+                    </button>
+                  </div>
+                  <div
+                    class="col-4 w-100 d-flex justify-content-between gap-1 mt-2"
                   >
-                    <span id="action-evade-default">Evade</span>
-                    <span id="action-evade-cancel">Cancel</span>
-                  </button>
+                    <button
+                      id="action-end-turn"
+                      class="action-button"
+                      style="flex-basis: 66.666667%"
+                    >
+                      End turn
+                    </button>
+                    <button
+                      id="action-evade"
+                      class="action-button"
+                      style="flex-basis: 33.3333333%"
+                    >
+                      <span id="action-evade-default">Evade</span>
+                      <span id="action-evade-cancel">Cancel</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

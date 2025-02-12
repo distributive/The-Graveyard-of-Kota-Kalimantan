@@ -36,7 +36,7 @@ CardDocklandsPass = new AssetData("docklands_pass", {
 
 CardPennyearner = new AssetData("pennyearner", {
   title: "Pennyearner",
-  text: "Whenever you move, place 1{c} on this.\n{click}: <b>Jack in.</b> If successful, take all hosted credits.",
+  text: "The first time each turn you move, place 1{c} on this.\n{click}: <b>Jack in.</b> If successful, take all hosted credits.",
   subtypes: ["console", "unique"],
   unique: true,
   faction: FACTION_CRIMINAL,
@@ -44,7 +44,14 @@ CardPennyearner = new AssetData("pennyearner", {
   cost: 3,
   health: 0,
   async onPlayerMoves(source, data) {
+    if (source.movedThisTurn) {
+      return;
+    }
     source.addPower(1);
+    source.movedThisTurn = true;
+  },
+  async onTurnEnd(source, data) {
+    source.movedThisTurn = false;
   },
   canUse(source) {
     return source.power > 0;

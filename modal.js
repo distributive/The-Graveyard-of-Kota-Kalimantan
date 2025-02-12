@@ -132,7 +132,7 @@ class Modal {
         .append(bodyContainer);
       imageContainer.parent().data("card-id", this.#cardData.id);
     } else if (typeof this.#body == "string") {
-      this.#body = $(`<div>${this.#body}</div>`);
+      this.#body = $(`<div></div>`).append(bodyContainer);
     }
 
     // Options

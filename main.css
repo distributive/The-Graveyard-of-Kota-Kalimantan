@@ -1,7 +1,8 @@
 html,
 body,
 #ui-mode,
-#ui-flags {
+#ui-flags,
+#tutorial-flags {
   height: 100%;
   width: 100%;
 
@@ -150,7 +151,17 @@ button:disabled .inline-icon {
 #ui-flags:not(.can-engage, .can-cancel-engage) #action-engage,
 #ui-flags:not(.can-fight, .can-cancel-fight) #action-fight,
 #ui-flags:not(.can-evade, .can-cancel-evade) #action-evade,
-#ui-mode.ui-mode-select-location #ui-flags:not(.can-cancel-move) #action-move {
+#ui-mode.ui-mode-select-location #ui-flags:not(.can-cancel-move) #action-move,
+#tutorial-flags.force-credit .action-button:not(#action-credit),
+#tutorial-flags.force-draw .action-button:not(#action-draw),
+#tutorial-flags.force-move .action-button:not(#action-move),
+#tutorial-flags.force-investigate .action-button:not(#action-investigate),
+#tutorial-flags.force-engage .action-button:not(#action-engage),
+#tutorial-flags.force-fight .action-button:not(#action-fight),
+#tutorial-flags.force-evade .action-button:not(#action-evade),
+#tutorial-flags.force-play-event .action-button,
+#tutorial-flags.force-install-asset .action-button,
+#tutorial-flags.force-use-asset .action-button {
   pointer-events: none;
 
   color: #888888 !important;
@@ -1130,7 +1141,7 @@ button:disabled .inline-icon {
 /* Modal */
 
 #modal-image {
-  max-height: 80%;
+  max-height: 500px;
   max-width: 50%;
   margin-right: 1em;
   margin-bottom: 1em;

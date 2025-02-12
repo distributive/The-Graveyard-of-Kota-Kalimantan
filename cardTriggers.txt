@@ -8,7 +8,7 @@ onGainClicks(source, {oldValue, newValue})
 onLoseClicks(source, {oldValue, newValue})
 
 onCardsDrawn(source, {number})
-onCardPlayed(source, {card}) // Conflates playing events with installing assets
+onCardPlayed(source, {card})
 onCardInstalled(source, {card})
 onCardDiscarded(source, {cardData})
 onAssetTrashed(source, {card})

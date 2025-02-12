@@ -15,6 +15,9 @@ class Broadcast {
       return;
     }
 
+    // Broadcast to the tutorial controller
+    await Tutorial.signal(trigger, data);
+
     // Broadcast to cards in hand that have active effects
     for (const source of Cards.grip) {
       if (source.cardData.activeInHand) {
