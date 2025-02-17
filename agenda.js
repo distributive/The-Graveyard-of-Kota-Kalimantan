@@ -1,5 +1,5 @@
 class Agenda {
-  static #cardData;
+  static #cardData = Agenda1; // Set directly to avoid animating (Agenda1 is blank and invisible)
   static #doom;
 
   static get cardData() {
@@ -44,5 +44,6 @@ class Agenda {
 ///////////////////////////////////////////////////////////////////////////////
 
 $(document).ready(function () {
-  // Agenda.setCard("the_catalyst", false);
+  // Set initial card data
+  $("#agenda").data("card-id", Agenda.cardData.id);
 });

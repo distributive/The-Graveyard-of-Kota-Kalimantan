@@ -94,24 +94,28 @@ $(document).ready(function () {
     )
   );
 
-  // TODO - fill dynamic data once implemented
   tippy(
     "#act",
     Tooltip.make((instance) =>
       instance.setContent(
-        "The current act; complete its requirement () to advance (good)"
+        `The current act; complete its requirement (${Act.cardData.requirement}) to advance (good)`
       )
     )
   );
   tippy(
     "#agenda",
-    Tooltip.make((instance) =>
+    Tooltip.make((instance) => {
+      if (Agenda.cardData == Agenda1) {
+        return false;
+      }
       instance.setContent(
-        `The current agenda; each turn 1 doom is placed on this until it reaches its threshold () and advances (${
+        `The current agenda; each turn 1 doom is placed on this until it reaches its threshold (${
+          Agenda.cardData.requirement
+        }) and advances (${
           Agenda.cardData == Agenda4 ? "this time it's good" : "bad"
         })`
-      )
-    )
+      );
+    })
   );
   tippy(
     "#runner-id",

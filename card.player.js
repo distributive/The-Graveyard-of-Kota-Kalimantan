@@ -26,6 +26,7 @@ const CardTopan = new IdentityData("topan", {
   health: 7,
   canUse(source) {
     return (
+      !Tutorial.active && // Inactive during the tutorial
       !source.tapped &&
       Cards.grip.some(
         (card) =>
@@ -85,6 +86,11 @@ const CardBaz = new IdentityData("baz", {
   link: 5,
   health: 7,
   async onPlayerEngages() {
+    // Inactive in the tutorial
+    if (Tutorial.active) {
+      return;
+    }
+
     const prevUiMode = UiMode.uiMode;
     const prevUiModeData = UiMode.data;
 

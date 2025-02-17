@@ -39,12 +39,19 @@ class Location {
     );
   }
   static focusMapOffsetCurrentLocation() {
-    if (!this.currentLocation) {
-      return this.resetMapOffset();
+    if (this.currentLocation) {
+      this.focusMapOffsetToLocation(this.getCurrentLocation());
+      $("#map-reset").attr("disabled", true);
+    } else {
+      this.resetMapOffset();
     }
-    const [dx, dy] = this.currentLocation.pos;
-    this.setMapOffset(-this.xCoordToPos(dx), -this.yCoordToPos(dy));
-    $("#map-reset").attr("disabled", true);
+  }
+  static focusMapOffsetToLocation(location) {
+    const [dx, dy] = location.pos;
+    this.focusMapOffsetToLocationPosition(dx, dy);
+  }
+  static focusMapOffsetToLocationPosition(x, y) {
+    this.setMapOffset(-this.xCoordToPos(x), -this.yCoordToPos(y));
   }
 
   static #zoomIndex = LOCATION_ZOOM_DEFAULT;
@@ -125,11 +132,10 @@ class Location {
     Location.recordLocationByPosition(this);
 
     let jObj = $(`
-      <div class="location-container">
+      <div class="location-container transition-in">
         <div class="card-image-container h-100">
-          <img src="${
-            this.#cardData.image
-          }" class="location-image card-image" onmousedown="event.preventDefault()" />
+          <img src="" class="location-image card-image" onmousedown="event.preventDefault()" />
+          <div class="card-text"></div>
         </div>
         <div class="hosted-counters">
           <div class="clues shake-counter"></div>
@@ -137,20 +143,33 @@ class Location {
         </div>
       </div>`);
     this.#jObj = jObj;
-    Cards.populateData(
-      jObj.find(".card-image-container"),
-      this.#cardData,
-      "10px"
-    );
+    // Cards.populateData(
+    //   jObj.find(".card-image-container"),
+    //   this.#cardData,
+    //   "10px"
+    // );
     jObj.data("location-id", this.#id);
     jObj.data("card-id", this.#cardData.id);
     Location.root.append(jObj);
     this.setPos(x, y);
 
-    this.#jClues = this.#jObj.find(".clues");
-    this.#jDoom = this.#jObj.find(".doom");
-    this.setClues(cardData.clues);
-    this.setDoom(0);
+    // Animate the background colour of the location (needed to obscure connections)
+    setTimeout(function () {
+      jObj.removeClass("transition-in");
+    }, 100);
+
+    this.#jClues = this.#jObj.find(".clues").hide();
+    this.#jDoom = this.#jObj.find(".doom").hide();
+
+    // Place counters after the intro animation
+    const instance = this;
+    setTimeout(function () {
+      instance.setClues(cardData.clues);
+      instance.setDoom(0);
+    }, 2000);
+
+    // Animate the location
+    Cards.flip(jObj.find(".card-image-container"), cardData);
   }
 
   get cardData() {
@@ -247,6 +266,17 @@ class Location {
     return this.#y;
   }
 
+  calculateValidLocations() {
+    $(".location-container").removeClass("valid-destination");
+    this.#neighbours.forEach((location) => {
+      location.#jObj.addClass("valid-destination");
+    });
+    $(".location-connector").removeClass("valid-connection");
+    Object.keys(this.#connections).forEach((key) =>
+      this.#connections[key].addClass("valid-connection")
+    );
+  }
+
   setCurrentLocation(firstTime = false) {
     if (Location.currentLocation == this) {
       return this;
@@ -258,14 +288,7 @@ class Location {
     this.#jObj.addClass("current-location");
 
     // Reassign valid destinations
-    $(".location-container").removeClass("valid-destination");
-    this.#neighbours.forEach((location) => {
-      location.#jObj.addClass("valid-destination");
-    });
-    $(".location-connector").removeClass("valid-connection");
-    Object.keys(this.#connections).forEach((key) =>
-      this.#connections[key].addClass("valid-connection")
-    );
+    this.calculateValidLocations();
 
     // Move the current-location identifier
     $("#current-location-marker")
@@ -290,8 +313,7 @@ class Location {
     }, 300);
 
     // Move camera to new location
-    // TODO - determine if new location is off screen?
-    // Location.focusMapOffsetCurrentLocation();
+    Location.focusMapOffsetCurrentLocation();
 
     // Update UI buttons
     $("#map-reset").attr("disabled", false);
@@ -333,6 +355,49 @@ class Location {
     }
 
     return this;
+  }
+
+  removeNeighbour(neighbour) {
+    // Remove neighbour relation
+    let index = this.#neighbours.indexOf(neighbour);
+    if (index > -1) {
+      this.#neighbours.splice(index, 1);
+    }
+    index = neighbour.#neighbours.indexOf(this);
+    if (index > -1) {
+      this.#neighbours.splice(index, 1);
+    }
+
+    // Remove connection
+    const connection = this.#connections[neighbour.#id];
+    delete this.#connections[neighbour.#id];
+    delete neighbour.#connections[this.#id];
+
+    // Remove connection jObj
+    if (connection) {
+      connection.remove();
+    }
+
+    this.calculateValidLocations();
+    return this;
+  }
+
+  // Deletes all neighbour relations, hosted enemies, and the location jObj#
+  remove() {
+    if (this == Location.getCurrentLocation()) {
+      throw new Error("Attmpted to delete current location!");
+    }
+    for (const neighbour of this.#neighbours) {
+      this.removeNeighbour(neighbour);
+    }
+    for (const enemy of this.#enemies) {
+      enemy.remove();
+    }
+    this.#jObj.remove();
+    const index = Location.instances.indexOf(this);
+    if (index >= 0) {
+      Location.instances.splice(index, 1);
+    }
   }
 
   // These do not affect the enemies, they are just for logging them at locations

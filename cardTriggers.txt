@@ -10,7 +10,7 @@ onLoseClicks(source, {oldValue, newValue})
 onCardsDrawn(source, {number})
 onCardPlayed(source, {card})
 onCardInstalled(source, {card})
-onCardDiscarded(source, {cardData})
+onCardDiscarded(source, {card})
 onAssetTrashed(source, {card})
 
 onTestAttempted(source, {stat})

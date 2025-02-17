@@ -1,5 +1,5 @@
 class Act {
-  static #cardData;
+  static #cardData = Act1;
 
   static get cardData() {
     return this.#cardData;
@@ -20,5 +20,6 @@ class Act {
 ///////////////////////////////////////////////////////////////////////////////
 
 $(document).ready(function () {
-  // Act.setCard(CardTheCatalyst, false);
+  // Set initial card data
+  $("#act").data("card-id", Act.cardData.id);
 });

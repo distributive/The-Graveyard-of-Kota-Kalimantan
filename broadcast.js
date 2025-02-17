@@ -16,7 +16,8 @@ class Broadcast {
     }
 
     // Broadcast to the tutorial controller
-    await Tutorial.signal(trigger, data);
+    // Note: we don't wait for the tutorial to finish resolving because it has async timing with the game
+    Tutorial.signal(trigger, data);
 
     // Broadcast to cards in hand that have active effects
     for (const source of Cards.grip) {
@@ -54,8 +55,8 @@ class Broadcast {
 
     // Broadcast to the agenda/act/identity
     // These are unique in that they do not provide a source as there is only ever one active
-    // await Act.cardData[trigger](data);
-    // await Agenda.cardData[trigger](data);
+    await Act.cardData[trigger](data);
+    await Agenda.cardData[trigger](data);
     await Identity.cardData[trigger](Identity, data);
   }
 

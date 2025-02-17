@@ -1,17 +1,6 @@
-const EnemyExample = new EnemyData("example", {
-  title: "Example",
-  text: "",
-  subtypes: [],
-  faction: FACTION_NET,
-  image: "img/card/enemy/bgAlt.png",
-  strength: 3,
-  health: 2,
-  link: 1,
-});
-
 const EnemyRat = new EnemyData("rat", {
   title: "Rat",
-  text: "When this attacks, do 1 damage.",
+  text: "Hunter.\nWhen this attacks, do 1 damage.",
   subtypes: ["creature"],
   faction: FACTION_MEAT,
   image: "img/card/enemy/rat.png",
@@ -25,7 +14,7 @@ const EnemyRat = new EnemyData("rat", {
 
 const EnemyNetRat = new EnemyData("net_rat", {
   title: "R.A.T",
-  text: "{sub} Do 1 damage.",
+  text: "Hunter.\n{sub} Do 1 damage.",
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/netRat.png",
@@ -143,7 +132,7 @@ const EnemyHydra = new EnemyData("hydra", {
 
 const EnemyArchitect = new EnemyData("architect", {
   title: "The Designer",
-  text: "{sub} Resolve a random encounter.\n{sub} Move one of the Runner's data to this location.",
+  text: "Hunter.\n{sub} Resolve a random encounter.\n{sub} Move one of the Runner's data to this location.",
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/architect.png",
@@ -158,7 +147,7 @@ const EnemyArchitect = new EnemyData("architect", {
 
 const EnemySurveyor = new EnemyData("surveyor", {
   title: "The Watcher",
-  text: "This has +1 {strength} and {link} for each enemy at this location.\n{sub} Do 1 damage.",
+  text: "Hunter.\nThis has +1 {strength} and {link} for each enemy at this location.\n{sub} Do 1 damage.",
   subtypes: ["ice", "observer"],
   faction: FACTION_NET,
   image: "img/card/enemy/surveyor.png",
@@ -173,7 +162,7 @@ const EnemySurveyor = new EnemyData("surveyor", {
 
 const EnemyDataRaven = new EnemyData("data_raven", {
   title: "The Bird",
-  text: "Whenever you engage another enemy at this location, this attacks.\n{sub} Do 2 net damage unless the Runner pays 2{c}.",
+  text: "Hunter.\nWhenever you engage another enemy at this location, this attacks.\n{sub} Do 2 net damage unless the Runner pays 2{c}.",
   subtypes: ["ice", "observer"],
   faction: FACTION_NET,
   image: "img/card/enemy/dataRaven.png",
@@ -188,7 +177,7 @@ const EnemyDataRaven = new EnemyData("data_raven", {
 
 const EnemyHantu = new EnemyData("hantu", {
   title: "Hantu",
-  text: "When this enemy is defeated, escape the simulation.\n{sub} Do 1 damage.\n{sub} Discard 2 random cards. Do 1 damage for each card the Runner cannot discard.",
+  text: "Hunter.\nWhen this enemy is defeated, escape the simulation.\n{sub} Do 1 damage.\n{sub} Discard 2 random cards. Do 1 damage for each card the Runner cannot discard.",
   subtypes: ["ice", "elite"],
   faction: FACTION_NET,
   image: "img/card/enemy/hantu.png",

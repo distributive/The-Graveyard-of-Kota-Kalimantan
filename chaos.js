@@ -1,19 +1,19 @@
 class Chaos {
   static #chaosTokens = [
-    // 1,
-    // 1,
-    // 0,
-    // 0,
-    // 0,
-    // -1,
-    // -1,
-    // -1,
-    // -2,
-    // -2,
-    // "skull",
-    // "skull",
-    // "skull",
-    // "fail",
+    1,
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1,
+    -1,
+    -2,
+    -2,
+    "skull",
+    "skull",
+    "skull",
+    "fail",
     "elder",
   ];
 
@@ -24,16 +24,17 @@ class Chaos {
     const successfulTokens = this.#chaosTokens.filter(
       (token) =>
         token == "elder" ||
-        (minimum <= 0 && "skull") ||
+        (minimum <= 0 && token == "skull" && !Tutorial.active) ||
         (typeof token == "number" && token >= minimum)
     );
     return randomElement(successfulTokens);
   }
   static randomFailToken(minimum) {
+    console.log(minimum);
     const failingTokens = this.#chaosTokens.filter(
       (token) =>
         token == "fail" ||
-        (minimum > 0 && "skull") ||
+        (minimum > 0 && token == "skull" && !Tutorial.active) ||
         (typeof token == "number" && token < minimum)
     );
     return randomElement(failingTokens);
@@ -107,7 +108,11 @@ class Chaos {
       `;
       const options = [
         new Option("continue", "Continue"),
-        new Option("commit", "Commit Cards"),
+        new Option(
+          "commit",
+          "Commit Cards",
+          Tutorial.active ? "disabled" : null
+        ),
       ];
       if (canCancel) {
         options.push(new Option("cancel", "Cancel", "warning w-100"));

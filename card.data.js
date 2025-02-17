@@ -77,6 +77,7 @@ class CardData {
   subtypes;
   faction;
   image;
+  hidden; // Special flag - set true if the card is just a placeholder and should not be treated as a real card (e.g. Agenda1)
 
   constructor(id, data) {
     if (CardData.#instances[id]) {

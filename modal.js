@@ -71,7 +71,7 @@ class Modal {
     this.#allowKeyboard = allowKeyboard;
     this.#image = image;
     this.#cardData = cardData;
-    this.#slowRoll = slowRoll;
+    this.#slowRoll = false; //slowRoll; // TODO: remove
     this.#size = size;
     if (id) {
       if (Modal.find(id)) {
@@ -122,7 +122,7 @@ class Modal {
         .append(bodyContainer);
     } else if (this.#cardData) {
       const imageContainer = $(
-        `<div class="card-image-container h-100 float-start">
+        `<div id="card-modal-image" class="card-image-container h-100 float-start">
           <img class="card-image w-100 h-100" src="${this.#cardData.image}" />
         </div>`
       );

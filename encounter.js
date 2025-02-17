@@ -1,3 +1,5 @@
+const TEST_ENCOUNTERS = [TreacheryRapidDecay];
+
 const MEAT_ENCOUNTERS = [
   TreacheryClumsy,
   TreacheryFallingDebris,
@@ -19,7 +21,7 @@ const NET_ENCOUNTERS = [
 ];
 
 class Encounter {
-  static #encounterCards = MEAT_ENCOUNTERS; // TEMP
+  static #encounterCards = TEST_ENCOUNTERS; //MEAT_ENCOUNTERS; // TEMP
   static skipEncounters = false;
 
   static async draw(cardData, removeFromDeck = true) {
@@ -56,12 +58,11 @@ class Encounter {
       cardData: cardData,
       size: "lg",
     }).display();
-    // TODO: implement assets/events in the encounter deck maybe (idk)
-    if (cardData.type == TYPE_TREACHERY) {
+    if (cardData.type == TYPE_ENEMY) {
+      new Enemy(cardData, Location.getCurrentLocation());
+    } else {
       // Cursed note: onEncounter has to close the modal itself if the encounter effect does not need one
       await cardData.onEncounter();
-    } else if (cardData.type == TYPE_ENEMY) {
-      new Enemy(cardData, Location.getCurrentLocation());
     }
     Modal.hide();
   }

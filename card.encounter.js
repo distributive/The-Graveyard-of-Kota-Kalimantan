@@ -164,3 +164,22 @@ const TreacherySomethingInTheDark = new TreacheryData("something_in_the_dark", {
     }
   },
 });
+
+const TreacheryRapidDecay = new EventData("rapid_decay", {
+  title: "Rapid Decay",
+  text: "When you encounter or discard this, shuffle 2 into your deck.\n\nRemove this from the game.",
+  subtypes: ["blight"],
+  smallText: true,
+  faction: FACTION_NEUTRAL,
+  image: "img/card/event/rapidDecay.png",
+  cost: 3,
+  async onEncounter() {
+    Cards.addToStack([TreacheryRapidDecay, TreacheryRapidDecay], true);
+  },
+  async onPlay() {},
+  async onCardDiscarded(source, data) {
+    if (source == data.card) {
+      Cards.addToStack([TreacheryRapidDecay, TreacheryRapidDecay], true);
+    }
+  },
+});

@@ -1,5 +1,10 @@
 class Game {
-  static initGameState() {
+  static async initGameState() {
+    Tutorial.active = true;
+    if (Tutorial.active) {
+      Encounter.skipEncounters = true; // Re-enabled at the end of the tutorial
+    }
+
     // TODO let the user choose the ID
     const identity = CardBaz;
     Identity.setCard(identity, false);
@@ -63,18 +68,33 @@ class Game {
     }
     Cards.addToStack(xs, true);
 
-    Cards.draw(5);
-
-    Stats.setCredits(0);
-    for (let i = 1; i <= 5; i++) {
-      setTimeout(() => {
-        Stats.setCredits(i);
-      }, i * 100);
+    if (!Tutorial.active) {
+      await Cards.draw(5);
+    } else {
+      // Place Unsure Gamble and Warehouse Key on top of the deck for the tutorial
+      // This means the decks run 3 Unsure Gambles, but the maths works out nice for the tutorial
+      Cards.addToStack([CardWarehouseKey, CardUnsureGamble]);
     }
 
-    Stats.setClues(0);
+    Stats.setCredits(0);
+    if (!Tutorial.active) {
+      for (let i = 1; i <= 5; i++) {
+        setTimeout(() => {
+          Stats.setCredits(i);
+        }, i * 100);
+      }
+    }
 
+    const l0 = new Location(LocationApartment, 0, 0).setCurrentLocation(true);
+    const l1 = new Location(LocationWarehouse, 1, 0);
+    l0.addNeighbour(l1);
+
+    Stats.setClues(0);
     Agenda.setDoom(0);
+
+    await wait(500);
+
+    Game.startTurn();
   }
 
   // For logging events that happened this turn for card conditions
@@ -101,20 +121,22 @@ class Game {
     await Cards.draw(1);
     await Broadcast.signal("onTurnEnd");
 
-    await wait(500);
+    await wait(500); // TODO: time all these properly
 
     animateTurnBanner("corp");
 
-    await wait(1500);
+    await wait(1000);
 
-    await Agenda.addDoom(1);
+    if (Agenda.cardData && Agenda.cardData != Agenda1) {
+      await Agenda.addDoom(1);
+    }
 
     await wait(500);
 
     await RigCard.readyAll();
     await Enemy.readyAll();
 
-    await wait(1000);
+    await wait(500);
     await Encounter.draw();
 
     this.startTurn();
@@ -219,6 +241,11 @@ class Game {
     }
     await Enemy.attackOfOpportunity();
     await Broadcast.signal("onInvestigationAttempt", { location: location });
+    const forceOutcome = !Tutorial.active
+      ? null
+      : Stats.clicks > 0
+      ? "fail"
+      : "success";
     const results = await Chaos.runModal({
       stat: stat,
       base: base,
@@ -229,6 +256,7 @@ class Game {
           ? "your current location"
           : "the target location"
       }.</p>`,
+      forceOutcome: forceOutcome,
     });
 
     const { success } = results;
@@ -376,7 +404,7 @@ $(document).ready(function () {
     }
     await Stats.addClicks(-1);
     await Enemy.attackOfOpportunity();
-    Cards.draw(1);
+    await Cards.draw(1);
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }

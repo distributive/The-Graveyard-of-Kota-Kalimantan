@@ -1,6 +1,7 @@
+// Example room for the tutorial
 const LocationRoom = new LocationData("room", {
   title: "Room",
-  text: "Whenever you enter this location, place 1 clue and 1 doom on it.",
+  text: "",
   subtypes: ["place"],
   faction: FACTION_MEAT,
   image: "img/card/location/bg.png",
@@ -8,20 +9,123 @@ const LocationRoom = new LocationData("room", {
   clues: 2,
 });
 
-const LocationUnknownMeat = new LocationData("unknown_meat", {
-  title: "Unknown",
-  text: "When you enter this location, flip it.",
-  subtypes: ["hidden"],
+///////////////////////////////////////////////////////////////////////////////
+// TUTORIAL
+
+const LocationApartment = new LocationData("apartment", {
+  title: "Apartment",
+  text: "Your home sweet home.",
+  subtypes: ["building"],
   faction: FACTION_MEAT,
-  image: "img/card/location/unknownMeat.png",
+  image: "img/card/location/apartment.png",
   shroud: 0,
   clues: 0,
 });
 
+const LocationWarehouse = new LocationData("warehouse", {
+  title: "Warehouse",
+  text: "Your next job.",
+  subtypes: ["building"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/warehouse.png",
+  shroud: 0,
+  clues: 0,
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// MEATSPACE
+
+const LocationUnknownMeat = new LocationData("unknown_meat", {
+  title: "Unknown",
+  text: "When you enter this location, flip it.",
+  subtypes: ["room", "hidden"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/unknownMeat.png",
+  shroud: 0,
+  clues: 0,
+  async onPlayerMoves(source, data) {
+    if (data.toLocation != source) return;
+    // We're hardcoding these based on location (sorry not sorry)
+    let cardData;
+    if (source.x == 2 && source.y == 0) {
+      cardData = LocationTerminal;
+      Location.resetZoom();
+    } else if (
+      (source.x == 2 && source.y == 1) ||
+      (source.x == 2 && source.y == -1) ||
+      (source.x == 6 && source.y == 1) ||
+      (source.x == 6 && source.y == -1)
+    ) {
+      cardData = LocationStairs;
+    } else if (source.x == 4 && source.y == 0) {
+      cardData = LocationOffice;
+    } else if (source.x == 6 && source.y == 0) {
+      cardData = LocationStoreroom;
+    } else {
+      cardData = LocationCorridor;
+    }
+    source.setCard(cardData);
+    source.setClues(cardData.clues);
+  },
+});
+
+const LocationCorridor = new LocationData("corridor", {
+  title: "Corridor",
+  text: "",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/corridor.png",
+  shroud: 2,
+  clues: 0,
+});
+
+const LocationTerminal = new LocationData("terminal", {
+  title: "Public Access Terminal",
+  text: "",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/terminal.png",
+  shroud: 3,
+  clues: 1,
+});
+
+const LocationOffice = new LocationData("office", {
+  title: "Ransacked Office",
+  text: "",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/office.png",
+  shroud: 4,
+  clues: 1,
+});
+
+const LocationStairs = new LocationData("stairs", {
+  title: "Stairs",
+  text: "",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/stairs.png",
+  shroud: 2,
+  clues: 0,
+});
+
+const LocationStoreroom = new LocationData("storeroom", {
+  title: "Storeroom",
+  text: "",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/storeroom.png",
+  shroud: 2,
+  clues: 2,
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// NETSPACE
+
 const LocationUnknownNet = new LocationData("unknown_net", {
   title: "Unknown",
   text: "When you enter this location, flip it.",
-  subtypes: ["hidden", "netspace"],
+  subtypes: ["netspace", "hidden"],
   faction: FACTION_NET,
   image: "img/card/location/unknownNet.png",
   shroud: 0,

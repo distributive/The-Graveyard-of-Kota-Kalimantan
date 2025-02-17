@@ -152,16 +152,20 @@ button:disabled .inline-icon {
 #ui-flags:not(.can-fight, .can-cancel-fight) #action-fight,
 #ui-flags:not(.can-evade, .can-cancel-evade) #action-evade,
 #ui-mode.ui-mode-select-location #ui-flags:not(.can-cancel-move) #action-move,
+#tutorial-flags.waiting .action-button,
+#tutorial-flags.force-end-turn .action-button:not(#action-end-turn),
 #tutorial-flags.force-credit .action-button:not(#action-credit),
-#tutorial-flags.force-draw .action-button:not(#action-draw),
-#tutorial-flags.force-move .action-button:not(#action-move),
-#tutorial-flags.force-investigate .action-button:not(#action-investigate),
-#tutorial-flags.force-engage .action-button:not(#action-engage),
-#tutorial-flags.force-fight .action-button:not(#action-fight),
-#tutorial-flags.force-evade .action-button:not(#action-evade),
-#tutorial-flags.force-play-event .action-button,
-#tutorial-flags.force-install-asset .action-button,
-#tutorial-flags.force-use-asset .action-button {
+#tutorial-flags.force-draw .action-button:not(#action-draw, #action-end-turn),
+#tutorial-flags.force-move .action-button:not(#action-move, #action-end-turn),
+#tutorial-flags.force-investigate
+  .action-button:not(#action-investigate, #action-end-turn),
+#tutorial-flags.force-engage
+  .action-button:not(#action-engage, #action-end-turn),
+#tutorial-flags.force-fight .action-button:not(#action-fight, #action-end-turn),
+#tutorial-flags.force-evade .action-button:not(#action-evade, #action-end-turn),
+#tutorial-flags.force-play-event .action-button:not(#action-end-turn),
+#tutorial-flags.force-install-asset .action-button:not(#action-end-turn),
+#tutorial-flags.force-use-asset .action-button:not(#action-end-turn) {
   pointer-events: none;
 
   color: #888888 !important;
@@ -568,7 +572,7 @@ button:disabled .inline-icon {
   padding: 0;
   top: 50%;
   left: 50%;
-  transition: --zoom 0.1s;
+  transition: transform 0.25s;
 }
 #location-position {
   position: relative;
@@ -577,9 +581,10 @@ button:disabled .inline-icon {
   margin: 0;
   padding: 0;
   transform: translate(var(--local-x), var(--local-y));
+  transition: transform 0.25s;
 }
-#location-map.dragged {
-  transition: --zoom 0.1s;
+#location-position.dragged {
+  transition: none;
 }
 .location-container {
   --x-pos: 0px;
@@ -587,9 +592,15 @@ button:disabled .inline-icon {
   position: absolute;
   border-radius: 5px;
   transform: translate(calc(var(--x-pos) - 50%), calc(var(--y-pos) - 50%));
+  height: 224px;
   width: 160px;
+  aspect-ratio: 160/224 !important;
   background-color: black;
+  transition: background-color 0.2s;
   z-index: 10;
+}
+.location-container.transition-in {
+  background-color: #00000000;
 }
 .location-image {
   width: 100%;
@@ -1259,6 +1270,7 @@ button:disabled .inline-icon {
   background-color: #6c1236;
 }
 
+.modal-option.disabled,
 .alert-option.disabled {
   color: #888888;
   border: 2px solid #ababab;
@@ -1426,13 +1438,17 @@ button:disabled .inline-icon {
   left: 50%;
   transform: translate(-50%, -50%) scale(0);
   transition: all 200ms ease;
-  z-index: 9999999999;
+  z-index: 1000000;
 }
 .turn-banner.animate-in {
   transform: translate(-50%, -50%) scale(1.2);
 }
 .turn-banner.animate-out {
   transform: translate(-50%, -50%) scale(0);
+}
+
+#modal {
+  z-index: 2000000;
 }
 
 /* Fonts */

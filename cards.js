@@ -10,17 +10,17 @@ class Cards {
   // General
 
   static focusCard(jCardImage) {
+    this.focusedCardId = jCardImage.parent().data("card-id");
+    const cardData = CardData.getCard(this.focusedCardId);
+    if (cardData.hidden) {
+      return;
+    }
     $("#card-focused-image")
       .attr("src", jCardImage.find(".card-image").attr("src"))
       // .attr("src", jCardImage.attr("src").replace(".png", "_full.png")) // TODO
       .removeClass("unfocused")
       .addClass("focused");
-    this.focusedCardId = jCardImage.parent().data("card-id");
-    Cards.populateData(
-      $("#card-focused-image").parent(),
-      CardData.getCard(this.focusedCardId),
-      "16.5px"
-    );
+    Cards.populateData($("#card-focused-image").parent(), cardData, "16.5px");
   }
   static unfocusCard() {
     $("#card-focused-image").removeClass("focused").addClass("unfocused");
@@ -42,8 +42,9 @@ class Cards {
             newCardData,
             jCardContainer.find(".card-text").css("font-size")
           );
+          jCardContainer.removeClass("d-none"); // For cards that start hidden
         },
-        fast ? 240 : 990
+        fast ? 210 : 960
       );
     }
     setTimeout(
@@ -96,7 +97,7 @@ class Cards {
 
   // cardData may be an array of classes
   static addToHeap(cardData, shuffleInto = false) {
-    if (cardData.length != null) {
+    if (typeof cardData == "object" && cardData.length != null) {
       this.heap.push(...cardData);
     } else {
       this.heap.push(cardData);
@@ -113,7 +114,7 @@ class Cards {
   }
 
   // Returns the number of cards that couldn't be drawn
-  static draw(n = 1) {
+  static async draw(n = 1) {
     let i = 0;
     for (; i < n && this.canDraw(); i++) {
       if (this.stack.length == 0) {
@@ -147,16 +148,23 @@ class Cards {
     }
     this.updateStackHeapHeights();
     this.determineCanDraw();
+    if (i > 0) {
+      Broadcast.signal("onCardsDrawn", { number: i });
+    }
     return n - i;
   }
 
   static async discard(card) {
-    const cardData = this.removeGripCard(card);
-    if (cardData) {
-      this.addToHeap(cardData);
+    const gripCard = this.removeGripCard(card);
+    if (gripCard) {
+      this.addToHeap(gripCard.cardData);
       this.updateStackHeapHeights();
       this.determineCanDraw();
-      await Broadcast.signal("onCardDiscarded", { cardData: cardData });
+      // The card itself will not receive the broadcast, so we message it directly
+      if (gripCard.cardData.onCardDiscarded) {
+        await gripCard.cardData.onCardDiscarded(gripCard, { card: gripCard });
+      }
+      await Broadcast.signal("onCardDiscarded", { card: gripCard });
     }
   }
 
@@ -179,21 +187,26 @@ class Cards {
   static removeGripCard(card) {
     const index = typeof card == "object" ? this.grip.indexOf(card) : card;
     if (index >= 0 && index < this.grip.length) {
-      const cardData = this.grip[index].cardData;
+      const card = this.grip[index];
       this.grip[index].remove();
       this.grip.splice(index, 1);
       this.updateHandPositions();
       setTimeout(function () {
         Cards.updateHandPositions();
       }, 210);
-      return cardData;
+      return card;
     }
-    return false;
+    return null;
   }
 
   static async trashInstalledCard(card) {
     await Broadcast.signal("onAssetTrashed", { card: card });
     const cardData = this.removeInstalledCard(card);
+    this.addToHeap(cardData);
+  }
+
+  static async removeInstalledCardFromGame(card) {
+    this.removeInstalledCard(card);
   }
 
   static removeInstalledCard(card) {
@@ -269,6 +282,14 @@ class GripCard {
   static markPlayableCards() {
     Cards.grip.forEach((gripCard) => {
       gripCard.playable =
+        UiMode.mode != UIMODE_END_TURN &&
+        UiMode.mode != UIMODE_CORP_TURN &&
+        (Tutorial.mode == TUTORIAL_MODE_NONE ||
+          (Tutorial.mode == TUTORIAL_MODE_PLAY_EVENT &&
+            gripCard.cardData.type == TYPE_EVENT) ||
+          (Tutorial.mode == TUTORIAL_MODE_INSTALL_ASSET &&
+            gripCard.cardData.type == TYPE_ASSET)) &&
+        Tutorial.mode != TUTORIAL_MODE_WAITING &&
         Stats.credits >= gripCard.cost &&
         gripCard.cardData.canPlay(gripCard) &&
         !(
@@ -457,7 +478,11 @@ class RigCard {
 
   static markUsableCards() {
     Cards.installedCards.forEach((card) => {
-      card.selectable = card.cardData.canUse && card.cardData.canUse(card);
+      card.selectable =
+        card.cardData.canUse &&
+        card.cardData.canUse(card) &&
+        (Tutorial.mode == TUTORIAL_MODE_NONE ||
+          Tutorial.mode == TUTORIAL_MODE_USE_ASSET);
     });
   }
   static markAllCardsUnusable() {
@@ -750,6 +775,12 @@ $(document).ready(function () {
       return;
     }
 
+    // Do not display the faction if it's meatspace (spoilers!)
+    const factionText =
+      cardData.faction == FACTION_MEAT
+        ? ""
+        : `${FACTION_TO_TEXT[cardData.faction]} `;
+
     let stats;
     if (cardData.type == TYPE_ASSET || cardData.type == TYPE_EVENT) {
       stats = `Cost: ${cardData.cost}<img class="inline-icon" src="img/game/credit.png">`;
@@ -778,7 +809,7 @@ $(document).ready(function () {
         </div>
         <hr>
         <div class="font-size-20">
-          <span class="fw-bold">${FACTION_TO_TEXT[cardData.faction]} ${
+          <span class="fw-bold">${factionText}${
       TYPE_TO_TEXT[cardData.type]
     }</span>${
       cardData.subtypes
@@ -823,16 +854,20 @@ $(document).ready(function () {
         Cards.unfocusCard($(this));
       }
     )
-    .on("dblclick", ":not(.grip-card) > .card-image-container", function () {
-      if (
-        (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD ||
-          UiMode.uiMode == UIMODE_ASSIGN_DAMAGE) &&
-        $(this).parent().hasClass("installed-card")
-      ) {
-        return;
+    .on(
+      "dblclick",
+      ":not(.grip-card) > .card-image-container:not(#card-modal-image)",
+      function () {
+        if (
+          (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD ||
+            UiMode.uiMode == UIMODE_ASSIGN_DAMAGE) &&
+          $(this).parent().hasClass("installed-card")
+        ) {
+          return;
+        }
+        displayCardModal($(this).parent().data("card-id"));
       }
-      displayCardModal($(this).parent().data("card-id"));
-    });
+    );
 
   $("#card-focused-image").click(function () {
     displayCardModal(Cards.focusedCardId);
