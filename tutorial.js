@@ -97,7 +97,7 @@ class Tutorial {
     if (
       this.#active &&
       this.mode != TUTORIAL_MODE_WAITING &&
-      this.#stageIndex < this.#stages.length - 1 &&
+      this.#stageIndex < this.#stages.length &&
       this.#stages[this.#stageIndex].trigger == trigger
     ) {
       this.setMode(TUTORIAL_MODE_WAITING);
@@ -114,6 +114,10 @@ class Tutorial {
       Modal.hide();
       // TODO: if this causes problems, add a pause here
       this.setMode(stage.mode);
+      // Check if the tutorial is over
+      if (this.#stageIndex >= this.#stages.length) {
+        this.#active = false;
+      }
     }
   }
 
@@ -335,7 +339,7 @@ class Tutorial {
     // Explain acts and advancing (the act will summon a rat)
     {
       mode: TUTORIAL_MODE_END_TURN,
-      trigger: "onEnemyMoves",
+      trigger: "onTurnEnd",
       modals: [
         {
           header: "Downloading data",
@@ -357,31 +361,201 @@ class Tutorial {
         },
       ],
     },
-    // NOTE: the explainer for the agenda will be triggered by Act1
+    // NOTE: the explainer for the agenda will be triggered asynchronously by Act1
     // Explain enemies, the hunter keyword, and engaging
     {
-      mode: TUTORIAL_MODE_NONE,
+      mode: TUTORIAL_MODE_EVADE,
       trigger: "onTurnStart",
+      modals: [
+        {
+          header: "Enemies",
+          body: "Unsurprising, this place has rats.<br><br>They're not going to be a major problem, but you should make sure to avoid them.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Enemies",
+          body: "Unfortunately, rats are hunters.<br><br>This means that during each corp phase, they will move towards you, taking any shortest path to reach you.<br><br>Whenever an enemy moves to your current location, it will engage you.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          cardData: EnemyRat,
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Enemies",
+          body: "While engaged with an enemy, taking any action that does not directly interact with enemies will trigger an 'attack of opportunity', in which each engaged enemy will attack you.<br><br>When a rat attacks you, it will do 1 damage. Damage is dealt directly to you, and if you run out of health...<br><br>Well...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Enemies",
+          body: "Some assets you install will have health, just like you!<br><br>When you take damage, you will have the opportunity to place that damage on these assets instead of yourself.<br><br>Of course, if they run out of health, they get trashed!",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          cardData: CardIceCarver,
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
     },
     // Explain evasion, exhaustion, and readying (guaranteed success)
     {
       mode: TUTORIAL_MODE_EVADE,
       trigger: "onPlayerEvades",
+      modals: [
+        {
+          header: "Evading enemies",
+          body: "We need to get rid of this thing.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Evading enemies",
+          body: "Enemies have three stats:<br>• Strength (left)<br>• Health (middle)<br>• Link (right)<br><br>In order to fight and defeat enemies, you need to interact with their strength. In order to evade and exhaust them, you need to interact with their link.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          cardData: EnemyRat,
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Evading enemies",
+          body: "When you attempt to evade an enemy, you perform a skill test of your link against its link. If successful, the enemy will disengage you, and become exhausted. Exhausted enemies are unable to move or attack for the remainder of the turn.<br><br>Give it a go!",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
     },
     // Explain the basic action to engage
     {
       mode: TUTORIAL_MODE_ENGAGE,
       trigger: "onPlayerEngages",
+      modals: [
+        {
+          header: "Evading enemies",
+          body: "Success!",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraHappy.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Engaging enemies",
+          body: "Sometimes, you might want to engage an enemy. Whenever you attack an enemy, you automatically engage it, but you can also spend a click to engage them without attacking.<br><br>Try re-engaging the rat! It's exhausted so it most likely probably can't harm you maybe.",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
     },
     // Explain fighting (guaranteed success)
     {
       mode: TUTORIAL_MODE_FIGHT,
       trigger: "onPlayerFights",
+      modals: [
+        {
+          header: "Attacking enemies",
+          body: "Now, lets make sure this rat won't bother us again.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Attacking enemies",
+          body: "When you use the basic action to attack an enemy, you perform a skill test of your strength against its strength. If successful, you do 1 damage to the enemy.<br><br>When the enemy runs out of health, it is defeated!<br><br>Have a go!",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
     },
     // Explain defeating enemies and end the tutorial
     {
       mode: TUTORIAL_MODE_NONE,
-      trigger: "-------",
+      trigger: "onTurnEnd",
+      modals: [
+        {
+          header: "Attacking enemies",
+          body: "You sure did punch that rat in the face! Good job, champ.<br><br>Today is already filled with so much moral ambiguity.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraHappy.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Onwards",
+          body: "That's pretty much everything you need to know!<br><br>I'll still be with you, but try exploring this place by yourself now.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // Explain encounters
+    {
+      mode: TUTORIAL_MODE_NONE,
+      trigger: "onTurnStart",
+      modals: [
+        {
+          header: "Random encounters",
+          body: "Now that we're in the thick of it, you're going to start having random encounters.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Random encounters",
+          body: "After each turn, you'll draw a random card from the encounter deck. Who knows what they could do...",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Random encounters",
+          body: "Me! I do!",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraHappy.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Random encounters",
+          body: "Best of luck!",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraHappy.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
     },
   ];
 

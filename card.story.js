@@ -9,9 +9,11 @@ Act1 = new ActData("act_1", {
   },
   async advance(source) {
     Act.setCard(Act2);
+    await wait(200);
     Agenda.setCard(Agenda2);
     await wait(2500);
-    Tutorial.run("agenda");
+    await Tutorial.run("agenda");
+    new Enemy(EnemyRat, Location.getLocationAtPosition(2, 1));
   },
 });
 

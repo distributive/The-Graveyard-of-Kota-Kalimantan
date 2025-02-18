@@ -13,7 +13,7 @@ class Act {
 
   static async advance() {
     await this.#cardData.advance();
-    Broadcast.signal("onActAdvanced", {});
+    await Broadcast.signal("onActAdvanced", {});
   }
 }
 

@@ -7,6 +7,7 @@ const EnemyRat = new EnemyData("rat", {
   strength: 1,
   health: 1,
   link: 3,
+  isHunter: true,
   async attack() {
     await Game.sufferDamage(1);
   },
@@ -21,6 +22,7 @@ const EnemyNetRat = new EnemyData("net_rat", {
   strength: 1,
   health: 1,
   link: 3,
+  isHunter: true,
   async attack() {
     await Game.sufferDamage(1);
   },
@@ -28,13 +30,15 @@ const EnemyNetRat = new EnemyData("net_rat", {
 
 const EnemyBurkeBug = new EnemyData("burke_bug", {
   title: "Burke Bug",
-  text: "{sub} Do 1 damage.",
+  text: "Hunter.\n{sub} Do 1 damage.",
+  flavour: "Freaking annoying.",
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/burkeBug.png",
   strength: 1,
   health: 1,
   link: 1,
+  isHunter: true,
   async attack() {
     await Game.sufferDamage(1);
   },
@@ -42,7 +46,7 @@ const EnemyBurkeBug = new EnemyData("burke_bug", {
 
 const EnemyAnansi = new EnemyData("anansi", {
   title: "The Spider",
-  text: "Whenever you evade this enemy, lose 1 data.\n{sub} Do 1 damage.\n{sub} Do 3 damage unless the Runner loses 2 data.",
+  text: "Whenever you evade this enemy, lose 2 data.\n{sub} Do 1 damage.\n{sub} Do 3 damage unless the Runner loses 2 data.",
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/anansi.png",
@@ -71,7 +75,7 @@ const EnemyAnansi = new EnemyData("anansi", {
   },
   async onPlayerEvades(source, data) {
     if (data.results.success && data.enemy == source) {
-      await Stats.addClues(-1);
+      await Stats.addClues(-2);
     }
   },
 });
@@ -139,6 +143,7 @@ const EnemyArchitect = new EnemyData("architect", {
   strength: 3,
   health: 3,
   link: 2,
+  isHunter: true,
   smallText: true,
   async attack() {
     // TODO
@@ -154,6 +159,7 @@ const EnemySurveyor = new EnemyData("surveyor", {
   strength: 0,
   health: 2,
   link: 0,
+  isHunter: true,
   smallText: true,
   async attack() {
     // TODO
@@ -169,6 +175,7 @@ const EnemyDataRaven = new EnemyData("data_raven", {
   strength: 3,
   health: 2,
   link: 3,
+  isHunter: true,
   smallText: true,
   async attack() {
     // TODO
@@ -184,6 +191,7 @@ const EnemyHantu = new EnemyData("hantu", {
   strength: 5,
   health: 12,
   link: 4,
+  isHunter: true,
   smallText: true,
   async attack() {
     await Game.sufferDamage(1);

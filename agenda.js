@@ -37,7 +37,7 @@ class Agenda {
   static async advance() {
     await this.#cardData.advance();
     await this.setDoom(0);
-    Broadcast.signal("onAgendaAdvanced", {});
+    await Broadcast.signal("onAgendaAdvanced", {});
   }
 }
 

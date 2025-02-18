@@ -1,9 +1,6 @@
 class Game {
   static async initGameState() {
     Tutorial.active = true;
-    if (Tutorial.active) {
-      Encounter.skipEncounters = true; // Re-enabled at the end of the tutorial
-    }
 
     // TODO let the user choose the ID
     const identity = CardBaz;
@@ -133,6 +130,7 @@ class Game {
 
     await wait(500);
 
+    await Enemy.moveHunters();
     await RigCard.readyAll();
     await Enemy.readyAll();
 

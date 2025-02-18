@@ -25,7 +25,7 @@ class Encounter {
   static skipEncounters = false;
 
   static async draw(cardData, removeFromDeck = true) {
-    if (this.skipEncounters) {
+    if (this.skipEncounters || Tutorial.active) {
       return;
     }
 

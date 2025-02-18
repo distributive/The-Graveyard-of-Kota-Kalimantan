@@ -35,6 +35,23 @@ class Enemy {
     return this.getEnemiesAtLocation(Location.getCurrentLocation());
   }
 
+  // Move all hunters towards the player
+  static async moveHunters() {
+    for (const enemy of this.instances.filter(
+      (enemy) => !enemy.exhausted && enemy.cardData.isHunter
+    )) {
+      const distance = enemy.#currentLocation.playerDistance;
+      if (distance > 0) {
+        const directions = enemy.#currentLocation.neighbours.filter(
+          (location) => location.playerDistance < distance
+        );
+        if (directions.length) {
+          await enemy.moveTo(randomElement(directions));
+        }
+      }
+    }
+  }
+
   static readyAll() {
     for (const enemy of this.instances) {
       enemy.exhausted = false;
@@ -125,6 +142,7 @@ class Enemy {
       target: target,
       title: "Fight!",
       description: `<p>If successful, you will do ${damage} damage to this enemy.</p>`,
+      forceOutcome: Tutorial.active ? "success" : null, // Always succeed during the tutorial
     });
     Modal.hide();
 
@@ -176,6 +194,7 @@ class Enemy {
       target: enemy.cardData.link,
       title: "Evade!",
       description: `<p>If successful, you will evade this enemy.</p>`,
+      forceOutcome: Tutorial.active ? "success" : null, // Always succeed during the tutorial
     });
     Modal.hide();
 
@@ -303,7 +322,7 @@ class Enemy {
   async moveTo(location) {
     const oldLocation = this.#currentLocation;
     if (this.setLocation(location)) {
-      Broadcast.signal("onEnemyMoves", {
+      await Broadcast.signal("onEnemyMoves", {
         enemy: this,
         fromLocation: oldLocation,
         toLocation: location,
@@ -407,7 +426,7 @@ class Enemy {
     if (this.#currentLocation != Location.getCurrentLocation()) {
       await this.moveTo(Location.getCurrentLocation());
     }
-    Broadcast.signal("onPlayerEngages", { enemy: this });
+    await Broadcast.signal("onPlayerEngages", { enemy: this });
     this.#engaged = true;
     this.#jObj.addClass("engaged");
     UiMode.setFlag("engaged", true);

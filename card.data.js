@@ -261,6 +261,7 @@ class EnemyData extends NonTreacheryData {
   health;
   strength;
   link;
+  isHunter;
 
   get type() { return TYPE_ENEMY; }
 

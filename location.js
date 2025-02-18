@@ -104,11 +104,35 @@ class Location {
     return this.#coordToInstance[x * 10000 + y];
   }
 
+  static recalculatePlayerDistance() {
+    // Reset all to -1
+    this.instances.forEach((location) => {
+      location.#playerDistance = -1;
+    });
+    // BFS
+    let currentLayer = [this.getCurrentLocation()];
+    let distance = 0;
+    while (currentLayer.length) {
+      const copy = currentLayer.filter(
+        (location) => location.#playerDistance == -1
+      );
+      currentLayer = [];
+      for (const location of copy) {
+        location.#playerDistance = distance;
+        for (const neighbour of location.#neighbours) {
+          currentLayer.push(neighbour);
+        }
+      }
+      distance += 1;
+    }
+  }
+
   // INSTANCE
   #id = -1;
   #cardData;
   #x = 0;
   #y = 0;
+  #playerDistance = -1; // Whenever the player moves, recalculate (used for hunter enemies)
 
   #clues = 0;
   #doom = 0;
@@ -184,6 +208,10 @@ class Location {
   }
   get doom() {
     return this.#doom;
+  }
+
+  get playerDistance() {
+    return this.#playerDistance;
   }
 
   get selectable() {
@@ -318,6 +346,9 @@ class Location {
     // Update UI buttons
     $("#map-reset").attr("disabled", false);
     UiMode.setFlag("can-investigate", this.#clues > 0);
+
+    // Recalculate player distance
+    Location.recalculatePlayerDistance();
 
     return this;
   }
@@ -474,16 +505,16 @@ $(document).ready(function () {
   let isDraggingMap = false;
   let mapMouseX;
   let mapMouseY;
+  $("body").mouseup(function () {
+    isDraggingMap = false;
+    Location.root.removeClass("dragged");
+  });
   Location.window
     .mousedown(function (e) {
       isDraggingMap = true;
       Location.root.addClass("dragged");
       mapMouseX = e.pageX;
       mapMouseY = e.pageY;
-    })
-    .mouseup(function () {
-      isDraggingMap = false;
-      Location.root.removeClass("dragged");
     })
     .mousemove(function (e) {
       if (isDraggingMap) {
