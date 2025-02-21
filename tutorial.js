@@ -70,6 +70,8 @@ class Tutorial {
   static #triggers = {};
   static #mode = TUTORIAL_MODE_NONE;
   static #active;
+  static #hintTimeout;
+  static #hintAlert;
 
   static get mode() {
     return this.#mode;
@@ -80,6 +82,14 @@ class Tutorial {
   }
   static get active() {
     return this.#active;
+  }
+
+  static serialise() {
+    return {
+      triggers: Object.keys(this.#triggers),
+      mode: this.#mode,
+      active: this.#active,
+    };
   }
 
   // To exit tutorial mode, set it to null
@@ -100,40 +110,54 @@ class Tutorial {
       this.#stageIndex < this.#stages.length &&
       this.#stages[this.#stageIndex].trigger == trigger
     ) {
-      this.setMode(TUTORIAL_MODE_WAITING);
-      await wait(1000); // TODO: time appropriately // NOTE: things break if this is too short (100 confirmed too short)
+      if (this.#hintTimeout) {
+        clearTimeout(this.#hintTimeout);
+      }
+      if (this.#hintAlert) {
+        this.#hintAlert.close();
+      }
       this.#stageIndex++;
       const stage = this.#stages[this.#stageIndex];
-      if (!stage.modals) {
-        this.setMode(stage.mode);
-        return;
+      if (stage.modals) {
+        this.setMode(TUTORIAL_MODE_WAITING);
+        await wait(1000); // TODO: time appropriately // NOTE: things break if this is too short (100 confirmed too short)
+        for (const page of stage.modals) {
+          await new Modal(null, page).display();
+        }
+        Modal.hide();
       }
-      for (const page of stage.modals) {
-        await new Modal(null, page).display();
+      if (stage.hint && UiMode.mode != UIMODE_CORP_TURN) {
+        this.#hintTimeout = setTimeout(function () {
+          Tutorial.#hintAlert = Alert.send(stage.hint, ALERT_INFO, false, true);
+        }, 3750);
       }
-      Modal.hide();
       // TODO: if this causes problems, add a pause here
       this.setMode(stage.mode);
       // Check if the tutorial is over
-      if (this.#stageIndex >= this.#stages.length) {
+      if (this.#stageIndex >= this.#stages.length - 1) {
         this.#active = false;
       }
     }
   }
 
   static async run(trigger) {
-    if (this.#triggers[trigger] || !this.#tutorials[trigger]) {
-      return;
+    if (
+      this.#triggers[trigger] ||
+      !this.#tutorials[trigger] ||
+      (this.#tutorials[trigger].requireTutorialActive && !Tutorial.active)
+    ) {
+      return false;
     }
     this.#triggers[trigger] = true;
 
-    const tutorial = this.#tutorials[trigger].length
-      ? this.#tutorials[trigger]
-      : [this.#tutorials[trigger]];
+    const tutorial = this.#tutorials[trigger].cutscene.length
+      ? this.#tutorials[trigger].cutscene
+      : [this.#tutorials[trigger].cutscene];
     for (const page of tutorial) {
       await new Modal(null, page).display();
     }
     Modal.hide();
+    return true;
   }
 
   // Each tutorial stage defines a tutorial mode, a list of data collections to
@@ -151,6 +175,7 @@ class Tutorial {
     {
       mode: TUTORIAL_MODE_MOVE,
       trigger: "onPlayerMoves",
+      hint: "Use the move button to move to the neighbouring location.",
       modals: [
         {
           header: "Moving",
@@ -167,6 +192,7 @@ class Tutorial {
     {
       mode: TUTORIAL_MODE_CREDIT,
       trigger: "onGainCredits",
+      hint: "Use the credit button to gain a credit.",
       modals: [
         {
           header: "Gaining credits",
@@ -182,7 +208,8 @@ class Tutorial {
     // Teach drawing
     {
       mode: TUTORIAL_MODE_DRAW,
-      trigger: "onTurnEnd",
+      trigger: "onCardsDrawn",
+      hint: "Use the draw button to draw a card.",
       modals: [
         {
           header: "Drawing cards",
@@ -195,10 +222,17 @@ class Tutorial {
         },
       ],
     },
+    // End turn
+    {
+      mode: TUTORIAL_MODE_DRAW,
+      trigger: "onTurnEnd",
+      hint: "End your turn.",
+    },
     // Explain upkeep
     {
       mode: TUTORIAL_MODE_PLAY_EVENT,
       trigger: "onTestCompleted",
+      hint: "Play Unsure Gamble from your hand.",
       modals: [
         {
           header: "Upkeep",
@@ -242,6 +276,7 @@ class Tutorial {
     {
       mode: TUTORIAL_MODE_INSTALL_ASSET,
       trigger: "onCardInstalled",
+      hint: "Install the Warehouse Key from your hand.",
       modals: [
         {
           header: "Installing assets",
@@ -257,7 +292,8 @@ class Tutorial {
     // Teach using assets
     {
       mode: TUTORIAL_MODE_USE_ASSET,
-      trigger: "onTurnStart",
+      trigger: "onLoseClicks",
+      hint: "Use the Warehouse Key by clicking on it.",
       modals: [
         {
           header: "Installing assets",
@@ -270,10 +306,17 @@ class Tutorial {
         },
       ],
     },
+    // End turn
+    {
+      mode: TUTORIAL_MODE_USE_ASSET,
+      trigger: "onTurnStart",
+      hint: "End your turn.",
+    },
     // Move to a new location (with clues)
     {
       mode: TUTORIAL_MODE_MOVE,
       trigger: "onPlayerMoves",
+      hint: "Move to the neighbouring location.",
       modals: [
         {
           header: "Onwards and inwards...",
@@ -290,6 +333,7 @@ class Tutorial {
     {
       mode: TUTORIAL_MODE_INVESTIGATE,
       trigger: "onInvestigation",
+      hint: "Use the 'jack in' button to attempt to download data from this location.",
       modals: [
         {
           header: "Downloading data",
@@ -302,7 +346,7 @@ class Tutorial {
         },
         {
           header: "Downloading data",
-          body: "Each location has a shroud value (left) and an amount of data (right).<br><br>If a location has any data hosted on it, you may spend a click to attempt to download it.<br><br>Attempting to download data initiates a skill test against your MU. If successful, you download 1 data from your current location.<br><br>Give it a go!",
+          body: "Each location has a shroud value (left) and an amount of data (right).<br><br>If a location has any data hosted on it, you may spend a click to 'jack in', and attempt to download it.<br><br>Attempting to download data initiates a skill test against your MU. If successful, you download 1 data from your current location.<br><br>Give it a go!",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           cardData: LocationTerminal,
@@ -315,6 +359,7 @@ class Tutorial {
     {
       mode: TUTORIAL_MODE_INVESTIGATE,
       trigger: "onInvestigation",
+      hint: "Use the 'jack in' button to attempt to download data from this location.",
       modals: [
         {
           header: "Downloading data",
@@ -339,7 +384,7 @@ class Tutorial {
     // Explain acts and advancing (the act will summon a rat)
     {
       mode: TUTORIAL_MODE_END_TURN,
-      trigger: "onTurnEnd",
+      trigger: "onTurnStart",
       modals: [
         {
           header: "Downloading data",
@@ -363,9 +408,11 @@ class Tutorial {
     },
     // NOTE: the explainer for the agenda will be triggered asynchronously by Act1
     // Explain enemies, the hunter keyword, and engaging
+    // Explain evasion, exhaustion, and readying (guaranteed success)
     {
       mode: TUTORIAL_MODE_EVADE,
-      trigger: "onTurnStart",
+      trigger: "onPlayerEvades",
+      hint: "Use the evade button to attempt to evade the rat.",
       modals: [
         {
           header: "Enemies",
@@ -403,16 +450,9 @@ class Tutorial {
           slowRoll: true,
           size: "lg",
         },
-      ],
-    },
-    // Explain evasion, exhaustion, and readying (guaranteed success)
-    {
-      mode: TUTORIAL_MODE_EVADE,
-      trigger: "onPlayerEvades",
-      modals: [
         {
           header: "Evading enemies",
-          body: "We need to get rid of this thing.",
+          body: "We should get rid of this rat though.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -443,6 +483,7 @@ class Tutorial {
     {
       mode: TUTORIAL_MODE_ENGAGE,
       trigger: "onPlayerEngages",
+      hint: "Use the engage button to engage the rat.",
       modals: [
         {
           header: "Evading enemies",
@@ -467,7 +508,8 @@ class Tutorial {
     // Explain fighting (guaranteed success)
     {
       mode: TUTORIAL_MODE_FIGHT,
-      trigger: "onPlayerFights",
+      trigger: "onPlayerAttacks",
+      hint: "Use the fight button to attempt to attack the rat.",
       modals: [
         {
           header: "Attacking enemies",
@@ -489,10 +531,16 @@ class Tutorial {
         },
       ],
     },
+    // End turn
+    {
+      mode: TUTORIAL_MODE_FIGHT,
+      trigger: "onTurnEnd",
+      hint: "End your turn.",
+    },
     // Explain defeating enemies and end the tutorial
     {
       mode: TUTORIAL_MODE_NONE,
-      trigger: "onTurnEnd",
+      trigger: "",
       modals: [
         {
           header: "Attacking enemies",
@@ -514,11 +562,56 @@ class Tutorial {
         },
       ],
     },
-    // Explain encounters
-    {
-      mode: TUTORIAL_MODE_NONE,
-      trigger: "onTurnStart",
-      modals: [
+  ];
+
+  // Async tutorials that are triggered by unscripted events
+  static #tutorials = {
+    // Agenda explainer
+    agenda: {
+      requireTutorialActive: true,
+      cutscene: [
+        {
+          header: "Agendas",
+          body: "There is now an agenda.<br><br>Agendas are acts' evil twins: advancing these makes things harder for you.<br><br>At the end of each turn, 1 doom is placed on the current agenda. When it reaches its limit, it will advance.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          cardData: Agenda2,
+          slowRoll: false,
+          size: "lg",
+        },
+        {
+          header: "Agendas",
+          body: "Advance too much, and you might not make it out of here.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: false,
+          size: "lg",
+        },
+        {
+          header: "Agendas",
+          body: "I'm sure you'll be fine though!",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraHappy.png",
+          slowRoll: false,
+          size: "lg",
+        },
+        {
+          header: "Agendas",
+          body: "...good luck!",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraHappy.png",
+          slowRoll: false,
+          size: "lg",
+        },
+      ],
+    },
+    // Encounter explainer
+    encounter: {
+      requireTutorialActive: true,
+      cutscene: [
         {
           header: "Random encounters",
           body: "Now that we're in the thick of it, you're going to start having random encounters.",
@@ -557,57 +650,38 @@ class Tutorial {
         },
       ],
     },
-  ];
-
-  // Async tutorials that are triggered by unscripted events
-  static #tutorials = {
-    example: {
-      header: "",
-      body: "",
-      options: [],
-      allowKeyboard: false,
-      image: null,
-      slowRoll: false,
-      size: "lg",
+    // Committing cards
+    commit: {
+      requireTutorialActive: true,
+      cutscene: [
+        {
+          header: "Committing cards",
+          body: "Whenever you perform a test, you may first 'commit' cards from your hand.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Committing cards",
+          body: "Cards in your hand may have skill symbols on their side. These correspond to the skill tests you may commit them to.<br><br>Whenever you make a skill test, you may select any number of valid cards to discard, and each card discarded will increase your test strength by 1. This will allow you to succeed at tests you might not otherwise be able to.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          cardData: CardUnsureGamble,
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Committing cards",
+          body: "Just remember: if you ever draw the autofail token, you will fail the test regardless of how many cards you've committed.",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
     },
-    // Agenda explainer
-    agenda: [
-      {
-        header: "Agendas",
-        body: "There is now an agenda.<br><br>Agendas are acts' evil twins: advancing these makes things harder for you.<br><br>At the end of each turn, 1 doom is placed on the current agenda. When it reaches its limit, it will advance, and start again.",
-        options: [new Option("", "Next")],
-        allowKeyboard: false,
-        cardData: Agenda2,
-        slowRoll: false,
-        size: "lg",
-      },
-      {
-        header: "Agendas",
-        body: "Advance too much, and you might not make it out of here.",
-        options: [new Option("", "Next")],
-        allowKeyboard: false,
-        image: "img/character/sahasraraPensive.png",
-        slowRoll: false,
-        size: "lg",
-      },
-      {
-        header: "Agendas",
-        body: "I'm sure you'll be fine though!",
-        options: [new Option("", "Next")],
-        allowKeyboard: false,
-        image: "img/character/sahasraraHappy.png",
-        slowRoll: false,
-        size: "lg",
-      },
-      {
-        header: "Agendas",
-        body: "...good luck!",
-        options: [new Option("", "Close")],
-        allowKeyboard: false,
-        image: "img/character/sahasraraHappy.png",
-        slowRoll: false,
-        size: "lg",
-      },
-    ],
   };
 }

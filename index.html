@@ -56,6 +56,7 @@
     <script src="chaos.js"></script>
     <script src="tooltip.js"></script>
     <script src="tutorial.js"></script>
+    <script src="serialisation.js"></script>
     <script src="game.js"></script>
     <script src="main.js"></script>
     <title>Test Story</title>
@@ -96,6 +97,11 @@
             <div class="card-image-container h-100">
               <img class="card-padding h-100" src="img/card/placeholder.png" />
               <img id="card-focused-image" class="card-image h-100" src="" />
+            </div>
+            <div id="card-focused-buttons" class="d-flex flex-column gap-1">
+              <button id="card-focused-toggle">
+                <i class="fa-solid fa-arrows-left-right"></i>
+              </button>
             </div>
           </div>
 
@@ -144,13 +150,14 @@
                       <img
                         id="act-image"
                         class="card-image h-100"
-                        src="img/card/act/act1.png"
+                        src="img/card/act/bg.png"
                       />
                     </div>
                   </div>
                   <div id="agenda" class="h-50">
                     <div class="card-image-container h-100">
                       <img id="agenda-image" class="card-image h-100" src="" />
+                      <div class="card-text act" style="font-size: 15px"></div>
                     </div>
                     <div class="hosted-counters">
                       <div
@@ -160,12 +167,10 @@
                     </div>
                   </div>
                 </div>
-                <div class="flex-grow-1">
-                  <div
-                    id="rig"
-                    class="h-100 w-100 d-flex flex-column align-content-start p-1 gap-1"
-                  ></div>
-                </div>
+                <div
+                  id="rig"
+                  class="h-100 w-100 d-flex flex-column flex-wrap align-content-start p-1 gap-1"
+                ></div>
               </div>
             </div>
             <div class="row h-30">

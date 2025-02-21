@@ -35,6 +35,12 @@ class Enemy {
     return this.getEnemiesAtLocation(Location.getCurrentLocation());
   }
 
+  static async engagedEnemiesAttack() {
+    for (const enemy of this.getEngagedEnemies()) {
+      await enemy.attack();
+    }
+  }
+
   // Move all hunters towards the player
   static async moveHunters() {
     for (const enemy of this.instances.filter(
@@ -214,11 +220,7 @@ class Enemy {
       "You have invoked an attack of opportunity: all enemies engaged with you will attack.",
       ALERT_DANGER
     );
-    for (const enemy of this.instances) {
-      if (enemy.engaged) {
-        await enemy.attack();
-      }
-    }
+    await this.engagedEnemiesAttack();
   }
 
   // Moves all engaged enemies to the current location
@@ -228,6 +230,24 @@ class Enemy {
         await enemy.moveTo(Location.getCurrentLocation());
       }
     }
+  }
+
+  // SERIALISATION
+  static serialise() {
+    const enemies = this.instances.map((enemy) => {
+      return {
+        id: enemy.cardData.id,
+        damage: enemy.damage,
+        clues: enemy.clues,
+        doom: enemy.doom,
+        engaged: enemy.engaged,
+        exhausted: enemy.exhausted,
+        location: enemy.location.id,
+      };
+    });
+    return {
+      enemies: enemies,
+    };
   }
 
   // INSTANCE
@@ -346,6 +366,10 @@ class Enemy {
       this.engage();
     }
     return true;
+  }
+
+  get location() {
+    return this.#currentLocation;
   }
 
   // Ensures enemies at the same location don't fully overlap

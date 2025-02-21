@@ -53,6 +53,15 @@ class UiMode {
     return UiMode.#uiMode;
   }
 
+  // The game should never be serialised while UiMode.data has data loaded, since that data cannot be easily serialised
+  // The best way to ensure this is to only save between actions and at the start/end of each turn
+  static serialise() {
+    return {
+      uiMode: this.#uiMode,
+      previousMode: this.#previousMode,
+    };
+  }
+
   // Some modes serve a singular purpose and this function will maintain
   // control of the game state until that function is complete
   // This will never return values from those actions, but instead add them

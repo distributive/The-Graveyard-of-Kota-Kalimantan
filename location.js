@@ -127,6 +127,25 @@ class Location {
     }
   }
 
+  // SERIALISATION
+  static serialise() {
+    const locations = this.instances.map((location) => {
+      return {
+        id: location.id,
+        cardId: location.cardData.id,
+        x: location.x,
+        y: location.y,
+        playerDistance: location.playerDistance,
+        clues: location.clues,
+        doom: location.doom,
+        neighbours: location.#neighbours.map((neighbour) => neighbour.id),
+      };
+    });
+    return {
+      locations: locations,
+    };
+  }
+
   // INSTANCE
   #id = -1;
   #cardData;
@@ -196,6 +215,9 @@ class Location {
     Cards.flip(jObj.find(".card-image-container"), cardData);
   }
 
+  get id() {
+    return this.#id;
+  }
   get cardData() {
     return this.#cardData;
   }

@@ -10,11 +10,12 @@ class Cards {
   // General
 
   static focusCard(jCardImage) {
-    this.focusedCardId = jCardImage.parent().data("card-id");
-    const cardData = CardData.getCard(this.focusedCardId);
+    const focusedCardId = jCardImage.parent().data("card-id");
+    const cardData = CardData.getCard(focusedCardId);
     if (cardData.hidden) {
       return;
     }
+    this.focusedCardId = focusedCardId;
     $("#card-focused-image")
       .attr("src", jCardImage.find(".card-image").attr("src"))
       // .attr("src", jCardImage.attr("src").replace(".png", "_full.png")) // TODO
@@ -46,20 +47,31 @@ class Cards {
         },
         fast ? 210 : 960
       );
-    }
-    setTimeout(
-      () => {
-        if (newCardData) {
-          jCardContainer.find(".card-image").attr("src", newCardData.image);
-        }
-        jCardContainer.removeClass("flipping");
-      },
-      doAnimate ? (fast ? 250 : 1000) : 0 // CSS currently takes 1s to flip a card halfway (0.25s if fast)
-    );
-    if (doAnimate && fast) {
-      setTimeout(() => {
-        jCardContainer.removeClass("fast");
-      }, 500);
+      setTimeout(
+        () => {
+          if (newCardData) {
+            jCardContainer.find(".card-image").attr("src", newCardData.image);
+          }
+          jCardContainer.removeClass("flipping");
+        },
+        doAnimate ? (fast ? 250 : 1000) : 0 // CSS currently takes 1s to flip a card halfway (0.25s if fast)
+      );
+      if (doAnimate && fast) {
+        setTimeout(() => {
+          jCardContainer.removeClass("fast");
+        }, 500);
+      }
+    } else {
+      Cards.populateData(
+        jCardContainer,
+        newCardData,
+        jCardContainer.find(".card-text").css("font-size")
+      );
+      jCardContainer.find(".card-image").attr("src", newCardData.image);
+      jCardContainer
+        .removeClass("flipping")
+        .removeClass("fast")
+        .removeClass("d-none"); // For cards that start hidden
     }
   }
 
@@ -267,6 +279,34 @@ class Cards {
     this.installedCards.push(rigCard);
     return rigCard;
   }
+
+  ///////////////////////////////////////////////
+  // Serialisation
+
+  static serialise() {
+    const stack = this.stack.map((card) => card.id);
+    const heap = this.heap.map((card) => card.id);
+    const grip = this.grip.map((card) => {
+      return {
+        id: card.cardData.id,
+      };
+    });
+    const rig = this.installedCards.map((card) => {
+      return {
+        id: card.cardData.id,
+        damage: card.damage,
+        doom: card.doom,
+        power: card.power,
+        tapped: card.tapped,
+      };
+    });
+    return {
+      stack: stack,
+      heap: heap,
+      grip: grip,
+      rig: rig,
+    };
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -422,6 +462,14 @@ class GripCard {
     }
   }
 
+  get selected() {
+    return this.#jObj.hasClass("selected-card");
+  }
+
+  get inPlay() {
+    return this.#jObj.hasClass("in-play");
+  }
+
   remove() {
     let jObj = this.#jObj;
     jObj.addClass("transition-out");
@@ -481,6 +529,7 @@ class RigCard {
       card.selectable =
         card.cardData.canUse &&
         card.cardData.canUse(card) &&
+        !card.tapped &&
         (Tutorial.mode == TUTORIAL_MODE_NONE ||
           Tutorial.mode == TUTORIAL_MODE_USE_ASSET);
     });
@@ -871,5 +920,9 @@ $(document).ready(function () {
 
   $("#card-focused-image").click(function () {
     displayCardModal(Cards.focusedCardId);
+  });
+  $("#card-focused-toggle").click((e) => {
+    e.preventDefault();
+    $("#card-focused").toggleClass("hidden");
   });
 });

@@ -22,9 +22,30 @@ const LocationApartment = new LocationData("apartment", {
   clues: 0,
 });
 
+const LocationHideout = new LocationData("hideout", {
+  title: "Hideout",
+  text: "Your home sweet home.",
+  subtypes: ["building"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/hideout.png",
+  shroud: 0,
+  clues: 0,
+});
+
+const LocationPenthouse = new LocationData("penthouse", {
+  title: "Penthouse",
+  text: "Your home sweet home.",
+  subtypes: ["building"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/penthouse.png",
+  shroud: 0,
+  clues: 0,
+});
+
 const LocationWarehouse = new LocationData("warehouse", {
   title: "Warehouse",
   text: "Your next job.",
+  flavour: "If you lived here, you'd have your scoop by now!",
   subtypes: ["building"],
   faction: FACTION_MEAT,
   image: "img/card/location/warehouse.png",
@@ -41,6 +62,7 @@ const LocationUnknownMeat = new LocationData("unknown_meat", {
   subtypes: ["room", "hidden"],
   faction: FACTION_MEAT,
   image: "img/card/location/unknownMeat.png",
+  flavour: "oooOOOoooOOOooo spooky!",
   shroud: 0,
   clues: 0,
   async onPlayerMoves(source, data) {
@@ -49,7 +71,9 @@ const LocationUnknownMeat = new LocationData("unknown_meat", {
     let cardData;
     if (source.x == 2 && source.y == 0) {
       cardData = LocationTerminal;
-      Location.resetZoom();
+      if (Tutorial.active) {
+        Location.resetZoom();
+      }
     } else if (
       (source.x == 2 && source.y == 1) ||
       (source.x == 2 && source.y == -1) ||

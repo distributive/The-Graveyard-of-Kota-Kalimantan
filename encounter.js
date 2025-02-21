@@ -1,4 +1,4 @@
-const TEST_ENCOUNTERS = [TreacheryRapidDecay];
+const TEST_ENCOUNTERS = [];
 
 const MEAT_ENCOUNTERS = [
   TreacheryClumsy,
@@ -12,6 +12,7 @@ const MEAT_ENCOUNTERS = [
 
 const NET_ENCOUNTERS = [
   TreacherySomethingInTheDark,
+  TreacheryRapidDecay,
   EnemyNetRat,
   EnemyNetRat,
   EnemyArcher,
@@ -21,12 +22,19 @@ const NET_ENCOUNTERS = [
 ];
 
 class Encounter {
-  static #encounterCards = TEST_ENCOUNTERS; //MEAT_ENCOUNTERS; // TEMP
+  static #encounterCards = MEAT_ENCOUNTERS;
+  static #discardedCards = [];
   static skipEncounters = false;
 
   static async draw(cardData, removeFromDeck = true) {
     if (this.skipEncounters || Tutorial.active) {
       return;
+    }
+
+    // First time explainer
+    const firstTime = await Tutorial.run("encounter");
+    if (firstTime) {
+      await wait(1000); // Allow the tutorial window to close before opening a new one
     }
 
     // If a card is provided, draw that and don't affect the encounter deck; otherwise, choose a random valid encounter
@@ -42,6 +50,7 @@ class Encounter {
       cardData = this.#encounterCards[index];
       if (removeFromDeck && index > 0) {
         this.#encounterCards.splice(index, 1);
+        this.#discardedCards.push(cardData);
       }
     }
 
@@ -65,5 +74,17 @@ class Encounter {
       await cardData.onEncounter();
     }
     Modal.hide();
+  }
+
+  static resetDeck() {
+    this.#encounterCards = this.#encounterCards.concat(this.#discardedCards);
+    this.#discardedCards = [];
+  }
+
+  static serialise() {
+    return {
+      encounterCards: this.#encounterCards.map((card) => card.id),
+      discardedCards: this.#discardedCards.map((card) => card.id),
+    };
   }
 }

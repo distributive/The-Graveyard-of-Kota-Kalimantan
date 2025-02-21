@@ -98,7 +98,7 @@ $(document).ready(function () {
     "#act",
     Tooltip.make((instance) =>
       instance.setContent(
-        `The current act; complete its requirement (${Act.cardData.requirement}) to advance (good)`
+        `The current act; complete its requirement (${Act.cardData.textRequirement}) to advance (good)`
       )
     )
   );

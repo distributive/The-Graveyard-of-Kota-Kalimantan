@@ -17,6 +17,14 @@ class Chaos {
     "elder",
   ];
 
+  // SERIALISATION
+  static serialise() {
+    return {
+      chaosTokens: this.#chaosTokens,
+    };
+  }
+
+  // UTIL
   static randomToken() {
     return randomElement(this.#chaosTokens);
   }
@@ -30,7 +38,6 @@ class Chaos {
     return randomElement(successfulTokens);
   }
   static randomFailToken(minimum) {
-    console.log(minimum);
     const failingTokens = this.#chaosTokens.filter(
       (token) =>
         token == "fail" ||
@@ -69,11 +76,15 @@ class Chaos {
     };
   }
 
+  // FRONTEND
   static async runModal(data) {
     let { stat, base, target, canCancel, title, description, forceOutcome } =
       data;
     if (base == null) {
       base = Stats.getBase(stat);
+    }
+    if (description && description.length && description[0] != "<") {
+      description = `<p>${description}</p>`;
     }
     const chaosTokens = this.#chaosTokens;
     let intervalID;
@@ -85,10 +96,13 @@ class Chaos {
       const body = `
       <p>You are rolling ${Stats.getName(
         stat
-      )} with a target of ${target}. Your base &#160;${Stats.getSymbol(
+      )} with a target of ${target}. Your base ${Stats.getSymbol(
         stat
       )} value is ${base}.</p>
       ${description ? description : ""}
+      <p>You may commit ${Stats.getSymbol(
+        stat
+      )} cards to increase your base strength.</p>
       <p>Your chaos pool contains:
       <br>
         <span class="ms-3">
@@ -128,14 +142,24 @@ class Chaos {
     if (response == "cancel") {
       return;
     } else if (response == "commit") {
-      Modal.hide();
+      const didRun = await Tutorial.run("commit");
+      if (!didRun) {
+        Modal.hide();
+      }
       const prevUiMode = UiMode.uiMode;
       const prevUiModeData = UiMode.data;
+      const validTargets = Cards.grip.filter(
+        (card) =>
+          !card.inPlay &&
+          card.cardData.skills &&
+          card.cardData.skills.includes(stat)
+      );
       await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
         message: `Select any number of cards to commit to this test. Each card committed with be discarded and grant you +1 strength to this skill test (base strength ${base}).`,
         minCards: 0,
         maxCards: Cards.grip.length,
         canCancel: true,
+        validTargets: validTargets,
       });
       if (UiMode.data.selectedCards) {
         base += UiMode.data.selectedCards.length;

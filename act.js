@@ -15,6 +15,10 @@ class Act {
     await this.#cardData.advance();
     await Broadcast.signal("onActAdvanced", {});
   }
+
+  static serialise() {
+    return { cardId: this.#cardData.id };
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,4 +26,5 @@ class Act {
 $(document).ready(function () {
   // Set initial card data
   $("#act").data("card-id", Act.cardData.id);
+  Cards.populateData($("#act .card-image-container"), Act1, "15px");
 });

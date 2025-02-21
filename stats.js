@@ -180,4 +180,16 @@ class Stats {
       }
     }
   }
+
+  static serialise() {
+    return {
+      link: this.#link,
+      mu: this.#mu,
+      influence: this.#influence,
+      strength: this.#strength,
+      clicks: this.#clicks,
+      credits: this.#credits,
+      clues: this.#clues,
+    };
+  }
 }

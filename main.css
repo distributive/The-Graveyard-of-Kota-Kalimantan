@@ -87,6 +87,11 @@ body {
   background-color: white;
   box-shadow: 0 0 5px black;
 }
+#card-focused-buttons {
+  border-bottom-left-radius: 14px;
+  background-color: white;
+  /* box-shadow: 0 0 5px black; */
+}
 .modal-dialog {
   border: solid 3px black;
   border-radius: 14px;
@@ -97,6 +102,11 @@ body {
   border-bottom-left-radius: 14px;
   background-color: black;
   box-shadow: 0 0 5px black;
+  transition: transform 0.5s;
+  z-index: 100;
+}
+#card-focused.hidden {
+  transform: translateX(96%);
 }
 
 /* Buttons */
@@ -177,7 +187,39 @@ button:disabled .inline-icon {
 #ui-mode:not(.uimode-select-action, .uimode-select-location)
   .action-button
   .inline-icon,
-#ui-mode.uimode-select-location .action-button:not(#action-move) .inline-icon {
+#ui-mode.uimode-select-location .action-button:not(#action-move) .inline-icon,
+#tutorial-flags.waiting .action-button .inline-icon,
+#tutorial-flags.force-end-turn
+  .action-button:not(#action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-credit .action-button:not(#action-credit) .inline-icon,
+#tutorial-flags.force-draw
+  .action-button:not(#action-draw, #action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-move
+  .action-button:not(#action-move, #action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-investigate
+  .action-button:not(#action-investigate, #action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-engage
+  .action-button:not(#action-engage, #action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-fight
+  .action-button:not(#action-fight, #action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-evade
+  .action-button:not(#action-evade, #action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-play-event
+  .action-button:not(#action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-install-asset
+  .action-button:not(#action-end-turn)
+  .inline-icon,
+#tutorial-flags.force-use-asset
+  .action-button:not(#action-end-turn)
+  .inline-icon {
   filter: invert() brightness(0.5) !important;
 }
 
@@ -251,6 +293,29 @@ button:disabled .inline-icon {
   transform: scale(1.05);
   cursor: pointer;
   opacity: 1 !important;
+}
+
+#card-focused-buttons {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  padding: 5px 5px 6px 6px;
+}
+#card-focused-buttons button {
+  color: black;
+  border: none;
+  background: none;
+}
+#card-focused-buttons button:hover {
+  color: #555;
+}
+#card-focused-buttons button:active {
+  color: #aaa;
+}
+#card-focused-buttons button:disabled {
+  color: #ccc;
+  border: none;
+  background: none;
 }
 
 .card-padding {
@@ -440,12 +505,11 @@ button:disabled .inline-icon {
 
 /* Installed cards */
 #rig {
-  overflow-y: none;
 }
 .installed-card {
   position: relative;
-  height: 224px;
-  width: 160px;
+  height: 32%;
+  /* width: 160px; */
   aspect-ratio: 160/224 !important;
   animation: install 0.2s;
   transition: transform 0.2s;
@@ -789,6 +853,7 @@ button:disabled .inline-icon {
 #ui-mode:not(.uimode-select-enemy)
   .enemy-container.engaged:not(.transition-out) {
   box-shadow: 0 0 20px red;
+  background-color: #ff000070;
 }
 
 .enemy-container.engaged:not(.attacking) .card-image-container {
@@ -1013,6 +1078,21 @@ button:disabled .inline-icon {
   font-size: 0.95em;
 }
 
+.asset .card-text-skills {
+  top: 17%;
+  left: 2%;
+}
+.event .card-text-skills {
+  top: 15%;
+  left: 2%;
+}
+.asset .card-text-skill,
+.event .card-text-skill {
+  display: block;
+  width: 2.5em;
+  margin-bottom: 0.3em;
+}
+
 .location .card-text-title {
   top: 0.45%;
   left: 0;
@@ -1136,6 +1216,54 @@ button:disabled .inline-icon {
   left: 5%;
   right: 5%;
   font-size: 0.9em;
+}
+
+.act .card-text-title,
+.agenda .card-text-title {
+  left: 8%;
+  right: 0;
+  top: 0.1%;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+.act .card-text-requirement,
+.agenda .card-text-requirement {
+  top: 3%;
+  left: 78.2%;
+  right: 4%;
+  color: white;
+  text-align: center;
+  font-size: 1.7em;
+}
+.act .card-text-act,
+.agenda .card-text-agenda {
+  top: 48%;
+  left: 4.75%;
+  right: 75%;
+  color: white;
+  text-align: center;
+  font-size: 1.65em;
+}
+.act .card-text-text-box,
+.agenda .card-text-text-box {
+  left: 5%;
+  right: 5%;
+  top: 50%;
+  bottom: 5%;
+}
+.act .card-text-float,
+.agenda .card-text-float {
+  float: left;
+  width: 28.5%;
+  height: 27%;
+}
+.act .card-text-text,
+.agenda .card-text-text {
+  font-size: 0.8em;
+}
+.agenda * {
+  color: white;
 }
 
 .card-text-text.short {

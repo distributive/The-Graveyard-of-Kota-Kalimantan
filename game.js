@@ -1,6 +1,6 @@
 class Game {
   static async initGameState() {
-    Tutorial.active = true;
+    // Tutorial.active = true;
 
     // TODO let the user choose the ID
     const identity = CardBaz;
@@ -82,9 +82,55 @@ class Game {
       }
     }
 
-    const l0 = new Location(LocationApartment, 0, 0).setCurrentLocation(true);
-    const l1 = new Location(LocationWarehouse, 1, 0);
-    l0.addNeighbour(l1);
+    if (Tutorial.active) {
+      const home =
+        identity == CardTopan
+          ? LocationHideout
+          : identity == CardBaz
+          ? LocationPenthouse
+          : LocationApartment;
+      const l0 = new Location(home, 0, 0).setCurrentLocation(true);
+      const l1 = new Location(LocationWarehouse, 1, 0);
+      l0.addNeighbour(l1);
+    } else {
+      const l_ = new Location(LocationCorridor, 1, 0).setCurrentLocation();
+      const l0 = new Location(LocationUnknownMeat, 2, 1);
+      const l1 = new Location(LocationUnknownMeat, 3, 1);
+      const l2 = new Location(LocationUnknownMeat, 4, 1);
+      const l3 = new Location(LocationUnknownMeat, 5, 1);
+      const l4 = new Location(LocationUnknownMeat, 6, 1);
+      const l5 = new Location(LocationUnknownMeat, 2, 0);
+      const l6 = new Location(LocationUnknownMeat, 4, 0);
+      const l7 = new Location(LocationUnknownMeat, 6, 0);
+      const l8 = new Location(LocationUnknownMeat, 2, -1);
+      const l9 = new Location(LocationUnknownMeat, 3, -1);
+      const lA = new Location(LocationUnknownMeat, 4, -1);
+      const lB = new Location(LocationUnknownMeat, 5, -1);
+      const lC = new Location(LocationUnknownMeat, 6, -1);
+      // Connect neighbours
+      l_.addNeighbour(l5);
+      l5.addNeighbour(l0);
+      l5.addNeighbour(l8);
+      l0.addNeighbour(l1);
+      l1.addNeighbour(l2);
+      l2.addNeighbour(l3);
+      l3.addNeighbour(l4);
+      l6.addNeighbour(l2);
+      l6.addNeighbour(lA);
+      l7.addNeighbour(l4);
+      l7.addNeighbour(lC);
+      l8.addNeighbour(l9);
+      l9.addNeighbour(lA);
+      lA.addNeighbour(lB);
+      lB.addNeighbour(lC);
+      // Calculate distances
+      Location.recalculatePlayerDistance();
+    }
+
+    // Agenda 1 starts hidden in the tutorial
+    if (!Tutorial.active) {
+      Agenda.setCard(Agenda2, false);
+    }
 
     Stats.setClues(0);
     Agenda.setDoom(0);
@@ -130,6 +176,7 @@ class Game {
 
     await wait(500);
 
+    await Enemy.engagedEnemiesAttack();
     await Enemy.moveHunters();
     await RigCard.readyAll();
     await Enemy.readyAll();
@@ -208,7 +255,7 @@ class Game {
     } else {
       await cardData.onPlay(gripCard);
       await Broadcast.signal("onCardPlayed", { card: gripCard }); // TODO - ditto
-      Cards.addToHeap(gripCard.cardData.id);
+      Cards.addToHeap(gripCard.cardData);
     }
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION); // TODO - is it true that this will always be the correct mode to return to?
@@ -217,6 +264,9 @@ class Game {
   }
 
   static async actionUseCard(rigCard) {
+    if (rigCard.tapped) {
+      return;
+    }
     await rigCard.cardData.onUse(rigCard);
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);

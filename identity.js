@@ -96,6 +96,15 @@ class Identity {
       $("#runner-id").removeClass("tapped");
     }
   }
+
+  static serialise() {
+    return {
+      cardId: this.#cardData.id,
+      damage: this.#damage,
+      doom: this.#doom,
+      tapped: this.tapped,
+    };
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

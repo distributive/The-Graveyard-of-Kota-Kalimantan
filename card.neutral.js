@@ -9,8 +9,9 @@ CardWarehouseKey = new AssetData("warehouse_key", {
   subtypes: ["item"],
   faction: FACTION_NEUTRAL,
   image: "img/card/asset/warehouseKey.png",
-  cost: 0,
+  cost: 4,
   async onUse(source) {
+    // The layout this produces must match the non-tuturial starting layout in game.js
     if (Tutorial.mode != TUTORIAL_MODE_USE_ASSET) return;
     await Stats.addClicks(-1);
     await Cards.removeInstalledCardFromGame(source);
@@ -60,6 +61,8 @@ CardWarehouseKey = new AssetData("warehouse_key", {
     l9.addNeighbour(lA);
     lA.addNeighbour(lB);
     lB.addNeighbour(lC);
+    // Recalculate distances
+    Location.recalculatePlayerDistance();
   },
 });
 
@@ -74,6 +77,7 @@ CardUnsureGamble = new EventData("unsureGamble", {
   faction: FACTION_NEUTRAL,
   image: "img/card/event/offShoreFund.png",
   cost: 0,
+  skills: ["influence", "mu", "strength", "link"],
   onPlay: async (card) => {
     const results = await Chaos.runModal({
       stat: "influence",

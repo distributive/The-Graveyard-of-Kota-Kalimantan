@@ -39,6 +39,13 @@ class Agenda {
     await this.setDoom(0);
     await Broadcast.signal("onAgendaAdvanced", {});
   }
+
+  static serialise() {
+    return {
+      cardId: this.#cardData.id,
+      doom: this.#doom,
+    };
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

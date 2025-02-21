@@ -42,6 +42,10 @@ class Modal {
     return Modal.instances[id];
   }
 
+  static get isModalVisible() {
+    return $("#modal").css("display") != "none";
+  }
+
   // INSTANCE
   #id;
   #header;
