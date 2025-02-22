@@ -17,7 +17,7 @@ CardWarehouseKey = new AssetData("warehouse_key", {
     await Cards.removeInstalledCardFromGame(source);
     // Remove all layout
     for (const location of Location.instances) {
-      location.remove();
+      Location.remove(location);
     }
     // Set camera to see the new locations
     Location.focusMapOffsetToLocationPosition(4, 0);

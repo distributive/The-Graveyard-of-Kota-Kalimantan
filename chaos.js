@@ -19,9 +19,10 @@ class Chaos {
 
   // SERIALISATION
   static serialise() {
-    return {
-      chaosTokens: this.#chaosTokens,
-    };
+    return this.#chaosTokens;
+  }
+  static deserialise(json) {
+    this.#chaosTokens = json;
   }
 
   // UTIL

@@ -183,13 +183,23 @@ class Stats {
 
   static serialise() {
     return {
-      link: this.#link,
-      mu: this.#mu,
-      influence: this.#influence,
-      strength: this.#strength,
-      clicks: this.#clicks,
-      credits: this.#credits,
-      clues: this.#clues,
+      link: this.link,
+      mu: this.mu,
+      inf: this.influence,
+      str: this.strength,
+      clicks: this.clicks,
+      credits: this.credits,
+      clues: this.clues,
     };
+  }
+
+  static async deserialise(json) {
+    this.link = json.link;
+    this.mu = json.mu;
+    this.influence = json.inf;
+    this.strength = json.str;
+    await this.setClicks(json.clicks);
+    await this.setCredits(json.credits);
+    this.setClues(json.clues);
   }
 }

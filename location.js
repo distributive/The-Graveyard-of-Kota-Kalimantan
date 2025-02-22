@@ -127,6 +127,27 @@ class Location {
     }
   }
 
+  // Deletes all neighbour relations, hosted enemies, and the location jObj#
+  static remove(location, force = false) {
+    if (location == this.getCurrentLocation() && !force) {
+      throw new Error("Attmpted to delete current location!");
+    }
+    for (const neighbour of location.#neighbours) {
+      location.removeNeighbour(neighbour);
+    }
+    for (const enemy of location.#enemies) {
+      enemy.remove();
+    }
+    location.#jObj.remove();
+    const index = this.instances.indexOf(this);
+    if (index >= 0) {
+      this.instances.splice(index, 1);
+    }
+    if (this.#coordToInstance[location.x * 10000 + location.y] == location) {
+      delete this.#coordToInstance[location.x * 10000 + location.y];
+    }
+  }
+
   // SERIALISATION
   static serialise() {
     const locations = this.instances.map((location) => {
@@ -142,8 +163,39 @@ class Location {
       };
     });
     return {
+      current: this.getCurrentLocation().id,
+      nextId: this.nextId,
       locations: locations,
     };
+  }
+
+  static deserialise(json) {
+    // Remove all existing locations
+    this.instances.forEach((location) => this.remove(location, true));
+    this.instances = [];
+
+    // Create new locations from serialised data
+    json.locations.forEach((data) => {
+      const location = new Location(
+        CardData.getCard(data.cardId),
+        data.x,
+        data.y,
+        false,
+        data
+      );
+    });
+    this.nextId = json.nextId;
+
+    // Create connections
+    json.locations.forEach((data) => {
+      const location = this.getInstance(data.id);
+      data.neighbours.forEach((neighbourID) => {
+        location.addNeighbour(this.getInstance(neighbourID));
+      });
+    });
+
+    // Set current location
+    this.getInstance(json.current).setCurrentLocation();
   }
 
   // INSTANCE
@@ -165,8 +217,8 @@ class Location {
   #jClues = null;
   #jDoom = null;
 
-  constructor(cardData, x, y) {
-    this.#id = Location.nextId++;
+  constructor(cardData, x, y, doAnimate = true, data = null) {
+    this.#id = data && data.id ? data.id : Location.nextId++;
     this.#cardData = cardData;
     this.#x = x;
     this.#y = y;
@@ -175,7 +227,7 @@ class Location {
     Location.recordLocationByPosition(this);
 
     let jObj = $(`
-      <div class="location-container transition-in">
+      <div class="location-container ${doAnimate ? "transition-in" : ""}">
         <div class="card-image-container h-100">
           <img src="" class="location-image card-image" onmousedown="event.preventDefault()" />
           <div class="card-text"></div>
@@ -197,22 +249,32 @@ class Location {
     this.setPos(x, y);
 
     // Animate the background colour of the location (needed to obscure connections)
-    setTimeout(function () {
-      jObj.removeClass("transition-in");
-    }, 100);
+    if (doAnimate) {
+      setTimeout(function () {
+        jObj.removeClass("transition-in");
+      }, 100);
+    }
 
     this.#jClues = this.#jObj.find(".clues").hide();
     this.#jDoom = this.#jObj.find(".doom").hide();
 
+    const placeCounters = function () {
+      instance.setClues(
+        data && Number.isInteger(data.clues) ? data.clues : cardData.clues
+      );
+      instance.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0);
+    };
+
     // Place counters after the intro animation
     const instance = this;
-    setTimeout(function () {
-      instance.setClues(cardData.clues);
-      instance.setDoom(0);
-    }, 2000);
+    if (doAnimate) {
+      setTimeout(placeCounters, 2000);
+    } else {
+      placeCounters();
+    }
 
     // Animate the location
-    Cards.flip(jObj.find(".card-image-container"), cardData);
+    Cards.flip(jObj.find(".card-image-container"), cardData, doAnimate);
   }
 
   get id() {
@@ -433,24 +495,6 @@ class Location {
 
     this.calculateValidLocations();
     return this;
-  }
-
-  // Deletes all neighbour relations, hosted enemies, and the location jObj#
-  remove() {
-    if (this == Location.getCurrentLocation()) {
-      throw new Error("Attmpted to delete current location!");
-    }
-    for (const neighbour of this.#neighbours) {
-      this.removeNeighbour(neighbour);
-    }
-    for (const enemy of this.#enemies) {
-      enemy.remove();
-    }
-    this.#jObj.remove();
-    const index = Location.instances.indexOf(this);
-    if (index >= 0) {
-      Location.instances.splice(index, 1);
-    }
   }
 
   // These do not affect the enemies, they are just for logging them at locations

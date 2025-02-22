@@ -133,30 +133,7 @@ class Cards {
         this.shuffleHeap();
       }
       const cardData = this.stack.pop();
-      let jCard = $(
-        `<div class="grip-card ${
-          cardData.type == TYPE_EVENT && cardData.preventAttacks
-            ? "prevent-attacks"
-            : ""
-        }">
-          <div class="card-image-container h-100">
-            <img class="grip-card-image card-image h-100" src="${
-              cardData.image
-            }" />
-          </div>
-        </div>`
-      );
-      Cards.populateData(
-        jCard.find(".card-image-container"),
-        cardData,
-        "12.1px"
-      );
-      jCard.data("card-id", cardData.id);
-      this.grip.push(new GripCard(cardData.id, jCard));
-      setTimeout(() => {
-        $("#grip").append(jCard);
-        this.updateHandPositions();
-      }, i * 50);
+      this.addCardToGrip(cardData, i * 50);
     }
     this.updateStackHeapHeights();
     this.determineCanDraw();
@@ -164,6 +141,20 @@ class Cards {
       Broadcast.signal("onCardsDrawn", { number: i });
     }
     return n - i;
+  }
+
+  static addCardToGrip(cardData, delay) {
+    const gripCard = new GripCard(cardData);
+    this.grip.push(gripCard);
+    if (delay) {
+      setTimeout(() => {
+        $("#grip").append(gripCard.jObj);
+        this.updateHandPositions();
+      }, delay);
+    } else {
+      $("#grip").append(gripCard.jObj);
+      this.updateHandPositions();
+    }
   }
 
   static async discard(card) {
@@ -221,12 +212,12 @@ class Cards {
     this.removeInstalledCard(card);
   }
 
-  static removeInstalledCard(card) {
+  static removeInstalledCard(card, doAnimate = true) {
     const index =
       typeof card == "object" ? this.installedCards.indexOf(card) : card;
     if (index >= 0 && index < this.installedCards.length) {
       const cardData = this.installedCards[index].cardData;
-      this.installedCards[index].remove();
+      this.installedCards[index].remove(doAnimate);
       this.installedCards.splice(index, 1);
       return cardData;
     }
@@ -274,8 +265,8 @@ class Cards {
   ///////////////////////////////////////////////
   // Rig
 
-  static install(cardData) {
-    const rigCard = new RigCard(cardData);
+  static install(cardData, data) {
+    const rigCard = new RigCard(cardData, data);
     this.installedCards.push(rigCard);
     return rigCard;
   }
@@ -287,9 +278,7 @@ class Cards {
     const stack = this.stack.map((card) => card.id);
     const heap = this.heap.map((card) => card.id);
     const grip = this.grip.map((card) => {
-      return {
-        id: card.cardData.id,
-      };
+      return card.cardData.id;
     });
     const rig = this.installedCards.map((card) => {
       return {
@@ -306,6 +295,21 @@ class Cards {
       grip: grip,
       rig: rig,
     };
+  }
+
+  static async deserialise(json) {
+    this.stack = json.stack.map((id) => CardData.getCard(id));
+    this.heap = json.heap.map((id) => CardData.getCard(id));
+    this.grip.forEach((card) => card.remove(false));
+    this.installedCards.forEach((card) => card.remove(false));
+    this.grip = [];
+    this.installedCards = [];
+    json.grip.forEach((id) => {
+      Cards.addCardToGrip(CardData.getCard(id));
+    });
+    json.rig.forEach((data) => {
+      Cards.install(CardData.getCard(data.id), data);
+    });
   }
 }
 
@@ -354,10 +358,29 @@ class GripCard {
   #jObj;
   #playable = false;
 
-  constructor(cardId, jObj) {
-    this.#cardData = CardData.getCard(cardId);
-    this.#jObj = jObj;
+  constructor(cardData) {
     const instance = this;
+    this.#cardData = cardData;
+    this.#jObj = $(
+      `<div class="grip-card ${
+        cardData.type == TYPE_EVENT && cardData.preventAttacks
+          ? "prevent-attacks"
+          : ""
+      }">
+          <div class="card-image-container h-100">
+            <img class="grip-card-image card-image h-100" src="${
+              cardData.image
+            }" />
+          </div>
+        </div>`
+    );
+    Cards.populateData(
+      this.#jObj.find(".card-image-container"),
+      cardData,
+      "12.1px"
+    );
+    this.#jObj.data("card-id", cardData.id);
+    const jObj = this.#jObj;
     this.#jObj.click(async function () {
       if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
         jObj.addClass("in-play");
@@ -416,6 +439,9 @@ class GripCard {
     return false;
   }
 
+  get jObj() {
+    return this.#jObj;
+  }
   get cardData() {
     return this.#cardData;
   }
@@ -470,12 +496,16 @@ class GripCard {
     return this.#jObj.hasClass("in-play");
   }
 
-  remove() {
+  remove(doAnimate = true) {
     let jObj = this.#jObj;
     jObj.addClass("transition-out");
-    setTimeout(function () {
+    if (doAnimate) {
+      setTimeout(function () {
+        jObj.remove();
+      }, 200);
+    } else {
       jObj.remove();
-    }, 200);
+    }
   }
 
   // // Releases the card from the grip and moves it to a given point
@@ -586,7 +616,7 @@ class RigCard {
   #doom;
   #power;
 
-  constructor(cardData) {
+  constructor(cardData, data) {
     const instance = this;
     this.#cardData = cardData;
 
@@ -652,9 +682,13 @@ class RigCard {
     this.#jDamage = this.#jObj.find(".damage");
     this.#jDoom = this.#jObj.find(".doom");
     this.#jPower = this.#jObj.find(".power");
-    this.setDamage(0);
-    this.setDoom(0);
-    this.setPower(0);
+    this.setDamage(data && Number.isInteger(data.damage) ? data.damage : 0);
+    this.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0);
+    this.setPower(data && Number.isInteger(data.power) ? data.power : 0);
+
+    if (data && data.tapped) {
+      this.tapped = true;
+    }
   }
 
   get installed() {
@@ -800,16 +834,20 @@ class RigCard {
     this.#jObj.removeClass("selected-card");
   }
 
-  remove() {
-    let jObj = this.#jObj;
-    jObj
-      .addClass("transition-out")
-      .removeClass("perceived-trashed")
-      .removeClass("selectable")
-      .removeClass("selected-card");
-    setTimeout(function () {
-      jObj.remove();
-    }, 200);
+  remove(doAnimate = true) {
+    if (doAnimate) {
+      let jObj = this.#jObj;
+      jObj
+        .addClass("transition-out")
+        .removeClass("perceived-trashed")
+        .removeClass("selectable")
+        .removeClass("selected-card");
+      setTimeout(function () {
+        jObj.remove();
+      }, 200);
+    } else {
+      this.#jObj.remove();
+    }
   }
 }
 

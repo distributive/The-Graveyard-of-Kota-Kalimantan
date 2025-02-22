@@ -234,7 +234,7 @@ class Enemy {
 
   // SERIALISATION
   static serialise() {
-    const enemies = this.instances.map((enemy) => {
+    return this.instances.map((enemy) => {
       return {
         id: enemy.cardData.id,
         damage: enemy.damage,
@@ -245,9 +245,19 @@ class Enemy {
         location: enemy.location.id,
       };
     });
-    return {
-      enemies: enemies,
-    };
+  }
+
+  static async deserialise(json) {
+    // Remove all existing enemies
+    this.instances.forEach((enemy) => enemy.remove());
+    // Create new enemies
+    json.forEach((data) => {
+      const enemy = new Enemy(
+        CardData.getCard(data.id),
+        Location.getInstance(data.location),
+        data
+      );
+    });
   }
 
   // INSTANCE
@@ -265,7 +275,7 @@ class Enemy {
   #clues;
   #doom;
 
-  constructor(cardData, location) {
+  constructor(cardData, location, data) {
     Enemy.instances.push(this);
     this.#cardData = cardData;
 
@@ -296,9 +306,16 @@ class Enemy {
     this.#jDamage = this.#jObj.find(".damage");
     this.#jClues = this.#jObj.find(".clues");
     this.#jDoom = this.#jObj.find(".doom");
-    this.setDamage(0);
-    this.setClues(0);
-    this.setDoom(0);
+    this.setDamage(data && Number.isInteger(data.damage) ? data.damage : 0);
+    this.setClues(data && Number.isInteger(data.clues) ? data.clues : 0);
+    this.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0);
+
+    if (data && data.engaged) {
+      this.engage();
+    }
+    if (data && data.exhausted) {
+      this.exhausted();
+    }
 
     this.setLocation(location);
   }

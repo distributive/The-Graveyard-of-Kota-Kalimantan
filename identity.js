@@ -99,11 +99,18 @@ class Identity {
 
   static serialise() {
     return {
-      cardId: this.#cardData.id,
+      id: this.#cardData.id,
       damage: this.#damage,
       doom: this.#doom,
       tapped: this.tapped,
     };
+  }
+
+  static deserialise(json) {
+    this.setCard(CardData.getCard(json.id), false);
+    this.setDamage(json.damage);
+    this.setDoom(json.doom);
+    this.tapped = json.tapped;
   }
 }
 

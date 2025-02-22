@@ -46,6 +46,11 @@ class Agenda {
       doom: this.#doom,
     };
   }
+
+  static deserialise(json) {
+    this.setCard(CardData.getCard(json.cardId), false);
+    this.setDoom(json.doom);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

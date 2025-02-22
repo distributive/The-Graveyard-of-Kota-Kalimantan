@@ -91,6 +91,14 @@ class Tutorial {
       active: this.#active,
     };
   }
+  static deserialise(json) {
+    this.#triggers = {};
+    json.triggers.forEach((trigger) => {
+      this.#triggers[trigger] = true;
+    });
+    this.#mode = json.mode;
+    this.active = json.active;
+  }
 
   // To exit tutorial mode, set it to null
   static setMode(mode) {

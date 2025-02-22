@@ -58,8 +58,12 @@ class UiMode {
   static serialise() {
     return {
       uiMode: this.#uiMode,
-      previousMode: this.#previousMode,
+      prevMode: this.#previousMode,
     };
+  }
+  static async deserialise(json) {
+    this.#previousMode = json.prevMode;
+    await this.setMode(json.uiMode);
   }
 
   // Some modes serve a singular purpose and this function will maintain

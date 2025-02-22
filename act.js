@@ -19,6 +19,10 @@ class Act {
   static serialise() {
     return { cardId: this.#cardData.id };
   }
+
+  static deserialise(json) {
+    this.setCard(CardData.getCard(json.cardId), false);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

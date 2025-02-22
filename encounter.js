@@ -83,8 +83,13 @@ class Encounter {
 
   static serialise() {
     return {
-      encounterCards: this.#encounterCards.map((card) => card.id),
-      discardedCards: this.#discardedCards.map((card) => card.id),
+      deck: this.#encounterCards.map((card) => card.id),
+      discarded: this.#discardedCards.map((card) => card.id),
     };
+  }
+
+  static deserialise(json) {
+    this.#encounterCards = json.deck.map((id) => CardData.getCard(id));
+    this.#discardedCards = json.discarded.map((id) => CardData.getCard(id));
   }
 }
