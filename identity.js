@@ -28,6 +28,10 @@ class Identity {
   }
 
   static setDamage(value, doAnimate = true) {
+    if (doAnimate && value > this.#damage) {
+      animate($("#pain"), 500);
+      Audio.playEffect(AUDIO_PAIN);
+    }
     const jDamage = $("#runner-id .damage");
     if (value == 0) {
       jDamage.hide();
@@ -45,7 +49,7 @@ class Identity {
     this.setDamage(this.#damage + value, doAnimate);
   }
 
-  static setDoom(value, doAnimate = true) {
+  static async setDoom(value, doAnimate = true) {
     const jDoom = $("#runner-id .doom");
     if (value == 0) {
       jDoom.hide();
@@ -56,11 +60,18 @@ class Identity {
     if (value != this.#doom && doAnimate) {
       animate(jDoom, 500);
     }
+    if (this.#doom < value) {
+      await Broadcast.signal("onDoomPlaced", {
+        doom: value,
+        card: this,
+        cardData: this.cardData,
+      });
+    }
     this.#doom = value;
     return this;
   }
-  static addDoom(value, doAnimate = true) {
-    this.setDoom(this.#doom + value, doAnimate);
+  static async addDoom(value, doAnimate = true) {
+    await this.setDoom(this.#doom + value, doAnimate);
   }
 
   // Does nothing if the ID is unusable
@@ -108,15 +119,8 @@ class Identity {
 
   static deserialise(json) {
     this.setCard(CardData.getCard(json.id), false);
-    this.setDamage(json.damage);
+    this.setDamage(json.damage, false);
     this.setDoom(json.doom);
     this.tapped = json.tapped;
   }
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-$(document).ready(function () {
-  Identity.setDamage(Identity.damage);
-  Identity.setDoom(Identity.doom);
-});

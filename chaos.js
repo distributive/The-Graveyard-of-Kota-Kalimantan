@@ -254,6 +254,12 @@ class Chaos {
       `;
       const options = [new Option("continue", "Continue")];
 
+      if (success) {
+        Audio.playEffect(AUDIO_SUCCESS);
+      } else {
+        Audio.playEffect(AUDIO_FAIL);
+      }
+
       await new Modal(null, {
         header: header,
         body: body,

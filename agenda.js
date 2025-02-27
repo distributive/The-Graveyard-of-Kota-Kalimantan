@@ -16,7 +16,7 @@ class Agenda {
     Cards.flip($("#agenda .card-image-container"), this.#cardData, doAnimate);
   }
 
-  static setDoom(value, doAnimate = true) {
+  static async setDoom(value, doAnimate = true) {
     const jDoom = $("#agenda .doom");
     if (value == 0) {
       jDoom.hide();
@@ -27,16 +27,23 @@ class Agenda {
     if (value != this.#doom && doAnimate) {
       animate(jDoom, 500);
     }
+    if (this.#doom < value) {
+      await Broadcast.signal("onDoomPlaced", {
+        doom: value,
+        card: this,
+        cardData: this.cardData,
+      });
+    }
     this.#doom = value;
     return this;
   }
   static async addDoom(value, doAnimate = true) {
-    this.setDoom(this.#doom + value, doAnimate);
+    await this.setDoom(this.#doom + value, doAnimate);
   }
 
   static async advance() {
-    await this.#cardData.advance();
     await this.setDoom(0);
+    await this.#cardData.advance();
     await Broadcast.signal("onAgendaAdvanced", {});
   }
 
@@ -47,9 +54,9 @@ class Agenda {
     };
   }
 
-  static deserialise(json) {
+  static async deserialise(json) {
     this.setCard(CardData.getCard(json.cardId), false);
-    this.setDoom(json.doom);
+    await this.setDoom(json.doom);
   }
 }
 

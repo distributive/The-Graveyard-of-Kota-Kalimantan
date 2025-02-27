@@ -27,3 +27,11 @@ function animateTurnBanner(side) {
     obj.hide();
   }, 1400);
 }
+
+function setNetspace(isNetspace) {
+  if (isNetspace) {
+    $("body").addClass("netspace");
+  } else {
+    $("body").removeClass("netspace");
+  }
+}

@@ -139,13 +139,22 @@ class Location {
       enemy.remove();
     }
     location.#jObj.remove();
-    const index = this.instances.indexOf(this);
+    const index = this.instances.indexOf(location);
     if (index >= 0) {
       this.instances.splice(index, 1);
     }
     if (this.#coordToInstance[location.x * 10000 + location.y] == location) {
       delete this.#coordToInstance[location.x * 10000 + location.y];
     }
+  }
+
+  // Remove all existing locations
+  static deleteState() {
+    while (this.instances.length > 0) {
+      this.remove(this.instances[0], true);
+    }
+    // This shouldn't be necessary but until I work out why these aren't getting cleaned up properly this will ensure they do
+    $(".location-connector").remove();
   }
 
   // SERIALISATION
@@ -171,8 +180,7 @@ class Location {
 
   static deserialise(json) {
     // Remove all existing locations
-    this.instances.forEach((location) => this.remove(location, true));
-    this.instances = [];
+    this.deleteState();
 
     // Create new locations from serialised data
     json.locations.forEach((data) => {
@@ -262,7 +270,7 @@ class Location {
       instance.setClues(
         data && Number.isInteger(data.clues) ? data.clues : cardData.clues
       );
-      instance.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0);
+      instance.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0); // Theoretically causes async issues, but this should never advance the agenda
     };
 
     // Place counters after the intro animation
@@ -338,7 +346,7 @@ class Location {
     return true;
   }
 
-  setDoom(value, doAnimate = true) {
+  async setDoom(value, doAnimate = true) {
     if (value == 0) {
       this.#jDoom.hide();
     } else {
@@ -349,15 +357,22 @@ class Location {
     if (value != this.#doom && doAnimate) {
       animate(jDoom, 500);
     }
+    if (this.#doom < value) {
+      await Broadcast.signal("onDoomPlaced", {
+        doom: value,
+        card: this,
+        cardData: this.cardData,
+      });
+    }
     this.#doom = value;
     return this;
   }
-  addDoom(number) {
+  async addDoom(number) {
     if (this.#doom + number < 0) {
-      this.setDoom(0);
+      await this.setDoom(0);
       return false;
     }
-    this.setDoom(this.#doom + number);
+    await this.setDoom(this.#doom + number);
     return true;
   }
 
@@ -439,7 +454,7 @@ class Location {
 
   // assume all connections are bidirectional
   addNeighbour(neighbour) {
-    if (this.#neighbours.includes(neighbour)) {
+    if (!neighbour || this.#neighbours.includes(neighbour)) {
       return this;
     }
     this.#neighbours.push(neighbour);

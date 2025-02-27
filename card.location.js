@@ -51,6 +51,7 @@ const LocationWarehouse = new LocationData("warehouse", {
   image: "img/card/location/warehouse.png",
   shroud: 0,
   clues: 0,
+  enterSfx: AUDIO_MOVE_OUTSIDE,
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -218,6 +219,7 @@ const LocationUnknownNet = new LocationData("unknown_net", {
 const LocationEntrance = new LocationData("entrance", {
   title: "Entrance",
   text: "",
+  flavour: "No exit.",
   subtypes: ["netspace"],
   faction: FACTION_NET,
   image: "img/card/location/entrance.png",
@@ -228,6 +230,7 @@ const LocationEntrance = new LocationData("entrance", {
 const LocationSource = new LocationData("source", {
   title: "Source",
   text: "",
+  flavour: `"Come to me."`,
   subtypes: ["netspace", "lair"],
   faction: FACTION_NET,
   image: "img/card/location/source.png",
@@ -237,7 +240,8 @@ const LocationSource = new LocationData("source", {
 
 const LocationVoid = new LocationData("void", {
   title: "Void",
-  text: "Turn back; there is nothing more to find.",
+  text: "There is nothing more to find.",
+  flavour: "Even infinity has walls.",
   subtypes: ["netspace"],
   faction: FACTION_NET,
   image: "img/card/location/void.png",
@@ -311,7 +315,7 @@ RANDOM_NET_LOCATIONS.push(LocationTagStorm);
 
 const LocationNest = new LocationData("nest", {
   title: "Nest",
-  text: "Whenever you move out of this location, spawn an enemy here.",
+  text: "Whenever you move out of this location, spawn a bug.",
   subtypes: ["netspace", "lair"],
   faction: FACTION_NET,
   image: "img/card/location/nest.png",

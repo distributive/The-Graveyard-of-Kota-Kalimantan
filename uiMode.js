@@ -177,6 +177,10 @@ class UiMode {
     UiMode.setFlag("can-engage", canEngage);
     UiMode.setFlag("can-fight", canFight);
     UiMode.setFlag("can-evade", canEvade);
+
+    UiMode.setFlag("engaged", Enemy.getEngagedEnemies().length > 0);
+
+    Serialisation.save();
   }
   static async exitSelectAction() {
     GripCard.markAllCardsUnplayable();
@@ -485,7 +489,9 @@ class UiMode {
   static async exitWaiting() {}
 
   // UIMODE_END_TURN
-  static async enterEndTurn() {}
+  static async enterEndTurn() {
+    Serialisation.save();
+  }
   static async exitEndTurn() {}
 }
 

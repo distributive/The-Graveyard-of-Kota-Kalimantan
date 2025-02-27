@@ -49,8 +49,10 @@ class Cards {
       );
       setTimeout(
         () => {
-          if (newCardData) {
+          if (newCardData && !newCardData.hidden) {
             jCardContainer.find(".card-image").attr("src", newCardData.image);
+          } else {
+            jCardContainer.find(".card-image").attr("src", "");
           }
           jCardContainer.removeClass("flipping");
         },
@@ -61,6 +63,8 @@ class Cards {
           jCardContainer.removeClass("fast");
         }, 500);
       }
+    } else if (newCardData.hidden) {
+      jCardContainer.find(".card-image").attr("src", "");
     } else {
       Cards.populateData(
         jCardContainer,
@@ -77,6 +81,9 @@ class Cards {
 
   static populateData(jObj, cardData, fontSize) {
     jObj.find(".card-text").remove();
+    if (cardData.hidden) {
+      return;
+    }
     if (cardData) {
       cardData.populate(jObj);
     }
@@ -150,10 +157,12 @@ class Cards {
       setTimeout(() => {
         $("#grip").append(gripCard.jObj);
         this.updateHandPositions();
+        Audio.playEffect(AUDIO_DRAW);
       }, delay);
     } else {
       $("#grip").append(gripCard.jObj);
       this.updateHandPositions();
+      Audio.playEffect(AUDIO_DRAW);
     }
   }
 
@@ -210,6 +219,7 @@ class Cards {
 
   static async removeInstalledCardFromGame(card) {
     this.removeInstalledCard(card);
+    Audio.playEffect(AUDIO_TRASH);
   }
 
   static removeInstalledCard(card, doAnimate = true) {
@@ -298,18 +308,27 @@ class Cards {
   }
 
   static async deserialise(json) {
+    // Remove all existing card data
+    this.deleteState();
+
+    // Create new state from json
     this.stack = json.stack.map((id) => CardData.getCard(id));
     this.heap = json.heap.map((id) => CardData.getCard(id));
-    this.grip.forEach((card) => card.remove(false));
-    this.installedCards.forEach((card) => card.remove(false));
-    this.grip = [];
-    this.installedCards = [];
     json.grip.forEach((id) => {
       Cards.addCardToGrip(CardData.getCard(id));
     });
     json.rig.forEach((data) => {
       Cards.install(CardData.getCard(data.id), data);
     });
+  }
+
+  static deleteState() {
+    this.stack = [];
+    this.heap = [];
+    this.grip.forEach((card) => card.remove(false));
+    this.grip = [];
+    this.installedCards.forEach((card) => card.remove(false));
+    this.installedCards = [];
   }
 }
 
@@ -387,6 +406,9 @@ class GripCard {
         const { success, reason } = await Game.actionPlayCard(instance);
         if (success) {
           Cards.removeGripCard(instance);
+          if (!Game.checkTurnEnd()) {
+            UiMode.setMode(UIMODE_SELECT_ACTION); // TODO - is it true that this will always be the correct mode to return to?
+          }
         } else {
           jObj.removeClass("in-play");
           animate(instance.#jObj, 300);
@@ -683,7 +705,7 @@ class RigCard {
     this.#jDoom = this.#jObj.find(".doom");
     this.#jPower = this.#jObj.find(".power");
     this.setDamage(data && Number.isInteger(data.damage) ? data.damage : 0);
-    this.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0);
+    this.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0); // Theoretically causes async problems, but this should never advance the agenda
     this.setPower(data && Number.isInteger(data.power) ? data.power : 0);
 
     if (data && data.tapped) {
@@ -782,7 +804,7 @@ class RigCard {
     return this;
   }
 
-  setDoom(value, doAnimate = true) {
+  async setDoom(value, doAnimate = true) {
     if (value < 0) {
       value = 0;
     }
@@ -796,11 +818,18 @@ class RigCard {
     if (value != this.#doom && doAnimate) {
       animate(jDoom, 500);
     }
+    if (this.#doom < value) {
+      await Broadcast.signal("onDoomPlaced", {
+        doom: value,
+        card: this,
+        cardData: this.cardData,
+      });
+    }
     this.#doom = value;
     return this;
   }
-  addDoom(value, doAnimate = true) {
-    this.setDoom(this.#doom + value, doAnimate);
+  async addDoom(value, doAnimate = true) {
+    await this.setDoom(this.#doom + value, doAnimate);
   }
 
   setPower(value, doAnimate = true) {

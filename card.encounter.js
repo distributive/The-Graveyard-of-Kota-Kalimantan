@@ -97,7 +97,7 @@ const TreacheryFallingDebris = new TreacheryData("falling_debris", {
 
 const TreacheryFaultyHardware = new TreacheryData("faulty_hardware", {
   title: "Faulty Hardware",
-  text: "Test 3 {mu}. If unsuccessful, exhaust all installed cards.",
+  text: "Test 3 {mu}. If unsuccessful, exhaust all installed cards (they cannot be used for the rest of the turn).",
   subtypes: ["hazard"],
   image: "img/card/treachery/faultyHardware.png",
   canEncounter() {

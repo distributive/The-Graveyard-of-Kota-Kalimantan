@@ -1,11 +1,17 @@
 class Game {
-  static async initGameState() {
-    // Tutorial.active = true;
+  static async initGameState(
+    identity = CardTheCatalyst,
+    tutorialActive = false
+  ) {
+    Tutorial.active = !!tutorialActive;
+    setNetspace(false);
 
-    // TODO let the user choose the ID
-    const identity = CardBaz;
+    // Wipe existing game state (if any)
+    Location.deleteState();
+    Enemy.deleteState();
+    Cards.deleteState();
+
     Identity.setCard(identity, false);
-
     Stats.influence = identity.influence;
     Stats.mu = identity.mu;
     Stats.strength = identity.strength;
@@ -69,18 +75,11 @@ class Game {
       await Cards.draw(5);
     } else {
       // Place Unsure Gamble and Warehouse Key on top of the deck for the tutorial
-      // This means the decks run 3 Unsure Gambles, but the maths works out nice for the tutorial
+      // This means the deck run an extra copy, but the maths works out nice for the tutorial
       Cards.addToStack([CardWarehouseKey, CardUnsureGamble]);
     }
 
-    Stats.setCredits(0);
-    if (!Tutorial.active) {
-      for (let i = 1; i <= 5; i++) {
-        setTimeout(() => {
-          Stats.setCredits(i);
-        }, i * 100);
-      }
-    }
+    Stats.setCredits(5);
 
     if (Tutorial.active) {
       const home =
@@ -128,14 +127,23 @@ class Game {
     }
 
     // Agenda 1 starts hidden in the tutorial
-    if (!Tutorial.active) {
+    if (Tutorial.active) {
+      Agenda.setCard(Agenda1, false);
+    } else {
       Agenda.setCard(Agenda2, false);
     }
 
-    Stats.setClues(0);
-    Agenda.setDoom(0);
+    Act.setCard(Act1, false);
 
-    await wait(500);
+    await Stats.setClues(0);
+    await Agenda.setDoom(0);
+    Identity.setDamage(0);
+
+    if (Tutorial.active) {
+      Tutorial.reset();
+    } else {
+      Tutorial.setMode(null);
+    }
 
     Game.startTurn();
   }
@@ -150,10 +158,10 @@ class Game {
   }
 
   static async startTurn() {
-    UiMode.setMode(UIMODE_SELECT_ACTION);
+    await Stats.setClicks(3);
+    await UiMode.setMode(UIMODE_SELECT_ACTION);
     animateTurnBanner("runner");
     await Broadcast.signal("onTurnStart");
-    await Stats.setClicks(3);
   }
   static async endTurn() {
     this.#turnEvents = {};
@@ -197,21 +205,34 @@ class Game {
 
   static async actionMoveTo(location, data) {
     const { costsClick, enemiesCanEngage = true } = data;
+
     if (costsClick) {
       await Stats.addClicks(-1);
     }
+
     const oldLocation = Location.getCurrentLocation();
     location.setCurrentLocation();
+
+    if (location.cardData.enterSfx) {
+      Audio.playEffect(location.cardData.enterSfx);
+    } else if (location.cardData.faction == FACTION_NET) {
+      Audio.playEffect(AUDIO_MOVE_NETSPACE);
+    } else {
+      Audio.playEffect(AUDIO_MOVE_MEATSPACE);
+    }
+
     if (enemiesCanEngage) {
       for (const enemy of Enemy.getEnemiesAtCurrentLocation()) {
         await enemy.engage();
       }
     }
     await Enemy.moveEngagedEnemies();
+
     await Broadcast.signal("onPlayerMoves", {
       fromLocation: oldLocation,
       toLocation: location,
     });
+
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }
@@ -252,13 +273,12 @@ class Game {
       const rigCard = Cards.install(cardData);
       await cardData.onPlay(rigCard); // TODO - move to Cards.install
       await Broadcast.signal("onCardInstalled", { card: rigCard });
+      Audio.playEffect(AUDIO_PLAY);
     } else {
       await cardData.onPlay(gripCard);
       await Broadcast.signal("onCardPlayed", { card: gripCard }); // TODO - ditto
       Cards.addToHeap(gripCard.cardData);
-    }
-    if (!Game.checkTurnEnd()) {
-      UiMode.setMode(UIMODE_SELECT_ACTION); // TODO - is it true that this will always be the correct mode to return to?
+      Audio.playEffect(AUDIO_PLAY);
     }
     return { success: true };
   }
@@ -441,6 +461,7 @@ $(document).ready(function () {
     Stats.addClicks(-1);
     await Enemy.attackOfOpportunity();
     Stats.addCredits(1);
+    Audio.playEffect(AUDIO_CREDIT);
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }

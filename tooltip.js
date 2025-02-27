@@ -54,7 +54,7 @@ $(document).ready(function () {
   tippy(
     "#action-evade",
     Tooltip.make(
-      "Spend a click to evade an enemy: test your link against the enemy's; if successful, disengage the enemy"
+      "Spend a click to evade an enemy: test your link against the enemy's; if successful, disengage and exhaust the enemy"
     )
   );
 

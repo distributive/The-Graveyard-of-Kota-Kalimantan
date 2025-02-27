@@ -21,8 +21,9 @@ const NET_ENCOUNTERS = [
   EnemyHydra,
 ];
 
+// TODO - implement changing the encounter deck
 class Encounter {
-  static #encounterCards = MEAT_ENCOUNTERS;
+  static #encounterCards = shuffle(MEAT_ENCOUNTERS);
   static #discardedCards = [];
   static skipEncounters = false;
 
@@ -45,12 +46,13 @@ class Encounter {
       if (validEncounters.length == 0) {
         this.resetDeck(); // We assume there will be cards that can always be encountered in the full deck, so this should always work
       }
-      let index = randomIndex(validEncounters);
-      index = this.#encounterCards.indexOf(validEncounters[index]);
-      cardData = this.#encounterCards[index];
-      if (removeFromDeck && index > 0) {
-        this.#encounterCards.splice(index, 1);
-        this.#discardedCards.push(cardData);
+      if (validEncounters.length > 0) {
+        const index = this.#encounterCards.indexOf(validEncounters[0]);
+        cardData = this.#encounterCards[index];
+        if (removeFromDeck && index > 0) {
+          this.#encounterCards.splice(index, 1);
+          this.#discardedCards.push(cardData);
+        }
       }
     }
 
@@ -79,6 +81,7 @@ class Encounter {
   static resetDeck() {
     this.#encounterCards = this.#encounterCards.concat(this.#discardedCards);
     this.#discardedCards = [];
+    shuffle(this.#encounterCards);
   }
 
   static serialise() {

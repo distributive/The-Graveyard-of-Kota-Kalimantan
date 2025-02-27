@@ -386,6 +386,7 @@ class AgendaData extends NonTreacheryData {
 class LocationData extends NonTreacheryData {
   shroud;
   clues;
+  enterSfx; // There are defaults for meatspace/netspace if this is not set
 
   get type() { return TYPE_LOCATION; }
 

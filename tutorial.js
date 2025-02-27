@@ -72,6 +72,7 @@ class Tutorial {
   static #active;
   static #hintTimeout;
   static #hintAlert;
+  static #unlockedCatalyst = false;
 
   static get mode() {
     return this.#mode;
@@ -84,20 +85,30 @@ class Tutorial {
     return this.#active;
   }
 
+  static unlockCatalyst() {
+    this.#unlockedCatalyst = true;
+  }
+  static get catalystIsUnlocked() {
+    return this.#unlockedCatalyst;
+  }
+
   static serialise() {
     return {
+      index: this.#stageIndex,
       triggers: Object.keys(this.#triggers),
-      mode: this.#mode,
       active: this.#active,
+      unlocked: this.#unlockedCatalyst,
     };
   }
   static deserialise(json) {
+    this.#stageIndex = json.index;
     this.#triggers = {};
     json.triggers.forEach((trigger) => {
       this.#triggers[trigger] = true;
     });
-    this.#mode = json.mode;
     this.active = json.active;
+    this.#unlockedCatalyst = json.unlocked;
+    this.#mode = TUTORIAL_MODE_NONE; // Ensure it is not stuck in WAITING
   }
 
   // To exit tutorial mode, set it to null
@@ -111,6 +122,12 @@ class Tutorial {
     RigCard.markUsableCards();
   }
 
+  static clearHintTimout() {
+    if (this.#hintTimeout) {
+      clearTimeout(this.#hintTimeout);
+    }
+  }
+
   static async signal(trigger, data) {
     if (
       this.#active &&
@@ -118,33 +135,53 @@ class Tutorial {
       this.#stageIndex < this.#stages.length &&
       this.#stages[this.#stageIndex].trigger == trigger
     ) {
-      if (this.#hintTimeout) {
-        clearTimeout(this.#hintTimeout);
+      await this.triggerCutscene(this.#stageIndex);
+    }
+  }
+
+  static async triggerCutscene(index) {
+    this.clearHintTimout();
+    if (this.#hintAlert) {
+      this.#hintAlert.close();
+    }
+    this.#stageIndex = index + 1;
+    const stage = this.#stages[this.#stageIndex];
+    if (stage.modals) {
+      this.setMode(TUTORIAL_MODE_WAITING);
+      await wait(1000); // TODO: time appropriately // NOTE: things break if this is too short (100 confirmed too short)
+      for (const page of stage.modals) {
+        await new Modal(null, page).display();
       }
-      if (this.#hintAlert) {
-        this.#hintAlert.close();
-      }
-      this.#stageIndex++;
-      const stage = this.#stages[this.#stageIndex];
-      if (stage.modals) {
-        this.setMode(TUTORIAL_MODE_WAITING);
-        await wait(1000); // TODO: time appropriately // NOTE: things break if this is too short (100 confirmed too short)
-        for (const page of stage.modals) {
-          await new Modal(null, page).display();
-        }
-        Modal.hide();
-      }
-      if (stage.hint && UiMode.mode != UIMODE_CORP_TURN) {
-        this.#hintTimeout = setTimeout(function () {
-          Tutorial.#hintAlert = Alert.send(stage.hint, ALERT_INFO, false, true);
-        }, 3750);
-      }
-      // TODO: if this causes problems, add a pause here
-      this.setMode(stage.mode);
-      // Check if the tutorial is over
-      if (this.#stageIndex >= this.#stages.length - 1) {
-        this.#active = false;
-      }
+      Modal.hide();
+    }
+    if (stage.hint && UiMode.mode != UIMODE_CORP_TURN) {
+      this.#hintTimeout = setTimeout(function () {
+        Tutorial.#hintAlert = Alert.send(stage.hint, ALERT_INFO, false, true);
+      }, 3750);
+    }
+    // TODO: if this causes problems, add a pause here
+    this.setMode(stage.mode);
+    // Check if the tutorial is over
+    if (this.#stageIndex >= this.#stages.length - 1) {
+      this.#active = false;
+      this.#unlockedCatalyst = true;
+    }
+  }
+
+  static reset() {
+    this.#triggers = {};
+    this.#mode = TUTORIAL_MODE_NONE;
+    this.clearHintTimout();
+    if (this.#hintAlert) {
+      this.#hintAlert.close();
+    }
+    this.#stageIndex = 0;
+  }
+
+  // Retriggers the previous tutorial cutscene - used when loading the game
+  static async retriggerCutscene() {
+    if (this.#active && this.#stageIndex > 0) {
+      await this.triggerCutscene(this.#stageIndex - 1);
     }
   }
 
@@ -158,13 +195,23 @@ class Tutorial {
     }
     this.#triggers[trigger] = true;
 
+    Menu.disableInGameMenuButton();
+
     const tutorial = this.#tutorials[trigger].cutscene.length
       ? this.#tutorials[trigger].cutscene
       : [this.#tutorials[trigger].cutscene];
-    for (const page of tutorial) {
-      await new Modal(null, page).display();
+    let index = 0;
+    while (index < tutorial.length) {
+      const page = tutorial[index];
+      const option = await new Modal(null, page).display();
+      if (Number.isInteger(option) && option >= 0) {
+        index = option;
+      } else {
+        index++;
+      }
     }
     Modal.hide();
+    Menu.enableInGameMenuButton();
     return true;
   }
 
@@ -574,6 +621,19 @@ class Tutorial {
 
   // Async tutorials that are triggered by unscripted events
   static #tutorials = {
+    // Intro cutscene
+    intro: {
+      cutscene: [
+        {
+          header: "Introductions",
+          body: ``,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
     // Agenda explainer
     agenda: {
       requireTutorialActive: true,
@@ -584,7 +644,7 @@ class Tutorial {
           options: [new Option("", "Next")],
           allowKeyboard: false,
           cardData: Agenda2,
-          slowRoll: false,
+          slowRoll: true,
           size: "lg",
         },
         {
@@ -593,7 +653,7 @@ class Tutorial {
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
-          slowRoll: false,
+          slowRoll: true,
           size: "lg",
         },
         {
@@ -602,7 +662,7 @@ class Tutorial {
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
-          slowRoll: false,
+          slowRoll: true,
           size: "lg",
         },
         {
@@ -611,7 +671,7 @@ class Tutorial {
           options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
-          slowRoll: false,
+          slowRoll: true,
           size: "lg",
         },
       ],

@@ -5,18 +5,20 @@ Act1 = new ActData("act_1", {
   textRequirement: "end your turn with 1 data",
   text: "When your turn ends, spend 1 data to advance the act, if able.",
   image: "img/card/act/bg.png",
-  async onTurnEnd(source) {
+  async onTurnEnd() {
     if (Stats.clues >= 1) {
-      await this.advance(source);
+      await Act.advance();
     }
   },
-  async advance(source) {
+  async advance() {
     await Stats.addClues(-1);
     Act.setCard(Act2);
     await wait(200);
-    Agenda.setCard(Agenda2);
-    await wait(2500);
-    await Tutorial.run("agenda");
+    if (Tutorial.active) {
+      Agenda.setCard(Agenda2);
+      await wait(2500);
+      await Tutorial.run("agenda");
+    }
     new Enemy(EnemyRat, Location.getLocationAtPosition(2, 1));
   },
 });
@@ -28,12 +30,12 @@ Act2 = new ActData("act_2", {
   textRequirement: "end your turn with 3 data",
   text: "When your turn ends, spend 3 data to advance the act, if able.",
   image: "img/card/act/bg.png",
-  async onTurnEnd(source) {
+  async onTurnEnd() {
     if (Stats.clues >= 3) {
-      await this.advance(source);
+      await Act.advance();
     }
   },
-  async advance(source) {
+  async advance() {
     await Stats.addClues(-3);
     Act.setCard(Act3);
   },
@@ -44,10 +46,18 @@ Act3 = new ActData("act_3", {
   requirement: null,
   act: 3,
   textRequirement: "find the source - it's a location somewhere around you",
-  text: "When you reveal the source, advance the act.",
+  text: "When you find the source, advance the act.",
   image: "img/card/act/bg.png",
-  async advance(source) {
+  async onPlayerMoves(data) {
+    if (data.toLocation == LocationSource) {
+      await Act.advance();
+    }
+  },
+  async advance() {
+    // TODO - lore
     Act.setCard(Act4);
+    Agenda.setDoom(0);
+    Agenda.setCard(Agenda4);
   },
 });
 
@@ -67,18 +77,51 @@ Agenda1 = new AgendaData("agenda_1", {
 
 Agenda2 = new AgendaData("agenda_2", {
   title: "Agenda i",
-  requirement: 5,
+  requirement: 8,
   agenda: 1,
-  text: "When this hosts 5 or more doom, advance the agenda.",
+  text: "When this hosts 8 or more doom, advance the agenda.",
   image: "img/card/agenda/bg.png",
+  async onDoomPlaced(data) {
+    // For now we assume only the agenda can host doom
+    if (data.doom >= this.requirement) {
+      await Agenda.advance();
+    }
+  },
+  async advance() {
+    // TODO - lore
+
+    Location.focusMapOffsetCurrentLocation();
+    Location.setZoomIndex(0);
+    setNetspace(true);
+
+    Agenda.setDoom(0);
+    Agenda.setCard(Agenda3);
+
+    for (const location of Location.instances) {
+      if (location == Location.getCurrentLocation()) {
+        location.setCard(LocationEntrance, true, false);
+      } else {
+        location.setCard(LocationUnknownNet, true, false);
+      }
+    }
+  },
 });
 
 Agenda3 = new AgendaData("agenda_3", {
   title: "Agenda ii",
-  requirement: 5,
+  requirement: 6,
   agenda: 2,
-  text: "When this hosts 5 or more doom, advance the agenda.",
+  text: "When this hosts 6 or more doom, advance the agenda.",
   image: "img/card/agenda/bg.png",
+  async onDoomPlaced(data) {
+    // For now we assume only the agenda can host doom
+    if (data.doom >= this.requirement) {
+      await Agenda.advance();
+    }
+  },
+  async advance() {
+    // TODO - lose state (no scoop)
+  },
 });
 
 Agenda4 = new AgendaData("agenda_4", {
@@ -87,4 +130,13 @@ Agenda4 = new AgendaData("agenda_4", {
   agenda: 3,
   text: "When this hosts 12 or more doom, escape the simulation.",
   image: "img/card/agenda/bg.png",
+  async onDoomPlaced(data) {
+    // For now we assume only the agenda can host doom
+    if (data.doom >= this.requirement) {
+      await Agenda.advance();
+    }
+  },
+  async advance() {
+    // TODO - victory state (neutral ending)
+  },
 });

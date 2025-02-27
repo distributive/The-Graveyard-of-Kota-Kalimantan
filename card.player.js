@@ -119,7 +119,7 @@ const CardBaz = new IdentityData("baz", {
       }
     }
 
-    UiMode.setMode(prevUiMode, prevUiModeData);
+    await UiMode.setMode(prevUiMode, prevUiModeData);
   },
 });
 

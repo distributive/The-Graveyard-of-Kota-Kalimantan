@@ -30,6 +30,7 @@
     ></script>
     <script src="util.js"></script>
     <script src="visual.js"></script>
+    <script src="audio.js"></script>
     <script src="option.js"></script>
     <script src="modal.js"></script>
     <script src="alert.js"></script>
@@ -58,6 +59,7 @@
     <script src="tutorial.js"></script>
     <script src="serialisation.js"></script>
     <script src="game.js"></script>
+    <script src="menu.js"></script>
     <script src="main.js"></script>
     <title>Test Story</title>
   </head>
@@ -77,6 +79,14 @@
             <img src="img/game/turnRunner.png" class="w-100 m-auto" />
           </div>
 
+          <!-- Pain -->
+          <div id="pain">
+            <img src="img/misc/pain.png" id="pain-top" />
+            <img src="img/misc/pain.png" id="pain-right" />
+            <img src="img/misc/pain.png" id="pain-bottom" />
+            <img src="img/misc/pain.png" id="pain-left" />
+          </div>
+
           <!-- Modal -->
           <div class="modal fade" id="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
@@ -87,6 +97,14 @@
                 <div id="modal-body" class="modal-body"></div>
               </div>
             </div>
+          </div>
+          <div id="main-menu-bg" class="show"></div>
+
+          <!-- Menu button -->
+          <div id="menu-button-container">
+            <button id="menu-button">
+              <i class="fa-solid fa-gear"></i>
+            </button>
           </div>
 
           <!-- Notifications/alerts -->
@@ -155,7 +173,7 @@
                     </div>
                   </div>
                   <div id="agenda" class="h-50">
-                    <div class="card-image-container h-100">
+                    <div class="card-image-container d-none h-100">
                       <img id="agenda-image" class="card-image h-100" src="" />
                       <div class="card-text act" style="font-size: 15px"></div>
                     </div>

@@ -232,6 +232,12 @@ class Enemy {
     }
   }
 
+  // Remove all existing enemies
+  static deleteState() {
+    this.instances.forEach((enemy) => enemy.remove());
+    this.instances = [];
+  }
+
   // SERIALISATION
   static serialise() {
     return this.instances.map((enemy) => {
@@ -249,7 +255,8 @@ class Enemy {
 
   static async deserialise(json) {
     // Remove all existing enemies
-    this.instances.forEach((enemy) => enemy.remove());
+    this.deleteState();
+
     // Create new enemies
     json.forEach((data) => {
       const enemy = new Enemy(
@@ -308,7 +315,7 @@ class Enemy {
     this.#jDoom = this.#jObj.find(".doom");
     this.setDamage(data && Number.isInteger(data.damage) ? data.damage : 0);
     this.setClues(data && Number.isInteger(data.clues) ? data.clues : 0);
-    this.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0);
+    this.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0); // Theoretically causes async issues, but this should never advance the agenda
 
     if (data && data.engaged) {
       this.engage();
@@ -441,7 +448,7 @@ class Enemy {
     this.setClues(this.#clues + value, doAnimate);
   }
 
-  setDoom(value, doAnimate = true) {
+  async setDoom(value, doAnimate = true) {
     if (value == 0) {
       this.#jDoom.hide();
     } else {
@@ -452,11 +459,18 @@ class Enemy {
     if (value != this.#doom && doAnimate) {
       animate(jDoom, 500);
     }
+    if (this.#doom < value) {
+      await Broadcast.signal("onDoomPlaced", {
+        doom: value,
+        card: this,
+        cardData: this.cardData,
+      });
+    }
     this.#doom = value;
     return this;
   }
-  addDoom(value, doAnimate = true) {
-    this.setDoom(this.#doom + value, doAnimate);
+  async addDoom(value, doAnimate = true) {
+    await this.setDoom(this.#doom + value, doAnimate);
   }
 
   // if not in the current location, move there (maybe this behaviour is not wanted)

@@ -4,7 +4,7 @@
 // Special tutorial asset
 CardWarehouseKey = new AssetData("warehouse_key", {
   title: "Warehouse Key",
-  text: "{click}: Unlock the warehouse. Remove this asset from the game.",
+  text: "{click}: Unlock the warehouse. Draw 2 cards. Remove this asset from the game.",
   flavour: `TODO: write some backstory as to how you got this."`,
   subtypes: ["item"],
   faction: FACTION_NEUTRAL,
@@ -15,9 +15,12 @@ CardWarehouseKey = new AssetData("warehouse_key", {
     if (Tutorial.mode != TUTORIAL_MODE_USE_ASSET) return;
     await Stats.addClicks(-1);
     await Cards.removeInstalledCardFromGame(source);
-    // Remove all layout
+    await Cards.draw(2);
+    // Remove the previous layout
     for (const location of Location.instances) {
-      Location.remove(location);
+      if (location != Location.getCurrentLocation()) {
+        Location.remove(location);
+      }
     }
     // Set camera to see the new locations
     Location.focusMapOffsetToLocationPosition(4, 0);

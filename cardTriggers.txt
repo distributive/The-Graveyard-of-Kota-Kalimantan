@@ -18,7 +18,7 @@ onTestCompleted(source, {stat, results})
 
 onActAdvanced(source, {})
 onAgendaAdvanced(source, {})
---onDoomPlaced(source, {doom, card, cardData}) // card can be null (acts/agendas/identities)
+onDoomPlaced(source, {doom, card, cardData}) // card can be null (acts/agendas/identities)
 
 onPlayerMoves(source, {fromLocation, toLocation})
 onPlayerEngages(source, {enemy})

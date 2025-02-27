@@ -82,13 +82,14 @@ class Alert {
     this.remove(this.#alerts[i], forceClose);
   }
 
-  // Remains for prosperity - I don't expect to use this
-  static removeLastAlert() {
-    if (this.#alerts.length < 1) {
-      return;
-    }
-    const alert = this.#alerts.pop();
-    this.remove(alert.data("card-id"));
+  // Remove all current alerts, and reset the ID counter
+  static reset() {
+    this.#alerts.forEach((alertID) => {
+      this.#idToAlert[alertID].close();
+    });
+    this.#alerts = [];
+    this.#idToAlert = {};
+    this.#nextId = 0;
   }
 
   // INSTANCE
@@ -205,6 +206,8 @@ class Alert {
   }
 
   close() {
-    this.#jObj.alert("close");
+    if (!this.#hasBeenClosed) {
+      this.#jObj.alert("close");
+    }
   }
 }
