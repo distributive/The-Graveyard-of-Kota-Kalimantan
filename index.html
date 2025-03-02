@@ -47,6 +47,7 @@
     <script src="card.location.js"></script>
     <script src="card.story.js"></script>
     <script src="card.encounter.js"></script>
+    <script src="story.js"></script>
     <script src="broadcast.js"></script>
     <script src="agenda.js"></script>
     <script src="act.js"></script>
@@ -175,7 +176,10 @@
                   <div id="agenda" class="h-50">
                     <div class="card-image-container d-none h-100">
                       <img id="agenda-image" class="card-image h-100" src="" />
-                      <div class="card-text act" style="font-size: 15px"></div>
+                      <div
+                        class="card-text agenda"
+                        style="font-size: 1.5vh"
+                      ></div>
                     </div>
                     <div class="hosted-counters">
                       <div
@@ -261,6 +265,11 @@
                     <div id="stat-link" class="stat mx-2">
                       <span id="link-count" class="bouncy">3</span>
                       <img class="skill-icon" src="img/game/link.png" />
+                    </div>
+                    <div id="chaos-bag-button-container">
+                      <button id="chaos-bag-button" class="">
+                        <i class="fa-solid fa-sack-xmark"></i>
+                      </button>
                     </div>
                   </div>
                 </div>

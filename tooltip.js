@@ -86,6 +86,10 @@ $(document).ready(function () {
       true
     )
   );
+  tippy(
+    "#chaos-bag-button-container",
+    Tooltip.make("View the contents of the chaos bag")
+  );
 
   tippy(
     "#click-count",
@@ -143,7 +147,7 @@ $(document).ready(function () {
         instance.setContent(
           `Your discard pile (${Cards.heap.length} card${
             Cards.heap.length == 1 ? "" : "s"
-          })`
+          }) - when your deck is empty, shuffle this into it`
         ),
       true
     )

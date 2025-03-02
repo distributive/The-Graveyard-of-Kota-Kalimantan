@@ -14,6 +14,7 @@ AUDIO_MOVE_OUTSIDE = "./audio/walk_outside.mp3";
 AUDIO_SUCCESS = "./audio/success.mp3";
 AUDIO_FAIL = "./audio/fail.mp3";
 
+AUDIO_ATTACK = "./audio/attack.mp3";
 AUDIO_PAIN = "./audio/pain.mp3";
 
 ///////////////////////////////////////////////////////////////////////////////

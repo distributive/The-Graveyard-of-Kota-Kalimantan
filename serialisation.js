@@ -11,6 +11,7 @@ class Serialisation {
     const identity = Identity.serialise();
     const location = Location.serialise();
     const stats = Stats.serialise();
+    const story = Story.serialise();
     const tutorial = Tutorial.serialise();
     const uiMode = UiMode.serialise();
     return {
@@ -24,6 +25,7 @@ class Serialisation {
       identity: identity,
       location: location,
       stats: stats,
+      story: story,
       tutorial: tutorial,
       uiMode: uiMode,
     };
@@ -43,6 +45,7 @@ class Serialisation {
     await Enemy.deserialise(json.enemy);
     Identity.deserialise(json.identity);
     await Stats.deserialise(json.stats);
+    Story.deserialise(json.story);
     Tutorial.deserialise(json.tutorial);
     await UiMode.deserialise(json.uiMode); // Should be last, as it will call setMode
 

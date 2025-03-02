@@ -10,6 +10,7 @@ CardWarehouseKey = new AssetData("warehouse_key", {
   faction: FACTION_NEUTRAL,
   image: "img/card/asset/warehouseKey.png",
   cost: 4,
+  uncollectable: true,
   async onUse(source) {
     // The layout this produces must match the non-tuturial starting layout in game.js
     if (Tutorial.mode != TUTORIAL_MODE_USE_ASSET) return;

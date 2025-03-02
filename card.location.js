@@ -144,6 +144,84 @@ const LocationStoreroom = new LocationData("storeroom", {
   clues: 2,
 });
 
+// Broadcast stations
+const LocationBroadcastInfluence = new LocationData("broadcast_influence", {
+  title: "Broadcast Terminal",
+  text: "When you jack in at this location, test against {influence} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/broadcastRed.png",
+  shroud: 4,
+  clues: 1,
+  statOverride: "influence",
+  async onInvestigation(source, data) {
+    if (data.location == source && source.clues == 0) {
+      source.setCard(LocationBroadcastActive);
+      Story.activateBroadcastTerminal(this);
+    }
+  },
+});
+
+const LocationBroadcastMu = new LocationData("broadcast_mu", {
+  title: "Broadcast Terminal",
+  text: "When you download the last data from this location, activate this terminal.",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/broadcastPurple.png",
+  shroud: 4,
+  clues: 1,
+  async onInvestigation(source, data) {
+    if (data.location == source && source.clues == 0) {
+      source.setCard(LocationBroadcastActive);
+      Story.activateBroadcastTerminal(this);
+    }
+  },
+});
+
+const LocationBroadcastStrength = new LocationData("broadcast_strength", {
+  title: "Broadcast Terminal",
+  text: "When you jack in at this location, test against {strength} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/broadcastGreen.png",
+  shroud: 4,
+  clues: 1,
+  statOverride: "strength",
+  async onInvestigation(source, data) {
+    if (data.location == source && source.clues == 0) {
+      source.setCard(LocationBroadcastActive);
+      Story.activateBroadcastTerminal(this);
+    }
+  },
+});
+
+const LocationBroadcastLink = new LocationData("broadcast_link", {
+  title: "Broadcast Terminal",
+  text: "When you jack in at this location, test against {link} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/broadcastYellow.png",
+  shroud: 4,
+  clues: 1,
+  statOverride: "link",
+  async onInvestigation(source, data) {
+    if (data.location == source && source.clues == 0) {
+      source.setCard(LocationBroadcastActive);
+      Story.activateBroadcastTerminal(this);
+    }
+  },
+});
+
+const LocationBroadcastActive = new LocationData("broadcast_active", {
+  title: "Broadcast Terminal",
+  text: "",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/broadcastActive.png",
+  shroud: 4,
+  clues: 0,
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // NETSPACE
 
@@ -162,19 +240,19 @@ const LocationUnknownNet = new LocationData("unknown_net", {
     let cardData;
     // After 4 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
     if (
-      !SOURCE_HAS_BEEN_REVEALED &&
-      (RANDOM_NET_LOCATIONS.length == 0 ||
-        (RANDOM_NET_LOCATIONS_REVEALED > 4 && randomInt(0, 3) == 0))
+      !Story.isSourceRevealed &&
+      (Story.randomNetLocations.length == 0 ||
+        (Story.netLocationsRevealed > 4 && randomInt(0, 3) == 0))
     ) {
       cardData = LocationSource;
-      SOURCE_HAS_BEEN_REVEALED = true;
+      Story.isSourceRevealed = true;
     }
     // Reveal a random netspace location from the pool
-    else if (RANDOM_NET_LOCATIONS.length > 0) {
-      const index = randomIndex(RANDOM_NET_LOCATIONS);
-      cardData = RANDOM_NET_LOCATIONS[index];
-      RANDOM_NET_LOCATIONS.splice(index, 1);
-      RANDOM_NET_LOCATIONS_REVEALED++;
+    else if (Story.randomNetLocations.length > 0) {
+      const index = randomIndex(Story.randomNetLocations);
+      cardData = Story.randomNetLocations[index];
+      Story.randomNetLocations.splice(index, 1);
+      Story.netLocationsRevealed++;
     }
     // When netspace locations are exhausted, reveal a void
     else {
@@ -250,10 +328,6 @@ const LocationVoid = new LocationData("void", {
 });
 
 // Random netspace locations
-const RANDOM_NET_LOCATIONS = [];
-let RANDOM_NET_LOCATIONS_REVEALED = 0;
-let SOURCE_HAS_BEEN_REVEALED = false;
-
 const LocationCloister = new LocationData("cloister", {
   title: "Cloister",
   text: "",
@@ -263,9 +337,6 @@ const LocationCloister = new LocationData("cloister", {
   shroud: 2,
   clues: 0,
 });
-RANDOM_NET_LOCATIONS.push(LocationCloister);
-RANDOM_NET_LOCATIONS.push(LocationCloister);
-RANDOM_NET_LOCATIONS.push(LocationCloister);
 
 const LocationNebula = new LocationData("nebula", {
   title: "Nebula",
@@ -276,12 +347,10 @@ const LocationNebula = new LocationData("nebula", {
   shroud: 4,
   clues: 1,
 });
-RANDOM_NET_LOCATIONS.push(LocationNebula);
-RANDOM_NET_LOCATIONS.push(LocationNebula);
 
 const LocationDataWell = new LocationData("data_well", {
   title: "Data Well",
-  text: "When the last clue is removed from this location, heal 3 damage from your identity and place 1 doom on the agenda.",
+  text: "When you download the last data from this location, heal 3 damage from your identity and place 1 doom on the agenda.",
   subtypes: ["netspace"],
   faction: FACTION_NET,
   image: "img/card/location/dataWell.png",
@@ -294,7 +363,6 @@ const LocationDataWell = new LocationData("data_well", {
     }
   },
 });
-RANDOM_NET_LOCATIONS.push(LocationDataWell);
 
 const LocationTagStorm = new LocationData("tag_storm", {
   title: "Tag Storm",
@@ -310,8 +378,6 @@ const LocationTagStorm = new LocationData("tag_storm", {
     }
   },
 });
-RANDOM_NET_LOCATIONS.push(LocationTagStorm);
-RANDOM_NET_LOCATIONS.push(LocationTagStorm);
 
 const LocationNest = new LocationData("nest", {
   title: "Nest",
@@ -327,7 +393,6 @@ const LocationNest = new LocationData("nest", {
     }
   },
 });
-RANDOM_NET_LOCATIONS.push(LocationNest);
 
 const LocationTheDestroyersEye = new LocationData("the_destroyers_eye", {
   title: "The Destroyer's Eye",
@@ -349,6 +414,3 @@ const LocationTheDestroyersEye = new LocationData("the_destroyers_eye", {
     }
   },
 });
-RANDOM_NET_LOCATIONS.push(LocationTheDestroyersEye);
-RANDOM_NET_LOCATIONS.push(LocationTheDestroyersEye);
-RANDOM_NET_LOCATIONS.push(LocationTheDestroyersEye);

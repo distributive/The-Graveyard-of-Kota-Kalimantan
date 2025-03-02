@@ -21,7 +21,7 @@ class Cards {
       // .attr("src", jCardImage.attr("src").replace(".png", "_full.png")) // TODO
       .removeClass("unfocused")
       .addClass("focused");
-    Cards.populateData($("#card-focused-image").parent(), cardData, "16.5px");
+    Cards.populateData($("#card-focused-image").parent(), cardData, "1.73vh");
   }
   static unfocusCard() {
     $("#card-focused-image").removeClass("focused").addClass("unfocused");
@@ -38,11 +38,7 @@ class Cards {
       }
       setTimeout(
         () => {
-          Cards.populateData(
-            jCardContainer,
-            newCardData,
-            jCardContainer.find(".card-text").css("font-size")
-          );
+          Cards.populateData(jCardContainer, newCardData);
           jCardContainer.removeClass("d-none"); // For cards that start hidden
         },
         fast ? 210 : 960
@@ -63,29 +59,32 @@ class Cards {
           jCardContainer.removeClass("fast");
         }, 500);
       }
-    } else if (newCardData.hidden) {
-      jCardContainer.find(".card-image").attr("src", "");
     } else {
-      Cards.populateData(
-        jCardContainer,
-        newCardData,
-        jCardContainer.find(".card-text").css("font-size")
-      );
+      Cards.populateData(jCardContainer, newCardData);
       jCardContainer.find(".card-image").attr("src", newCardData.image);
       jCardContainer
         .removeClass("flipping")
         .removeClass("fast")
         .removeClass("d-none"); // For cards that start hidden
+      if (newCardData.hidden) {
+        jCardContainer.find(".card-image").attr("src", "");
+      }
     }
   }
 
   static populateData(jObj, cardData, fontSize) {
-    jObj.find(".card-text").remove();
+    let jText = jObj.find(".card-text");
+    if (jText.length !== 0) {
+      jObj.find(".card-text").empty().removeClass().addClass("card-text");
+    } else {
+      jObj.append($(`<div class="card-text"></div>`));
+      jText = jObj.find(".card-text");
+    }
     if (cardData.hidden) {
       return;
     }
     if (cardData) {
-      cardData.populate(jObj);
+      cardData.populate(jText);
     }
     if (fontSize) {
       jObj.find(".card-text").css("font-size", fontSize);
@@ -275,9 +274,12 @@ class Cards {
   ///////////////////////////////////////////////
   // Rig
 
-  static install(cardData, data) {
+  static async install(cardData, data) {
     const rigCard = new RigCard(cardData, data);
     this.installedCards.push(rigCard);
+    await cardData.onPlay(rigCard);
+    await Broadcast.signal("onCardInstalled", { card: rigCard });
+    Audio.playEffect(AUDIO_PLAY);
     return rigCard;
   }
 
@@ -318,7 +320,7 @@ class Cards {
       Cards.addCardToGrip(CardData.getCard(id));
     });
     json.rig.forEach((data) => {
-      Cards.install(CardData.getCard(data.id), data);
+      Cards.install(CardData.getCard(data.id), data); // Not async because it shouldn't matter
     });
   }
 
@@ -619,9 +621,9 @@ class RigCard {
     );
   }
 
-  static readyAll() {
+  static async readyAll() {
     for (const card of Cards.installedCards) {
-      card.tapped = false;
+      await card.setTapped(false);
     }
   }
 
@@ -665,7 +667,7 @@ class RigCard {
     Cards.populateData(
       this.#jObj.find(".card-image-container"),
       this.#cardData,
-      "9.75px"
+      "0.95vh"
     );
     this.#jObj.data("card-id", this.#cardData.id);
     $("#rig").append(this.#jObj);
@@ -709,7 +711,7 @@ class RigCard {
     this.setPower(data && Number.isInteger(data.power) ? data.power : 0);
 
     if (data && data.tapped) {
-      this.tapped = true;
+      this.setTapped(true); // Ditto - should be fine
     }
   }
 
@@ -744,11 +746,20 @@ class RigCard {
   get tapped() {
     return this.#jObj.hasClass("tapped");
   }
-  set tapped(value) {
+  async setTapped(value) {
+    if (value == this.tapped) {
+      return;
+    }
     if (value) {
       this.#jObj.addClass("tapped");
+      if (this.#cardData.onTapped) {
+        await this.#cardData.onTapped();
+      }
     } else {
       this.#jObj.removeClass("tapped");
+      if (this.#cardData.onUntapped) {
+        await this.#cardData.onUntapped();
+      }
     }
   }
 

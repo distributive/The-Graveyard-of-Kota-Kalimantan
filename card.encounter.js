@@ -116,7 +116,7 @@ const TreacheryFaultyHardware = new TreacheryData("faulty_hardware", {
       return;
     }
     for (const card of Cards.installedCards) {
-      card.tapped = true;
+      await card.setTapped(true);
     }
   },
 });
@@ -173,6 +173,7 @@ const TreacheryRapidDecay = new EventData("rapid_decay", {
   faction: FACTION_NEUTRAL,
   image: "img/card/event/rapidDecay.png",
   cost: 3,
+  uncollectable: true,
   async onEncounter() {
     Cards.addToStack([TreacheryRapidDecay, TreacheryRapidDecay], true);
   },

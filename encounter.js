@@ -1,11 +1,10 @@
-const TEST_ENCOUNTERS = [];
+const TEST_ENCOUNTERS = [EnemyRat, TreacheryWhatWasThat];
 
 const MEAT_ENCOUNTERS = [
   TreacheryClumsy,
   TreacheryFallingDebris,
   TreacheryFaultyHardware,
   TreacheryWhatWasThat,
-  EnemyRat,
   EnemyRat,
   EnemyRat,
 ];
@@ -23,7 +22,7 @@ const NET_ENCOUNTERS = [
 
 // TODO - implement changing the encounter deck
 class Encounter {
-  static #encounterCards = shuffle(MEAT_ENCOUNTERS);
+  static #encounterCards = [];
   static #discardedCards = [];
   static skipEncounters = false;
 
@@ -49,7 +48,7 @@ class Encounter {
       if (validEncounters.length > 0) {
         const index = this.#encounterCards.indexOf(validEncounters[0]);
         cardData = this.#encounterCards[index];
-        if (removeFromDeck && index > 0) {
+        if (removeFromDeck && index >= 0) {
           this.#encounterCards.splice(index, 1);
           this.#discardedCards.push(cardData);
         }
@@ -58,7 +57,7 @@ class Encounter {
 
     // Juuuust in case, we have defaults
     if (!cardData) {
-      cardData = Act.cardData == Act1 ? EnemyRat : EnemyNetRat;
+      cardData = Story.isInNetspace ? EnemyNetRat : EnemyRat;
     }
 
     await new Modal(null, {
@@ -70,12 +69,20 @@ class Encounter {
       size: "lg",
     }).display();
     if (cardData.type == TYPE_ENEMY) {
-      new Enemy(cardData, Location.getCurrentLocation());
+      Modal.hide();
+      const enemy = new Enemy(cardData);
+      await enemy.setLocation(Location.getCurrentLocation());
     } else {
       // Cursed note: onEncounter has to close the modal itself if the encounter effect does not need one
       await cardData.onEncounter();
+      Modal.hide();
     }
-    Modal.hide();
+  }
+
+  static setPool(pool) {
+    this.#encounterCards = pool;
+    this.#discardedCards = [];
+    shuffle(this.#encounterCards);
   }
 
   static resetDeck() {

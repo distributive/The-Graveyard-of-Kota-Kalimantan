@@ -259,6 +259,14 @@ button:disabled .inline-icon {
   box-shadow: 0 0 20px red;
 }
 
+/* Chaos bag */
+#chaos-bag-button-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  font-size: 0.8em;
+}
+
 /* Cards */
 .card-image {
   border-radius: 5px;
@@ -727,20 +735,24 @@ button:disabled .inline-icon {
   padding: 10px 6px 8px 10px;
 }
 #menu-button,
+#chaos-bag-button,
 #location-buttons button {
   color: black;
   border: none;
   background: none;
 }
 #menu-button:hover,
+#chaos-bag-button:hover,
 #location-buttons button:hover {
   color: #555;
 }
 #menu-button:active,
+#chaos-bag-button:active,
 #location-buttons button:active {
   color: #aaa;
 }
 #menu-button:disabled,
+#chaos-bag-button:disabled,
 #location-buttons button:disabled {
   color: #ccc;
   border: none;
@@ -870,8 +882,11 @@ button:disabled .inline-icon {
   width: 100%;
   box-shadow: 0 0 15px black;
   filter: saturate(0.5);
-  transition: filter 1s, scale 0.1s, box-shadow 0.1s !important;
+  transition: scale 1s linear, filter 1s, box-shadow 0.1s !important;
   z-index: 50;
+}
+.fast .enemy-image {
+  transition: scale 0.25s linear, filter 0.25s, box-shadow 0.1s !important;
 }
 #ui-mode:not(.uimode-select-enemy)
   .enemy-container.engaged:not(.transition-out) {
@@ -963,10 +978,18 @@ button:disabled .inline-icon {
   transition: all 0.2s;
   user-select: none;
 }
+
 #agenda .hosted-counters {
   transform: translateY(-23.5%);
 }
 
+.enemy-container .hosted-counters {
+  transform: translateY(25%);
+}
+
+.location-container > .hosted-counters {
+  height: 62%;
+}
 .location-container:not(:hover) > .hosted-counters.covered,
 :not(.location-container) > .hosted-counters.covered {
   left: 24px;
@@ -980,6 +1003,7 @@ button:disabled .inline-icon {
 .power {
   height: 36px;
   width: 36px;
+  aspect-ratio: 1 !important;
   line-height: 31px;
   text-align: center;
   transform: translate(-50%, 0);

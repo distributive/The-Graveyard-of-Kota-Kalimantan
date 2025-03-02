@@ -41,7 +41,7 @@ CardNol = new AssetData("nol", {
     return !source.tapped && Cards.grip.length > 0;
   },
   async onUse(source, data) {
-    source.tapped = true;
+    await source.setTapped(true);
     await Stats.addClicks(-1);
     await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
       message: `n0l: Select 1 card to discard.`,
@@ -54,7 +54,7 @@ CardNol = new AssetData("nol", {
     await Stats.addCredits(1);
   },
   async onTurnEnd(source, data) {
-    source.tapped = false;
+    source.setTapped(false);
   },
 });
 
@@ -70,19 +70,20 @@ CardSifar = new AssetData("sifar", {
   skills: ["mu", "strength"],
   async onCardInstalled(source, data) {
     if (source != data.card) return;
-    Stats.strength += 3; // Assumes it can only be installed on your turn
+    if (!source.tapped) {
+      Stats.strength += 3;
+    }
   },
   async onAssetTrashed(source, data) {
     if (source != data.card) return;
-    if (!source.hasSeenStrengthTest) {
+    if (!source.tapped) {
       Stats.strength -= 3;
     }
   },
   async onTestCompleted(source, data) {
     if (data.stat == "strength") {
-      if (!source.hasSeenStrengthTest) {
-        Stats.strength -= 3;
-        source.hasSeenStrengthTest = true;
+      if (!source.tapped) {
+        source.setTapped(true);
       }
       if (typeof data.results.token != "number") {
         await Game.sufferDamage(1);
@@ -90,15 +91,20 @@ CardSifar = new AssetData("sifar", {
     }
   },
   async onTurnStart(source, data) {
-    source.hasSeenStrengthTest = false;
-    Stats.strength += 3;
+    if (source.tapped) {
+      source.setTapped(false);
+    }
   },
   async onTurnEnd(source, data) {
-    if (!source.hasSeenStrengthTest) {
-      Stats.strength -= 3;
-    } else {
-      source.hasSeenStrengthTest = false;
+    if (source.tapped) {
+      source.setTapped(false);
     }
+  },
+  async onTapped() {
+    Stats.strength -= 3;
+  },
+  async onUntapped() {
+    Stats.strength += 3;
   },
 });
 
@@ -299,25 +305,6 @@ CardLastDitch = new EventData("last_ditch", {
         });
         await enemy.addDamage(1);
       }
-    }
-  },
-});
-
-CardMakeAnEntrance = new EventData("make_an_entrance", {
-  title: "Make an Entrance",
-  text: "Engage every enemy at your location.",
-  subtypes: ["talent"],
-  faction: FACTION_ANARCH,
-  image: "img/card/event/bgAnarch.png",
-  cost: 0,
-  skills: ["influence"],
-  preventAttacks: true,
-  canPlay(source, data) {
-    return Enemy.getUnengagedEnemiesAtCurrentLocation().length > 0;
-  },
-  async onPlay(source, data) {
-    for (const enemy of Enemy.getUnengagedEnemiesAtCurrentLocation()) {
-      await enemy.engage();
     }
   },
 });

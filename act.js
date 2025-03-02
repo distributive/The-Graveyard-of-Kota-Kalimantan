@@ -30,5 +30,5 @@ class Act {
 $(document).ready(function () {
   // Set initial card data
   $("#act").data("card-id", Act.cardData.id);
-  Cards.populateData($("#act .card-image-container"), Act1, "15px");
+  Cards.populateData($("#act .card-image-container"), Act1, "1.5vh");
 });

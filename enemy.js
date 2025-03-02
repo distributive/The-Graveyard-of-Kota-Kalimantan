@@ -54,6 +54,8 @@ class Enemy {
         if (directions.length) {
           await enemy.moveTo(randomElement(directions));
         }
+      } else if (!enemy.engaged) {
+        await enemy.engage();
       }
     }
   }
@@ -236,6 +238,8 @@ class Enemy {
   static deleteState() {
     this.instances.forEach((enemy) => enemy.remove());
     this.instances = [];
+    // For safety
+    $(".enemy-container").remove();
   }
 
   // SERIALISATION
@@ -317,14 +321,18 @@ class Enemy {
     this.setClues(data && Number.isInteger(data.clues) ? data.clues : 0);
     this.setDoom(data && Number.isInteger(data.doom) ? data.doom : 0); // Theoretically causes async issues, but this should never advance the agenda
 
-    if (data && data.engaged) {
-      this.engage();
-    }
-    if (data && data.exhausted) {
-      this.exhausted();
+    if (data) {
+      if (data.engaged) {
+        this.engage();
+      } else {
+        this.disengage();
+      }
+      if (data.exhausted) {
+        this.exhausted = true;
+      }
     }
 
-    this.setLocation(location);
+    this.setLocation(location, !data);
   }
 
   get cardData() {
@@ -348,6 +356,17 @@ class Enemy {
     return this.#doom;
   }
 
+  setCard(cardData, doAnimate = true, fast = true) {
+    this.#cardData = cardData;
+    this.#jObj.data("card-id", cardData.id);
+    Cards.flip(
+      this.#jObj.find(".card-image-container"),
+      cardData,
+      doAnimate,
+      fast
+    );
+  }
+
   remove() {
     const index = Enemy.instances.indexOf(this);
     if (index >= 0) {
@@ -365,7 +384,8 @@ class Enemy {
 
   async moveTo(location) {
     const oldLocation = this.#currentLocation;
-    if (this.setLocation(location)) {
+    const successful = await this.setLocation(location);
+    if (successful) {
       await Broadcast.signal("onEnemyMoves", {
         enemy: this,
         fromLocation: oldLocation,
@@ -374,7 +394,7 @@ class Enemy {
     }
   }
 
-  setLocation(location) {
+  async setLocation(location, canEngage = true) {
     if (location == this.#currentLocation) {
       return false;
     }
@@ -386,8 +406,8 @@ class Enemy {
     const [x, y] = location.pos;
     this.#jObj.css("--x-pos", `${Location.xCoordToPos(x)}px`);
     this.#jObj.css("--y-pos", `${Location.yCoordToPos(y)}px`);
-    if (Location.getCurrentLocation() == location) {
-      this.engage();
+    if (canEngage && Location.getCurrentLocation() == location) {
+      await this.engage();
     }
     return true;
   }
@@ -490,7 +510,7 @@ class Enemy {
 
   // If the evasion was not as part of a skill test, results will be null
   async evade(results) {
-    if (results.success) {
+    if (!results || results.success) {
       this.disengage();
       this.exhausted = true;
     }
@@ -498,7 +518,7 @@ class Enemy {
       enemy: this,
       results: results,
     });
-    if (results.success) {
+    if (!results || results.success) {
       Game.logTurnEvent("evaded");
     }
   }
@@ -524,7 +544,8 @@ class Enemy {
 
   async attack() {
     this.#jObj.addClass("attacking");
-    UiMode.setMode(UIMODE_WAITING);
+    await UiMode.setMode(UIMODE_WAITING);
+    Audio.playEffect(AUDIO_ATTACK);
     await wait(1000);
     await this.#cardData.attack(this);
     await Broadcast.signal("onEnemyAttacks", { enemy: this });

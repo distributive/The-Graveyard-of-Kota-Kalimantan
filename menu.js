@@ -81,7 +81,7 @@ class Menu {
     }
 
     // Start the animation now so they can't see it
-    setNetspace(false);
+    Story.setNetspace(false);
 
     // Pick an ID
     const characterModal = new Modal(null, {
@@ -275,9 +275,9 @@ class Menu {
         </ul>
         <div class="mt-2 font-size-20">Art assets</div>
         <ul>
-          <li>Official NSG art used with permission by Benjamin Giletti, ...</li>
+          <li>Card art used with NSG's permission by Benjamin Giletti, Júlio Rocha, and Zefanya Langkan Maega.</li>
           <li>Royalty free images taken from unsplash.com</li>
-          <li>CC0 sound effects taken from freesound.org</li>
+          <li>Royalty free sound effects taken from freesound.org</li>
         </ul>
         <div class="mt-2 font-size-20">Playtesters</div>
         <ul>

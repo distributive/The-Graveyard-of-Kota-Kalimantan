@@ -127,9 +127,7 @@ const EnemyHydra = new EnemyData("hydra", {
   },
   async onTurnEnd(source, data) {
     if (source.damage > 0) {
-      await Enemy.spawn(EnemyHydra, source.location).setLocation(
-        Location.getCurrentLocation()
-      );
+      await Enemy.spawn(EnemyHydra, source.location);
     }
   },
 });
@@ -184,7 +182,7 @@ const EnemyDataRaven = new EnemyData("data_raven", {
 
 const EnemyHantu = new EnemyData("hantu", {
   title: "Hantu",
-  text: "Hunter.\nWhen this enemy is defeated, escape the simulation.\n{sub} Do 1 damage.\n{sub} Discard 2 random cards. Do 1 damage for each card the Runner cannot discard.",
+  text: "Hunter.\nWhen this enemy is defeated, escape the simulation.\n{sub} Do 1 damage.\n{sub} Discard 2 random cards. Do 1 damage for each card that cannot be discarded.",
   subtypes: ["ice", "elite"],
   faction: FACTION_NET,
   image: "img/card/enemy/hantu.png",
@@ -199,6 +197,16 @@ const EnemyHantu = new EnemyData("hantu", {
     await Cards.discardRandom(2);
     if (extraDamage > 0) {
       await Game.sufferDamage(extraDamage);
+    }
+  },
+  async onEnemyDies(source, data) {
+    if (source != data.enemy) return;
+    // TODO - good ending
+  },
+  async onTurnEnd(source, data) {
+    if (Stats.clues > 0) {
+      await Stats.addClues(-1);
+      await source.addDamage(1);
     }
   },
 });

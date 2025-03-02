@@ -62,7 +62,7 @@ class Chaos {
     if (token == "fail") {
       value = 0;
     } else if (token == "skull") {
-      value = base; // TODO: damage
+      value = base;
     } else if (token == "elder") {
       value = target;
     } else {
@@ -107,17 +107,7 @@ class Chaos {
       <p>Your chaos pool contains:
       <br>
         <span class="ms-3">
-          ${chaosTokens
-            .map((token) =>
-              token == "elder"
-                ? `<img class="inline-token" src="img/game/tokenElder.png" />`
-                : token == "fail"
-                ? `<img class="inline-token" src="img/game/tokenFail.png" />`
-                : token == "skull"
-                ? `<img class="inline-token" src="img/game/tokenSkull.png" />`
-                : token
-            )
-            .join(", ")}
+          ${this.stringifyTokens()}
         </span>
       </p>
       `;
@@ -214,7 +204,7 @@ class Chaos {
       }).display();
     }
 
-    const results = Chaos.performCheck("mu", base, target, forceOutcome);
+    const results = Chaos.performCheck(stat, base, target, forceOutcome);
     const { success, token, value } = results;
 
     // Third panel
@@ -271,6 +261,25 @@ class Chaos {
 
     await Broadcast.signal("onTestCompleted", { stat: stat, results: results });
     Game.logTurnEvent(success ? "testSuccess" : "testFail");
+
+    if (token == "skull" && !success) {
+      await Game.sufferDamage(1);
+    }
+
     return results;
+  }
+
+  static stringifyTokens() {
+    return this.#chaosTokens
+      .map((token) =>
+        token == "elder"
+          ? `<img class="inline-token" src="img/game/tokenElder.png" />`
+          : token == "fail"
+          ? `<img class="inline-token" src="img/game/tokenFail.png" />`
+          : token == "skull"
+          ? `<img class="inline-token" src="img/game/tokenSkull.png" />`
+          : token
+      )
+      .join(", ");
   }
 }

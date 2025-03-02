@@ -175,13 +175,7 @@ class IdentityData extends NonTreacheryData {
   // onUse(source, data) {} // Leave this unset for canUse
 
   // TODO - complete
-  populate(jObj) {
-    const jCardText = $(`
-      <div class="card-text identity">
-      </div>
-    `)
-    jObj.append(jCardText);
-  }
+  populate(jObj) {}
 }
 
 class PlayableCardData extends NonTreacheryData {
@@ -217,9 +211,12 @@ class AssetData extends PlayableCardData {
 
   // Determines if the asset can be used while installed
   canUse(source, data) { return this.onUse != null; }
-  // onUse(source, data) {} // Leave this unset for canUse
+  // async onUse(source, data) {} // Leave this unset for canUse
+  // async onTapped() {}
+  // async onUntapped() {}
 
   populate(jObj) {
+    jObj.addClass("asset");
     const skills = this.skills
       ? this.skills
           .map(
@@ -228,17 +225,15 @@ class AssetData extends PlayableCardData {
           .join("")
       : "";
     const jCardText = $(`
-      <div class="card-text asset">
-        <div class="card-text-cost">${this.cost}</div>
-        <div class="card-text-title">${this.formattedTitle}</div>
-        <div class="card-text-subtypes">${this.displaySubtypes}</div>
-        <div class="card-text-text"></div>
-        ${this.health ? `<div class="card-text-health">${this.health}</div>` : ""}
-        <div class="card-text-skills">${skills}</div>
-      </div>
+      <div class="card-text-cost">${this.cost}</div>
+      <div class="card-text-title">${this.formattedTitle}</div>
+      <div class="card-text-subtypes">${this.displaySubtypes}</div>
+      <div class="card-text-text"></div>
+      ${this.health ? `<div class="card-text-health">${this.health}</div>` : ""}
+      <div class="card-text-skills">${skills}</div>
     `);
-    jCardText.find(".card-text-text").append(this.jText);
     jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
   }
 }
 
@@ -256,6 +251,7 @@ class EventData extends PlayableCardData {
   }
 
   populate(jObj) {
+    jObj.addClass("event");
     const skills = this.skills
       ? this.skills
           .map(
@@ -264,16 +260,14 @@ class EventData extends PlayableCardData {
           .join("")
       : "";
     const jCardText = $(`
-      <div class="card-text event">
-        <div class="card-text-cost">${this.cost}</div>
-        <div class="card-text-title">${this.formattedTitle}</div>
-        <div class="card-text-subtypes">${this.displaySubtypes}</div>
-        <div class="card-text-text"></div>
-        <div class="card-text-skills">${skills}</div>
-      </div>
+      <div class="card-text-cost">${this.cost}</div>
+      <div class="card-text-title">${this.formattedTitle}</div>
+      <div class="card-text-subtypes">${this.displaySubtypes}</div>
+      <div class="card-text-text"></div>
+      <div class="card-text-skills">${skills}</div>
     `);
-    jCardText.find(".card-text-text").append(this.jText);
     jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
   }
 }
 
@@ -298,20 +292,22 @@ class EnemyData extends NonTreacheryData {
   async attack(source, data) {CardData.log("attack", data)}
 
   populate(jObj) {
+    jObj.addClass("enemy");
+    if (this.faction == FACTION_NET) {
+      jObj.addClass("alt");
+    }
     const jCardText = $(`
-      <div class="card-text enemy ${this.faction == FACTION_NET ? "alt" : ""}">
-        <div class="card-text-title">${this.formattedTitle}</div>
-        <div class="card-text-strength">${this.strength}</div>
-        <div class="card-text-health">${this.health}</div>
-        <div class="card-text-link">${this.link}</div>
-        <div class="card-text-box">
-          ${this.subtypes ? `<div class="card-text-subtypes">${this.displaySubtypes}</div>` : ""}
-          <div class="card-text-text"></div>
-        </div>
+      <div class="card-text-title">${this.formattedTitle}</div>
+      <div class="card-text-strength">${this.strength}</div>
+      <div class="card-text-health">${this.health}</div>
+      <div class="card-text-link">${this.link}</div>
+      <div class="card-text-box">
+        ${this.subtypes ? `<div class="card-text-subtypes">${this.displaySubtypes}</div>` : ""}
+        <div class="card-text-text"></div>
       </div>
     `);
-    jCardText.find(".card-text-text").append(this.jText);
     jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
   }
 }
 
@@ -333,19 +329,18 @@ class ActData extends NonTreacheryData {
   async advance(source, data) {CardData.log("advanceAct", data)}
 
   populate(jObj) {
+    jObj.addClass("act");
     const jCardText = $(`
-      <div class="card-text act">
-        <div class="card-text-title">${this.formattedTitle}</div>
-        <div class="card-text-requirement">${this.requirement ? this.requirement : "-"}</div>
-        <div class="card-text-act">${this.act}</div>
-        <div class="card-text-text-box">
-          <div class="card-text-float"></div>
-          <div class="card-text-text"></div>
-        </div>
+      <div class="card-text-title">${this.formattedTitle}</div>
+      <div class="card-text-requirement">${this.requirement ? this.requirement : "-"}</div>
+      <div class="card-text-act">${this.act}</div>
+      <div class="card-text-text-box">
+        <div class="card-text-float"></div>
+        <div class="card-text-text"></div>
       </div>
     `);
-    jCardText.find(".card-text-text").append(this.jText);
     jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
   }
 }
 
@@ -367,25 +362,25 @@ class AgendaData extends NonTreacheryData {
   async advance(source, data) {CardData.log("advanceAgenda", data)}
 
   populate(jObj) {
+    jObj.addClass("agenda");
     const jCardText = $(`
-      <div class="card-text agenda">
-        <div class="card-text-title">${this.formattedTitle}</div>
-        <div class="card-text-requirement">${this.requirement ? this.requirement : "-"}</div>
-        <div class="card-text-agenda">${this.agenda}</div>
-        <div class="card-text-text-box">
-          <div class="card-text-float"></div>
-          <div class="card-text-text"></div>
-        </div>
+      <div class="card-text-title">${this.formattedTitle}</div>
+      <div class="card-text-requirement">${this.requirement ? this.requirement : "-"}</div>
+      <div class="card-text-agenda">${this.agenda}</div>
+      <div class="card-text-text-box">
+        <div class="card-text-float"></div>
+        <div class="card-text-text"></div>
       </div>
     `);
-    jCardText.find(".card-text-text").append(this.jText);
     jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
   }
 }
 
 class LocationData extends NonTreacheryData {
   shroud;
   clues;
+  statOverride; // Overrides the skill tested when investigating
   enterSfx; // There are defaults for meatspace/netspace if this is not set
 
   get type() { return TYPE_LOCATION; }
@@ -401,17 +396,19 @@ class LocationData extends NonTreacheryData {
   }
 
   populate(jObj) {
+    jObj.addClass("location");
+    if (this.faction == FACTION_NET) {
+      jObj.addClass("alt");
+    }
     const jCardText = $(`
-      <div class="card-text location ${this.faction == FACTION_NET ? "alt" : ""}">
-        <div class="card-text-title">${this.formattedTitle}</div>
-        <div class="card-text-shroud">${this.shroud}</div>
-        <div class="card-text-clues">${this.clues}</div>
-        <div class="card-text-subtypes">${this.displaySubtypes}</div>
-        <div class="card-text-text"></div>
-      </div>
+      <div class="card-text-title">${this.formattedTitle}</div>
+      <div class="card-text-shroud">${this.shroud}</div>
+      <div class="card-text-clues">${this.clues}</div>
+      <div class="card-text-subtypes">${this.displaySubtypes}</div>
+      <div class="card-text-text"></div>
     `);
-    jCardText.find(".card-text-text").append(this.jText);
     jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
   }
 }
 
@@ -433,14 +430,13 @@ class TreacheryData extends CardData {
   async onEncounter() { }
 
   populate(jObj) {
+    jObj.addClass("treachery");
     const jCardText = $(`
-      <div class="card-text treachery">
-        <div class="card-text-title">${this.formattedTitle}</div>
-        <div class="card-text-subtypes">${this.displaySubtypes}</div>
-        <div class="card-text-text"></div>
-      </div>
+      <div class="card-text-title">${this.formattedTitle}</div>
+      <div class="card-text-subtypes">${this.displaySubtypes}</div>
+      <div class="card-text-text"></div>
     `);
-    jCardText.find(".card-text-text").append(this.jText);
     jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
   }
 }

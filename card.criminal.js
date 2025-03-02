@@ -47,14 +47,10 @@ CardPennyearner = new AssetData("pennyearner", {
   health: 0,
   skills: ["mu", "link"],
   async onPlayerMoves(source, data) {
-    if (source.movedThisTurn) {
+    if (Game.getTurnEvent("moved")) {
       return;
     }
     source.addPower(1);
-    source.movedThisTurn = true;
-  },
-  async onTurnEnd(source, data) {
-    source.movedThisTurn = false;
   },
   canUse(source) {
     return source.power > 0;
@@ -304,17 +300,6 @@ CardEmpDevice = new EventData("emp_device", {
       await enemy.moveTo(randomElement(locations));
     }
   },
-});
-
-CardInfiltrate = new EventData("infiltrate", {
-  title: "Infiltrate",
-  text: "Look at a facedown adjacent location. Move to an adjacent location.",
-  subtypes: ["tactic"],
-  faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
-  cost: 0,
-  skills: ["influence"],
-  // TODO
 });
 
 CardInsideJob = new EventData("inside_job", {

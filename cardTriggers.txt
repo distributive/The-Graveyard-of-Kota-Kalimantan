@@ -24,7 +24,6 @@ onPlayerMoves(source, {fromLocation, toLocation})
 onPlayerEngages(source, {enemy})
 onPlayerAttackAttempt(source, {enemy, damage})
 onPlayerAttacks(source, {enemy, results, damage})
-onPlayerKills(source, {enemy, results, damage})
 onPlayerEvadeAttempt(source, {enemy})
 onPlayerEvades(source, {enemy, results})
 

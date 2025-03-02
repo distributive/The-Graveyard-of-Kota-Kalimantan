@@ -1,10 +1,17 @@
 class Game {
+  static serialise() {
+    return this.#turnEvents;
+  }
+  static deserialise(json) {
+    this.#turnEvents = json ? json : {};
+  }
+
   static async initGameState(
     identity = CardTheCatalyst,
     tutorialActive = false
   ) {
     Tutorial.active = !!tutorialActive;
-    setNetspace(false);
+    Story.setNetspace(false);
 
     // Wipe existing game state (if any)
     Location.deleteState();
@@ -36,8 +43,8 @@ class Game {
         xs.push(CardRepurpose);
         xs.push(CardTakeInspiration);
       }
-      xs.push(CardMakeAnEntrance);
       xs.push(CardProjectile);
+      xs.push(CardSoda);
     } else if (identity.faction == FACTION_CRIMINAL) {
       for (let i = 0; i < 2; i++) {
         xs.push(CardUnsureGamble);
@@ -55,13 +62,14 @@ class Game {
         xs.push(CardInsideJob);
         xs.push(CardTreadLightly);
       }
-      xs.push(CardInfiltrate);
       xs.push(CardPush);
+      xs.push(CardSoda);
     } else {
       const cardPool = CardData.getAllCards().filter(
         (cardData) =>
           (cardData.type == TYPE_ASSET || cardData.type == TYPE_EVENT) &&
-          cardData.faction != FACTION_ENCOUNTER
+          cardData.faction != FACTION_ENCOUNTER &&
+          !cardData.uncollectable
       );
       for (let i = 0; i < 30 && cardPool.length; i++) {
         const index = randomIndex(cardPool);
@@ -139,11 +147,15 @@ class Game {
     await Agenda.setDoom(0);
     Identity.setDamage(0);
 
+    Story.reset();
+
     if (Tutorial.active) {
       Tutorial.reset();
     } else {
       Tutorial.setMode(null);
     }
+
+    Encounter.setPool(MEAT_ENCOUNTERS);
 
     Game.startTurn();
   }
@@ -270,13 +282,10 @@ class Game {
     }
     await UiMode.setMode(UIMODE_WAITING); // Prevent other actions being taken during resolution
     if (cardData.type == TYPE_ASSET) {
-      const rigCard = Cards.install(cardData);
-      await cardData.onPlay(rigCard); // TODO - move to Cards.install
-      await Broadcast.signal("onCardInstalled", { card: rigCard });
-      Audio.playEffect(AUDIO_PLAY);
+      const rigCard = await Cards.install(cardData);
     } else {
       await cardData.onPlay(gripCard);
-      await Broadcast.signal("onCardPlayed", { card: gripCard }); // TODO - ditto
+      await Broadcast.signal("onCardPlayed", { card: gripCard }); // TODO - move to Cards
       Cards.addToHeap(gripCard.cardData);
       Audio.playEffect(AUDIO_PLAY);
     }
@@ -330,7 +339,7 @@ class Game {
     const { success } = results;
     if (success) {
       location.addClues(-clues);
-      Stats.addClues(1);
+      Stats.addClues(clues);
     }
     await Broadcast.signal("onInvestigation", {
       location: location,
@@ -342,7 +351,7 @@ class Game {
     return results;
   }
 
-  static async sufferDamage(damage, callback) {
+  static async sufferDamage(damage) {
     if (RigCard.getDamageableCards().length > 0) {
       await UiMode.setMode(UIMODE_ASSIGN_DAMAGE, {
         damage: damage,
@@ -485,7 +494,8 @@ $(document).ready(function () {
     if (Stats.clicks <= 0 || UiMode.uiMode != UIMODE_SELECT_ACTION) {
       return;
     }
-    await Game.actionInvestigate({ clues: 1 });
+    const stat = Location.getCurrentLocation().cardData.statOverride; // If null, investigate defaults to MU
+    await Game.actionInvestigate({ clues: 1, stat: stat });
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }
