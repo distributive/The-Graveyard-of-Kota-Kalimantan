@@ -10,7 +10,13 @@ class Story {
   static netLocationsRevealed = 0;
   static isSourceRevealed = false;
 
+  // Boss
+  static isBossSummoned = false;
+
   static reset() {
+    // Broadcast terminals
+    this.broadcastTerminalsActivated = 0;
+    this.broadcastTerminalsCompleted = false;
     // Netspace
     this.isInNetspace = false;
     this.randomNetLocations = [
@@ -27,6 +33,10 @@ class Story {
       LocationTheDestroyersEye,
       LocationTheDestroyersEye,
     ];
+    this.netLocationsRevealed = 0;
+    this.isSourceRevealed = false;
+    // Boss
+    this.isBossSummoned = false;
   }
 
   static serialise() {
@@ -38,16 +48,18 @@ class Story {
       netLocs: netLocations,
       netRevealed: this.netLocationsRevealed,
       sourceRevealed: this.isSourceRevealed,
+      boss: this.isBossSummoned,
     };
   }
 
   static deserialise(json) {
     this.broadcastTerminalsActivated = json.terminals;
-    this.broadcastTerminalsCompleted = json.broadcast;
-    this.isInNetspace = json.net;
+    this.broadcastTerminalsCompleted = json.broadcast ? true : false;
+    this.isInNetspace = json.net ? true : false;
     this.randomNetLocations = json.netLocs.map((id) => CardData.getCard(id));
     this.netLocationsRevealed = json.netRevealed;
-    this.isSourceRevealed = json.sourceRevealed;
+    this.isSourceRevealed = json.sourceRevealed ? true : false;
+    this.isBossSummoned = json.boss ? true : false;
 
     this.setNetspace(this.isInNetspace);
   }
@@ -67,7 +79,7 @@ class Story {
   }
 
   // Netspace
-  static enterNetspace() {
+  static async enterNetspace() {
     if (this.isInNetspace) {
       return;
     }
@@ -103,5 +115,30 @@ class Story {
     } else {
       $("body").removeClass("netspace");
     }
+  }
+
+  // Boss
+  // Note: it is the responsibility of the caller to ensure the UI mode is set correctly during this
+  static async summonBoss() {
+    if (this.isBossSummoned) {
+      return;
+    }
+    this.isBossSummoned = true;
+
+    // There should be exactly one entrance location, but we should check
+    const locations = Location.instances.filter(
+      (location) => location.cardData == LocationEntrance
+    );
+    const spawnLoc = locations.length
+      ? locations[0]
+      : Location.getCurrentLocation();
+
+    // Make sure the player sees the spawn
+    Location.focusMapOffsetToLocation(spawnLoc);
+    Location.resetZoom();
+
+    // Wait for the camera to move then spawn
+    await wait(600);
+    const boss = new Enemy(EnemyHantu, spawnLoc);
   }
 }

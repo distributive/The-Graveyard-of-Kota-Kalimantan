@@ -60,7 +60,7 @@ CardNol = new AssetData("nol", {
 
 CardSifar = new AssetData("sifar", {
   title: "Sifar",
-  text: "You get +3{strength} during your turn until you complete a {strength} test.\nWhenever you roll a symbol during a {strength} test, suffer 1 damage.",
+  text: "You get +3{strength} during your turn until you complete a {strength} test.\nWhenever you reveal a symbol during a {strength} test, suffer 1 damage.",
   subtypes: ["unique"],
   unique: true,
   faction: FACTION_ANARCH,
@@ -268,7 +268,7 @@ CardLastDitch = new EventData("last_ditch", {
     return this.cost + Cards.grip.length * 2 - 2;
   },
   canPlay(source) {
-    return Enemy.getEnemiesAtCurrentLocation().length;
+    return Enemy.getEnemiesAtCurrentLocation().length > 0;
   },
   // This recreates the fight process from core principles to ensure it combos as intended
   async onPlay(source, data) {

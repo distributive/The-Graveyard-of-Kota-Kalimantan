@@ -85,69 +85,65 @@ class Menu {
 
     // Pick an ID
     const characterModal = new Modal(null, {
-      body: `
-        <div>
-          <div class="text-center font-size-32">Character selection</div>
-          <div class="row mt-3 mb-4">
-            <div class="col-4"><img id="topan-image" class="card-image character-selection-image" src="img/card/identity/topan.png" /></div>
-            <div class="col-4"><img id="baz-image" class="card-image character-selection-image" src="img/card/identity/baz.png" /></div>
-            <div class="col-4"><img id="catalyst-image" class="card-image character-selection-image ${
-              Tutorial.catalystIsUnlocked ? "" : "disabled"
-            }" src="img/card/identity/theCatalyst.png" /></div>
-          </div>
-        </div>
-        `,
+      body: `<div class="w-100 text-center font-size-20">Choose your character</div>`,
       options: [
-        new Option("topan", "Topan", "character-button topan-select"),
-        new Option("baz", "Baz", "character-button baz-select"),
+        new Option("topan", "", "character-button topan-select"),
+        new Option("baz", "", "character-button baz-select"),
         new Option(
           "catalyst",
-          Tutorial.catalystIsUnlocked ? "The Catalyst" : "Locked",
+          "",
           Tutorial.catalystIsUnlocked
             ? "character-button catalyst-select"
-            : "character-button disabled"
+            : "character-button catalyst-select disabled"
         ),
       ],
       allowKeyboard: false,
       size: "xl",
     });
 
-    // Add listeners for the mouseover animations
+    // Set images and add listeners for the mouseover animations
     setTimeout(function () {
-      $(".topan-select").hover(
+      $(".topan-select").append(
+        $(
+          `<img id="topan-image" class="card-image character-selection-image" src="img/card/identity/topanFull.png" />`
+        )
+      );
+      $(".baz-select").append(
+        $(
+          `<img id="baz-image" class="card-image character-selection-image" src="img/card/identity/bazFull.png" />`
+        )
+      );
+      $(".catalyst-select").append(
+        $(
+          `<img id="catalyst-image" class="card-image character-selection-image" src="img/card/identity/theCatalystFull.png" />`
+        )
+      );
+      $("#topan-image").hover(
         function () {
-          $("#topan-image")
-            .addClass("hover")
-            .attr("src", "img/card/identity/topanFull.png");
+          $(this).attr("src", "img/card/identity/topan.png");
         },
         function () {
-          $("#topan-image")
-            .removeClass("hover")
-            .attr("src", "img/card/identity/topan.png");
+          $(this).attr("src", "img/card/identity/topanFull.png");
         }
       );
-      $(".baz-select").hover(
+      $("#baz-image").hover(
         function () {
-          $("#baz-image")
-            .addClass("hover")
-            .attr("src", "img/card/identity/bazFull.png");
+          $(this).attr("src", "img/card/identity/baz.png");
         },
         function () {
-          $("#baz-image")
-            .removeClass("hover")
-            .attr("src", "img/card/identity/baz.png");
+          $(this).attr("src", "img/card/identity/bazFull.png");
         }
       );
       $(".catalyst-select").hover(
         function () {
-          $("#catalyst-image")
+          $(this)
             .addClass("hover")
-            .attr("src", "img/card/identity/theCatalystFull.png");
+            .attr("src", "img/card/identity/theCatalyst.png");
         },
         function () {
-          $("#catalyst-image")
+          $(this)
             .removeClass("hover")
-            .attr("src", "img/card/identity/theCatalyst.png");
+            .attr("src", "img/card/identity/theCatalystFull.png");
         }
       );
     }, 1);

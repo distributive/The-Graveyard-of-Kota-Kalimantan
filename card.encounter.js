@@ -156,9 +156,9 @@ const TreacherySomethingInTheDark = new TreacheryData("something_in_the_dark", {
           "Pick 1 non-elite enemy to move to your current location and engage.",
       });
       await UiMode.data.selectedEnemy.setLocation(
-        Location.getCurrentLocation()
+        Location.getCurrentLocation(),
+        true
       );
-      await UiMode.data.selectedEnemy.engage();
     } else {
       await Game.sufferDamage(2);
     }

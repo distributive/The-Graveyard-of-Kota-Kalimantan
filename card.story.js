@@ -103,9 +103,16 @@ Act4 = new ActData("act_4", {
   // Triggered by the location itself
   async advance() {
     // TODO - lore
+    await UiMode.setMode(UIMODE_WAITING);
     Act.setCard(Act4);
+    await wait(250);
     Agenda.setDoom(0);
     Agenda.setCard(Agenda4);
+    await wait(1500);
+    await Story.summonBoss();
+    if (!Game.checkTurnEnd()) {
+      UiMode.setMode(UIMODE_SELECT_ACTION);
+    }
   },
 });
 
@@ -127,11 +134,12 @@ Agenda2 = new AgendaData("agenda_2", {
   title: "Agenda i",
   requirement: 10,
   agenda: 1,
-  text: "When this hosts 10 or more doom, advance the agenda.",
+  text: "When this hosts 10 or more doom, lose all data and advance the agenda.",
   image: "img/card/agenda/bg.png",
   async onDoomPlaced(data) {
     // For now we assume only the agenda can host doom
     if (data.doom >= this.requirement) {
+      Stats.setClues(0);
       await Agenda.advance();
     }
   },
@@ -142,7 +150,7 @@ Agenda2 = new AgendaData("agenda_2", {
     }
     Agenda.setDoom(0);
     Agenda.setCard(Agenda3);
-    Story.enterNetspace();
+    await Story.enterNetspace();
   },
 });
 

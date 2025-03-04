@@ -138,7 +138,6 @@ class NonTreacheryData extends CardData {
   async onPlayerEngages(source, data) {CardData.log("onPlayerEngages", data)}
   async onPlayerAttackAttempt(source, data) {CardData.log("onPlayerAttackAttempt", data)}
   async onPlayerAttacks(source, data) {CardData.log("onPlayerAttacks", data)}
-  async onPlayerKills(source, data) {CardData.log("onPlayerKills", data)}
   async onPlayerEvadeAttempt(source, data) {CardData.log("onPlayerEvadeAttempt", data)}
   async onPlayerEvades(source, data) {CardData.log("onPlayerEvades", data)}
   

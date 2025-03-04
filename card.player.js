@@ -31,7 +31,9 @@ const CardTopan = new IdentityData("topan", {
       Cards.grip.some(
         (card) =>
           card.cardData.type == TYPE_ASSET &&
-          Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits
+          Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits &&
+          (!card.cardData.unique ||
+            Cards.installedCards.every((c) => c.cardData != card.cardData))
       )
     );
   },
@@ -47,7 +49,9 @@ const CardTopan = new IdentityData("topan", {
       validTargets: Cards.grip.filter(
         (card) =>
           card.cardData.type == TYPE_ASSET &&
-          Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits
+          Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits &&
+          (!card.cardData.unique ||
+            Cards.installedCards.every((c) => c.cardData != card.cardData))
       ),
     });
     await Cards.install(UiMode.data.selectedCards[0].cardData);
@@ -94,7 +98,9 @@ const CardBaz = new IdentityData("baz", {
     const validTargets = Cards.grip.filter(
       (card) =>
         card.cardData.type == TYPE_ASSET &&
-        card.cardData.calculateCost(card) <= Stats.credits
+        card.cardData.calculateCost(card) <= Stats.credits &&
+        (!card.cardData.unique ||
+          Cards.installedCards.every((c) => c.cardData != card.cardData))
     );
 
     if (validTargets.length == 0) {

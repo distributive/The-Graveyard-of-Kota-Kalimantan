@@ -170,7 +170,7 @@ class Tutorial {
 
   static reset() {
     this.#triggers = {};
-    this.#mode = TUTORIAL_MODE_NONE;
+    this.setMode(null);
     this.clearHintTimout();
     if (this.#hintAlert) {
       this.#hintAlert.close();
@@ -179,8 +179,13 @@ class Tutorial {
   }
 
   // Retriggers the previous tutorial cutscene - used when loading the game
+  // If the trigger it was waiting for was turn start, retriggering it will softlock the game due to the timing of saves
   static async retriggerCutscene() {
-    if (this.#active && this.#stageIndex > 0) {
+    if (
+      this.#active &&
+      this.#stageIndex > 0 &&
+      this.#stages[this.#stageIndex].trigger != "onTurnStart"
+    ) {
       await this.triggerCutscene(this.#stageIndex - 1);
     }
   }
@@ -401,7 +406,16 @@ class Tutorial {
         },
         {
           header: "Downloading data",
-          body: "Each location has a shroud value (left) and an amount of data (right).<br><br>If a location has any data hosted on it, you may spend a click to 'jack in', and attempt to download it.<br><br>Attempting to download data initiates a skill test against your MU. If successful, you download 1 data from your current location.<br><br>Give it a go!",
+          body: "Each location has a shroud value (left) and an amount of data (right).<br><br>If a location has any data hosted on it, you may spend a click to 'jack in', and attempt to download it.<br><br>This is you entering netspace to try and access hidden information.",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          cardData: LocationTerminal,
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Downloading data",
+          body: "Attempting to download data initiates a skill test against your MU. If successful, you download 1 data from your current location.<br><br>Give it a go!",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           cardData: LocationTerminal,
@@ -608,7 +622,7 @@ class Tutorial {
         },
         {
           header: "Onwards",
-          body: "That's pretty much everything you need to know!<br><br>I'll still be with you, but try exploring this place by yourself now.",
+          body: "That's pretty much everything you need to know!<br><br>I'll still be with you, but try exploring this place by yourself now.<br><br>Remember: you want to download more data to advance the next act!",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasrara.png",

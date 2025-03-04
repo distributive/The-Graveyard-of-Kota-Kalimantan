@@ -11,9 +11,8 @@ const MEAT_ENCOUNTERS = [
 
 const NET_ENCOUNTERS = [
   TreacherySomethingInTheDark,
+  TreacherySomethingInTheDark,
   TreacheryRapidDecay,
-  EnemyNetRat,
-  EnemyNetRat,
   EnemyArcher,
   EnemyArchitect,
   EnemyDataRaven,

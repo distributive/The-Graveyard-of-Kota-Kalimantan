@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Anta&family=Eagle+Lake&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Anta&family=Delius&family=Eagle+Lake&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
     <link href="fa/css/all.css" rel="stylesheet" />
@@ -48,6 +48,7 @@
     <script src="card.story.js"></script>
     <script src="card.encounter.js"></script>
     <script src="story.js"></script>
+    <script src="ending.js"></script>
     <script src="broadcast.js"></script>
     <script src="agenda.js"></script>
     <script src="act.js"></script>
@@ -68,6 +69,21 @@
     <div id="ui-mode">
       <div id="ui-flags">
         <div id="tutorial-flags">
+          <!-- Ending screen -->
+          <div id="ending-window">
+            <div class="container">
+              <div class="row">
+                <div class="offset-3 col-6">
+                  <div
+                    id="ending-text-box"
+                    class="mx-5 my-4 p-5 pb-3 font-fancy"
+                  ></div>
+                  <div style="height: 10px"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Turn banners -->
           <div id="corp-turn-banner" class="turn-banner" style="display: none">
             <img src="img/game/turnCorp.png" class="w-100 m-auto" />

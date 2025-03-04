@@ -28,6 +28,9 @@ class Identity {
   }
 
   static setDamage(value, doAnimate = true) {
+    if (value < 0) {
+      value = 0;
+    }
     if (doAnimate && value > this.#damage) {
       animate($("#pain"), 500);
       Audio.playEffect(AUDIO_PAIN);

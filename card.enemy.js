@@ -19,9 +19,9 @@ const EnemyNetRat = new EnemyData("net_rat", {
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/netRat.png",
-  strength: 1,
-  health: 1,
-  link: 3,
+  strength: 2,
+  health: 2,
+  link: 4,
   isHunter: true,
   async attack() {
     await Game.sufferDamage(1);
@@ -35,9 +35,9 @@ const EnemyBurkeBug = new EnemyData("burke_bug", {
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/burkeBug.png",
-  strength: 1,
-  health: 1,
-  link: 1,
+  strength: 3,
+  health: 3,
+  link: 3,
   isHunter: true,
   async attack() {
     await Game.sufferDamage(1);
@@ -111,7 +111,7 @@ const EnemyArcher = new EnemyData("archer", {
 
 const EnemyHydra = new EnemyData("hydra", {
   title: "Head of a Beast",
-  text: "At the end of the each turn, if this is damaged, summon another head.\n{sub} The Runner loses 3{c}.\n{sub} If the Runner has no credits, do 2 damage.",
+  text: "At the end of the each turn, if this is damaged, heal it summon a copy.\n{sub} The Runner loses 3{c}.\n{sub} If the Runner has no credits, do 2 damage.",
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/hydra.png",
@@ -127,6 +127,7 @@ const EnemyHydra = new EnemyData("hydra", {
   },
   async onTurnEnd(source, data) {
     if (source.damage > 0) {
+      source.setDamage(0);
       await Enemy.spawn(EnemyHydra, source.location);
     }
   },

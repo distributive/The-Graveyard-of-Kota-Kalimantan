@@ -266,6 +266,7 @@ class Enemy {
       const enemy = new Enemy(
         CardData.getCard(data.id),
         Location.getInstance(data.location),
+        false,
         data
       );
     });
@@ -286,13 +287,13 @@ class Enemy {
   #clues;
   #doom;
 
-  constructor(cardData, location, data) {
+  constructor(cardData, location, doAnimate = true, data) {
     Enemy.instances.push(this);
     this.#cardData = cardData;
 
     this.#jObj = $(`
       <div class="enemy-container">
-        <div class="card-image-container h-100">
+        <div class="card-image-container ${doAnimate ? "flipping" : ""} h-100">
           <img src="${
             this.#cardData.image
           }" class="enemy-image card-image" onmousedown="event.preventDefault()" />
@@ -313,6 +314,13 @@ class Enemy {
     );
     this.#jObj.data("card-id", cardData.id);
     Location.root.append(this.#jObj);
+
+    if (doAnimate) {
+      const jObj = this.#jObj;
+      setTimeout(function () {
+        jObj.find(".flipping").removeClass("flipping");
+      }, 1);
+    }
 
     this.#jDamage = this.#jObj.find(".damage");
     this.#jClues = this.#jObj.find(".clues");

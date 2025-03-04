@@ -128,6 +128,7 @@ CardCrowbar = new AssetData("crowbar", {
     return source.power > 0 && Location.getCurrentLocation().clues > 0;
   },
   async onUse(source, data) {
+    await Stat.addClicks(-1);
     source.addPower(-1);
     await Game.actionInvestigate({
       clues: 2,
@@ -160,6 +161,7 @@ CardShiv = new AssetData("shiv", {
     return source.power > 0 && Enemy.getEnemiesAtCurrentLocation().length > 0;
   },
   async onUse(source, data) {
+    await Stat.addClicks(-1);
     source.addPower(-1);
     await Enemy.actionFight({
       damage: 2,
@@ -191,6 +193,7 @@ CardSpike = new AssetData("spike", {
     return source.power > 0;
   },
   async onUse(source, data) {
+    await Stat.addClicks(-1);
     source.addPower(-1);
     await UiMode.setMode(UIMODE_SELECT_LOCATION, {
       message: "Pick a location to move to. (1/2)",

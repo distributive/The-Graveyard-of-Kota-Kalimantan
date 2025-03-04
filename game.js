@@ -10,6 +10,8 @@ class Game {
     identity = CardTheCatalyst,
     tutorialActive = false
   ) {
+    Broadcast.disable();
+
     Tutorial.active = !!tutorialActive;
     Story.setNetspace(false);
 
@@ -157,6 +159,8 @@ class Game {
 
     Encounter.setPool(MEAT_ENCOUNTERS);
 
+    Broadcast.enable();
+
     Game.startTurn();
   }
 
@@ -207,6 +211,7 @@ class Game {
     this.startTurn();
   }
 
+  // TODO - make async
   static checkTurnEnd() {
     if (Stats.clicks <= 0) {
       UiMode.setMode(UIMODE_END_TURN);
@@ -312,6 +317,9 @@ class Game {
       base,
       target = location.cardData.shroud,
     } = data;
+    if (clues > location.clues) {
+      clues = location.clues;
+    }
     // Run test
     if (costsClick) {
       await Stats.addClicks(-1);
