@@ -10,6 +10,16 @@ $(document).ready(async function () {
       Menu.showMainMenu();
     }
   } else {
+    if (!Serialisation.loadSetting("returning")) {
+      await new Modal(null, {
+        header: "Notice",
+        body: "This game uses local storage to automatically save your progress.",
+        options: [new Option("", "Accept")],
+        allowKeyboard: false,
+        size: "lg",
+      }).display();
+      Serialisation.saveSetting("returning", true);
+    }
     Menu.showMainMenu();
   }
 });

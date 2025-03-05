@@ -121,6 +121,7 @@ class Menu {
       $("#topan-image").hover(
         function () {
           $(this).attr("src", "img/card/identity/topan.png");
+          Audio.playEffect(AUDIO_CHARACTER_SELECT);
         },
         function () {
           $(this).attr("src", "img/card/identity/topanFull.png");
@@ -129,16 +130,18 @@ class Menu {
       $("#baz-image").hover(
         function () {
           $(this).attr("src", "img/card/identity/baz.png");
+          Audio.playEffect(AUDIO_CHARACTER_SELECT);
         },
         function () {
           $(this).attr("src", "img/card/identity/bazFull.png");
         }
       );
-      $(".catalyst-select").hover(
+      $("#catalyst-image").hover(
         function () {
           $(this)
             .addClass("hover")
             .attr("src", "img/card/identity/theCatalyst.png");
+          Audio.playEffect(AUDIO_CHARACTER_SELECT);
         },
         function () {
           $(this)

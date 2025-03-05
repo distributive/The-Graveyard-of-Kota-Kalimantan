@@ -28,6 +28,9 @@ AUDIO_DEATH_BOSS = "./audio/bossDeath.mp3";
 AUDIO_PAIN = "./audio/pain.mp3";
 AUDIO_DEATH = "./audio/death.mp3";
 
+AUDIO_CLICK = "./audio/click.mp3";
+AUDIO_CHARACTER_SELECT = "./audio/characterSelect.mp3";
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class Audio {
@@ -119,5 +122,9 @@ $(document).ready(function () {
     }
     debounce = true;
     Audio.playMusic(AUDIO_TRACK_TEST);
+  });
+  $("html").on("click", "button", function () {
+    console.log("!");
+    Audio.playEffect(AUDIO_CLICK);
   });
 });
