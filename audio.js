@@ -15,7 +15,18 @@ AUDIO_SUCCESS = "./audio/success.mp3";
 AUDIO_FAIL = "./audio/fail.mp3";
 
 AUDIO_ATTACK = "./audio/attack.mp3";
+AUDIO_ATTACK_RAT = "./audio/ratAttack.mp3";
+AUDIO_ATTACK_ARROW = "./audio/arrowAttack.mp3";
+AUDIO_ATTACK_BIRD = "./audio/birdAttack.mp3";
+AUDIO_ATTACK_BOSS = "./audio/bossAttack.mp3";
+AUDIO_ATTACK_BUG = "./audio/bugAttack.mp3";
+AUDIO_ATTACK_DESIGNER = "./audio/designerAttack.mp3";
+AUDIO_ATTACK_SPIDER = "./audio/spiderAttack.mp3";
+
+AUDIO_DEATH_BOSS = "./audio/bossDeath.mp3";
+
 AUDIO_PAIN = "./audio/pain.mp3";
+AUDIO_DEATH = "./audio/death.mp3";
 
 ///////////////////////////////////////////////////////////////////////////////
 

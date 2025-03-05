@@ -86,6 +86,8 @@ const LocationUnknownMeat = new LocationData("unknown_meat", {
       cardData = LocationOffice;
     } else if (source.x == 6 && source.y == 0) {
       cardData = LocationStoreroom;
+    } else if (source.x == 4) {
+      cardData = LocationJunction;
     } else {
       cardData = LocationCorridor;
     }
@@ -141,7 +143,17 @@ const LocationStoreroom = new LocationData("storeroom", {
   faction: FACTION_MEAT,
   image: "img/card/location/storeroom.png",
   shroud: 2,
-  clues: 2,
+  clues: 3,
+});
+
+const LocationJunction = new LocationData("junction", {
+  title: "Junction",
+  text: "",
+  subtypes: ["room"],
+  faction: FACTION_MEAT,
+  image: "img/card/location/junction.png",
+  shroud: 2,
+  clues: 1,
 });
 
 // Broadcast stations

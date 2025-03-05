@@ -1378,6 +1378,13 @@ button:not(.action-button, .alert-option) .inline-icon,
   font-size: 0.7em;
 }
 
+.buffed {
+  color: #c6ffc6 !important;
+}
+.nerfed {
+  color: #ffc6c6 !important;
+}
+
 /* Modal */
 
 #modal-image {
@@ -1397,7 +1404,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 #modal .quote {
   margin-top: 0.4em;
   margin-bottom: 0.4em;
-  border-left: solid 3px black;
+  border-left: solid 3px #303030;
 }
 
 #modal-dialog {
@@ -1834,6 +1841,17 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 .ending-image {
   width: 50%;
+  transition: scale 1.5s linear;
+}
+.ending-image.flipping {
+  scale: 0 1;
+}
+.ending-image.face-down {
+  border-radius: 5px;
+  cursor: pointer;
+}
+.ending-image.face-down:hover {
+  box-shadow: 0 0 10px white;
 }
 
 /* Fonts */

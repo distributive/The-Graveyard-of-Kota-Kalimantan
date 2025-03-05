@@ -56,6 +56,7 @@ CardPennyearner = new AssetData("pennyearner", {
     return source.power > 0;
   },
   async onUse(source, data) {
+    Stats.addClicks(-1);
     const { success } = await Game.actionInvestigate({ costsClick: false });
     if (success) {
       await Stats.addCredits(source.power);
@@ -86,6 +87,7 @@ CardAkauntan = new AssetData("akauntan", {
 CardForgedDocuments = new AssetData("forged_documents", {
   title: "Forged Documents",
   text: "You get +2 {link}.\nWhen you fail a {link} skill test, trash this asset.",
+  flavour: `"Haircut."`,
   subtypes: ["item"],
   unique: false,
   faction: FACTION_CRIMINAL,

@@ -137,8 +137,6 @@ class Chaos {
       if (!didRun) {
         Modal.hide();
       }
-      const prevUiMode = UiMode.uiMode;
-      const prevUiModeData = UiMode.data;
       const validTargets = Cards.grip.filter(
         (card) =>
           !card.inPlay &&
@@ -158,7 +156,6 @@ class Chaos {
           await Cards.discard(card);
         }
       }
-      await UiMode.setMode(prevUiMode, prevUiModeData);
     }
 
     // TODO: the modal won't close to show the affects of this broadcast - willfix?

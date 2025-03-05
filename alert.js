@@ -173,7 +173,6 @@ class Alert {
     const instance = this;
     this.#timeout = setTimeout(function () {
       if (!instance.#hasBeenClosed) {
-        instance.#hasBeenClosed = true;
         Alert.remove(instance.#id);
       }
     }, ALERT_TIMEOUT);
@@ -207,6 +206,7 @@ class Alert {
 
   close() {
     if (!this.#hasBeenClosed) {
+      this.#hasBeenClosed = true;
       this.#jObj.alert("close");
     }
   }

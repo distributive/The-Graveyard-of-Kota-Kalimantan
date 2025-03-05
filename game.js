@@ -250,6 +250,8 @@ class Game {
       toLocation: location,
     });
 
+    Game.logTurnEvent("moved");
+
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }
@@ -313,12 +315,18 @@ class Game {
       clues = 1,
       location = Location.getCurrentLocation(),
       costsClick = true,
-      stat = "mu",
+      stat,
       base,
       target = location.cardData.shroud,
     } = data;
     if (clues > location.clues) {
       clues = location.clues;
+    }
+    if (!stat) {
+      stat = Location.getCurrentLocation().cardData.statOverride;
+    }
+    if (!stat) {
+      stat = "mu";
     }
     // Run test
     if (costsClick) {
@@ -367,6 +375,26 @@ class Game {
       const destroyedCardIds = UiMode.data.destroyedCardIds;
     } else {
       Identity.addDamage(damage);
+    }
+    // Detect death
+    if (Identity.damage >= Identity.health) {
+      Audio.playEffect(AUDIO_DEATH);
+      await new Modal(null, {
+        header: "You died",
+        body: ``,
+        options: [new Option("", "Continue...")],
+        allowKeyboard: false,
+        size: "md",
+      }).display();
+      if (Act.cardData == Act1) {
+        Ending.show(ENDING_BAD_ACT_ONE);
+      } else if (Act.cardData == Act1) {
+        Ending.show(ENDING_BAD_ACT_TWO);
+      } else {
+        Ending.show(ENDING_BAD_ACT_THREE);
+      }
+    } else {
+      Audio.playEffect(AUDIO_PAIN);
     }
   }
 
@@ -502,8 +530,7 @@ $(document).ready(function () {
     if (Stats.clicks <= 0 || UiMode.uiMode != UIMODE_SELECT_ACTION) {
       return;
     }
-    const stat = Location.getCurrentLocation().cardData.statOverride; // If null, investigate defaults to MU
-    await Game.actionInvestigate({ clues: 1, stat: stat });
+    await Game.actionInvestigate({ clues: 1 });
     if (!Game.checkTurnEnd()) {
       UiMode.setMode(UIMODE_SELECT_ACTION);
     }

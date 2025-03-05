@@ -90,6 +90,18 @@ class Serialisation {
     window.localStorage.removeItem("netrunner-sahasrara");
   }
 
+  static saveSetting(key, value) {
+    window.localStorage.setItem(`netrunner-sahasrara-${key}`, value);
+  }
+  static loadSetting(key) {
+    return window.localStorage.getItem(`netrunner-sahasrara-${key}`);
+  }
+  static deleteSetting(key) {
+    value = window.localStorage.getItem(`netrunner-sahasrara-${key}`);
+    window.localStorage.removeItem(`netrunner-sahasrara-${key}`);
+    return value;
+  }
+
   // Checks if a save data object exists, not if it's valid
   static get saveExists() {
     const json = window.localStorage.getItem("netrunner-sahasrara");

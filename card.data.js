@@ -276,6 +276,10 @@ class EnemyData extends NonTreacheryData {
   link;
   isHunter;
 
+  // Optional accessors for variable stats
+  // calulateStrength(source) {...}
+  // calulateLink(source) {...}
+
   get type() { return TYPE_ENEMY; }
 
   constructor(id, data) {

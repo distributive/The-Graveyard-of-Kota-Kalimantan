@@ -33,7 +33,7 @@ class Ending {
     }
     text = text.replace(
       "{image}",
-      `<div class="ending-image-container"><img class="ending-image" src="img/card/placeholder.png" /></div>`
+      `<div class="ending-image-container"><img class="ending-image" src="img/card/back/anarch.png" /></div>`
     );
     $("#ending-text-box").html(text);
     setTimeout(function () {
@@ -42,6 +42,25 @@ class Ending {
     setTimeout(function () {
       $("#ending-text-box").addClass("show");
     }, 1000);
+    let debounce = false;
+    setTimeout(function () {
+      $(".ending-image").addClass("face-down");
+      $(".ending-image-container").on("click", async function () {
+        if (debounce) {
+          return;
+        }
+        debounce = true;
+        $(this)
+          .find(".ending-image")
+          .addClass("flipping")
+          .removeClass("face-down");
+        await wait(1500);
+        $(this)
+          .find(".ending-image")
+          .removeClass("flipping")
+          .attr("src", "img/game/scoop.png");
+      });
+    }, 5000);
   }
 }
 

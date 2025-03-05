@@ -33,7 +33,6 @@ class Identity {
     }
     if (doAnimate && value > this.#damage) {
       animate($("#pain"), 500);
-      Audio.playEffect(AUDIO_PAIN);
     }
     const jDamage = $("#runner-id .damage");
     if (value == 0) {

@@ -171,7 +171,73 @@ class Menu {
       }
     }
 
-    await Tutorial.run("intro");
+    // Lore cutscene
+    new Modal(null, {
+      body: `TODO TODO TODO TODO TODO`,
+      options: [new Option("", "Continue")],
+      allowKeyboard: false,
+      size: "md",
+    }).display();
+
+    // Skip cutscene (giving the player the opportunity to skip straight to the end)
+    let choice = "skip";
+    const skipCutscenes = [
+      new Modal(null, {
+        body: `TODO TODO TODO TODO TODO`,
+        options: [
+          new Option("", "Continue"),
+          new Option("skip", "I just want to see the scoop"),
+        ],
+        image: "img/character/sahasraraHappy.png",
+        allowKeyboard: false,
+        slowRoll: true,
+        size: "lg",
+      }),
+      new Modal(null, {
+        body: `Oh, uh. You do?`,
+        options: [new Option("skip", "Yes"), new Option("", "Just kidding!")],
+        image: "img/character/sahasraraPensive.png",
+        allowKeyboard: false,
+        slowRoll: true,
+        size: "lg",
+      }),
+      new Modal(null, {
+        body: `We uh, spent a lot of time working on this.<br><br>Are you sure you don't want to try it?`,
+        options: [new Option("", "No"), new Option("skip", "Scoop please")],
+        image: "img/character/sahasrara.png",
+        allowKeyboard: false,
+        slowRoll: true,
+        size: "lg",
+      }),
+      new Modal(null, {
+        body: `ok`,
+        options: [
+          new Option("skip", "Scoop"),
+          new Option("", "I'll try your game"),
+        ],
+        image: "img/character/sahasraraSad.png",
+        allowKeyboard: false,
+        slowRoll: true,
+        size: "lg",
+      }),
+    ];
+    for (let i = 0; i < skipCutscenes.length && choice == "skip"; i++) {
+      choice = await skipCutscenes[i].display();
+    }
+    if (choice == "skip") {
+      Ending.show(ENDING_SKIP_GAME);
+      Modal.hide();
+      return;
+    }
+
+    // Intro cutscene
+    await new Modal(null, {
+      body: `Splendid!<br><br>TODO TODO TODO TODO TODO`,
+      options: [new Option("", "Begin")],
+      image: "img/character/sahasraraHappy.png",
+      allowKeyboard: false,
+      size: "lg",
+    }).display();
 
     Modal.hide();
     await Game.initGameState(identity, tutorialActive);
@@ -234,12 +300,12 @@ class Menu {
   static async showAbout() {
     const body = `
       <div>
-        <div>This game was made in support of the release of Null Signal Games' Elevation set.</div>
-        <div>Although it was made with the help of members of NSG, it is not an official product.</div>
+        <div>This game was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
+        <div>Although it was made with the help of members of NSG, it is not an official NSG product and is not endorsed as such.</div>
         <div class="mt-2 font-size-20">Content warnings</div>
         <ul>
           <li>Mild horror themes</li>
-          <li>TBD</li>
+          <li>Hand-drawn depictions of rats and bugs</li>
         </ul>
         <div>
           There are no jumpscares, flashing lights, or sudden noises.
@@ -262,16 +328,24 @@ class Menu {
   static async showCredits() {
     const body = `
       <div>
-        <div>A game by Ams. Written by Ams and chord gang.</div>
-        <div>Music by Tripp Mirror.</div>
+        <div>A game by Ams.</div>
+        <div class="mt-2 font-size-20">Writing</div>
+        <ul>
+          <li>chord gang</li>
+          <li>Ams</li>
+        </ul>
+        <div class="mt-2 font-size-20">Music</div>
+        <ul>
+          <li>Tripp Mirror</li>
+        </ul>
         <div class="mt-2 font-size-20">Special thanks</div>
         <ul>
           <li>NSG Narrative contacts: Patrick Sklar and Ginevra Martin</li>
-          <li>NSG Art contact: Conrad "Banknote" Kluckdw</li>
+          <li>NSG Art contact: Conrad "Banknote" Kluck</li>
         </ul>
         <div class="mt-2 font-size-20">Art assets</div>
         <ul>
-          <li>Card art used with NSG's permission by Benjamin Giletti, Júlio Rocha, and Zefanya Langkan Maega.</li>
+          <li>Card art used with NSG's permission by Benjamin Giletti, Júlio Rocha, and Zefanya Langkan Maega</li>
           <li>Royalty free images taken from unsplash.com</li>
           <li>Royalty free sound effects taken from freesound.org</li>
         </ul>

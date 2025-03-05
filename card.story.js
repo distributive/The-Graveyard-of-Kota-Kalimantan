@@ -167,7 +167,8 @@ Agenda3 = new AgendaData("agenda_3", {
     }
   },
   async advance() {
-    // TODO - lose state (no scoop)
+    Audio.playEffect(AUDIO_DEATH);
+    Ending.show(ENDING_BAD_ACT_THREE);
   },
 });
 
@@ -185,6 +186,7 @@ Agenda4 = new AgendaData("agenda_4", {
     }
   },
   async advance() {
-    // TODO - victory state (neutral ending)
+    Audio.playEffect(AUDIO_DEATH_BOSS);
+    Ending.show(ENDING_NEUTRAL);
   },
 });

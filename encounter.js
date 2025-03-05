@@ -17,6 +17,8 @@ const NET_ENCOUNTERS = [
   EnemyArchitect,
   EnemyDataRaven,
   EnemyHydra,
+  EnemyAnansi,
+  EnemySurveyor,
 ];
 
 // TODO - implement changing the encounter deck

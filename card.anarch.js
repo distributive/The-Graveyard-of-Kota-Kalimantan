@@ -288,7 +288,7 @@ CardLastDitch = new EventData("last_ditch", {
     const results = await Chaos.runModal({
       stat: "strength",
       base: Stats.getBase("strength") + 1,
-      target: enemy.cardData.strength,
+      target: enemy.strength,
       title: "Fight!",
       description: `<p>If successful, you will do 1 damage to each engaged enemy (${
         Enemy.getEngagedEnemies().length
@@ -365,6 +365,7 @@ CardRepurpose = new EventData("repurpose", {
 CardTakeInspiration = new EventData("take_inspiration", {
   title: "Take Inspiration",
   text: "Play only if you have failed a test this turn. Gain 2{c} and draw 2 cards.",
+  flavour: "The idea fell off the back of a hopper.",
   subtypes: ["skill"],
   faction: FACTION_ANARCH,
   image: "img/card/event/takeInspiration.png",

@@ -8,6 +8,7 @@ const EnemyRat = new EnemyData("rat", {
   health: 1,
   link: 3,
   isHunter: true,
+  attackEffect: AUDIO_ATTACK_RAT,
   async attack() {
     await Game.sufferDamage(1);
   },
@@ -23,6 +24,7 @@ const EnemyNetRat = new EnemyData("net_rat", {
   health: 2,
   link: 4,
   isHunter: true,
+  attackEffect: AUDIO_ATTACK_RAT,
   async attack() {
     await Game.sufferDamage(1);
   },
@@ -39,6 +41,7 @@ const EnemyBurkeBug = new EnemyData("burke_bug", {
   health: 3,
   link: 3,
   isHunter: true,
+  attackEffect: AUDIO_ATTACK_BUG,
   async attack() {
     await Game.sufferDamage(1);
   },
@@ -53,10 +56,11 @@ const EnemyAnansi = new EnemyData("anansi", {
   strength: 4,
   health: 4,
   link: 4,
+  attackEffect: AUDIO_ATTACK_SPIDER,
   async attack() {
     await Game.sufferDamage(1);
     const alert = Alert.send(
-      "Anansi: Suffer 3 damage or lose 2 data?",
+      "The Spider: Suffer 3 damage or lose 2 data?",
       ALERT_INFO,
       false,
       true,
@@ -89,6 +93,7 @@ const EnemyArcher = new EnemyData("archer", {
   strength: 6,
   health: 1,
   link: 3,
+  attackEffect: AUDIO_ATTACK_ARROW,
   async attack(source, data) {
     await Game.sufferDamage(2);
     await source.setDamage(1000);
@@ -135,7 +140,7 @@ const EnemyHydra = new EnemyData("hydra", {
 
 const EnemyArchitect = new EnemyData("architect", {
   title: "The Designer",
-  text: "Hunter.\n{sub} Resolve a random encounter.\n{sub} Move one of the Runner's data to this location.",
+  text: "Hunter.\n{sub} Resolve a random encounter.",
   subtypes: ["ice"],
   faction: FACTION_NET,
   image: "img/card/enemy/architect.png",
@@ -144,8 +149,9 @@ const EnemyArchitect = new EnemyData("architect", {
   link: 2,
   isHunter: true,
   smallText: true,
+  attackEffect: AUDIO_ATTACK_DESIGNER,
   async attack() {
-    // TODO
+    await Encounter.draw();
   },
 });
 
@@ -158,16 +164,33 @@ const EnemySurveyor = new EnemyData("surveyor", {
   strength: 0,
   health: 2,
   link: 0,
+  calculateStrength(source) {
+    return Enemy.getEnemiesAtLocation(source.location).length;
+  },
+  calculateLink(source) {
+    return Enemy.getEnemiesAtLocation(source.location).length;
+  },
   isHunter: true,
   smallText: true,
+  attackEffect: AUDIO_ATTACK_SPIDER,
   async attack() {
-    // TODO
+    await Game.sufferDamage(1);
+  },
+  // This is the only enemy with variable stats, so we're cheating a little and implementing the visualisation of them here
+  async onEnemySpawns(source, data) {
+    source.updateStats();
+  },
+  async onEnemyMoves(source, data) {
+    source.updateStats();
+  },
+  async onEnemyDies(source, data) {
+    source.updateStats();
   },
 });
 
 const EnemyDataRaven = new EnemyData("data_raven", {
   title: "The Bird",
-  text: "Hunter.\nWhenever you engage another enemy at this location, this attacks.\n{sub} Do 2 net damage unless the Runner pays 2{c}.",
+  text: "Hunter.\nWhenever you engage another enemy at this location, this attacks.\n{sub} Do 2 damage unless the Runner pays 2{c}.",
   subtypes: ["ice", "observer"],
   faction: FACTION_NET,
   image: "img/card/enemy/dataRaven.png",
@@ -176,8 +199,37 @@ const EnemyDataRaven = new EnemyData("data_raven", {
   link: 3,
   isHunter: true,
   smallText: true,
+  attackEffect: AUDIO_ATTACK_BIRD,
+  async onPlayerEngages(source, data) {
+    if (
+      source.location == Location.getCurrentLocation() &&
+      data.enemy != source &&
+      data.enemy.location == Location.getCurrentLocation()
+    ) {
+      await this.attack();
+    }
+  },
   async attack() {
-    // TODO
+    if (Stats.credits >= 2) {
+      const options = [
+        new Option("credit", "Spend 2 credits"),
+        new Option("damage", "Suffer 2 damage"),
+      ];
+      const alert = Alert.send(
+        "The Bird: Spend 2 credits to prevent 2 damage?",
+        ALERT_INFO,
+        false,
+        true,
+        options
+      );
+      const choice = await alert.waitForOption();
+      alert.close();
+      if (choice == "credit") {
+        await Stats.addCredits(-2);
+        return;
+      }
+    }
+    await Game.sufferDamage(2);
   },
 });
 
@@ -192,6 +244,8 @@ const EnemyHantu = new EnemyData("hantu", {
   link: 4,
   isHunter: true,
   smallText: true,
+  attackEffect: AUDIO_ATTACK_BOSS,
+  deathEffect: AUDIO_DEATH_BOSS,
   async attack() {
     await Game.sufferDamage(1);
     const extraDamage = Math.max(0, 2 - Cards.grip.length);
@@ -202,7 +256,7 @@ const EnemyHantu = new EnemyData("hantu", {
   },
   async onEnemyDies(source, data) {
     if (source != data.enemy) return;
-    // TODO - good ending
+    Ending.show(ENDING_GOOD);
   },
   async onTurnEnd(source, data) {
     if (Stats.clues > 0) {

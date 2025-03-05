@@ -3,6 +3,9 @@ class Enemy {
   static instances = [];
 
   static async spawn(cardData, location) {
+    if (!location) {
+      location = Location.getCurrentLocation();
+    }
     new Enemy(cardData, location);
     await Broadcast.signal("onEnemySpawns", { enemy: this });
   }
@@ -121,7 +124,7 @@ class Enemy {
 
     // Set default target
     if (target == null) {
-      target = enemy.cardData.strength;
+      target = enemy.strength;
     }
 
     // Exit early if cancelled
@@ -199,7 +202,7 @@ class Enemy {
     // Run the modal
     const results = await Chaos.runModal({
       stat: "link",
-      target: enemy.cardData.link,
+      target: enemy.link,
       title: "Evade!",
       description: `<p>If successful, you will evade this enemy.</p>`,
       forceOutcome: Tutorial.active ? "success" : null, // Always succeed during the tutorial
@@ -349,6 +352,16 @@ class Enemy {
   get health() {
     return this.cardData.health;
   }
+  get strength() {
+    return this.cardData.calculateStrength
+      ? this.cardData.calculateStrength(this)
+      : this.cardData.strength;
+  }
+  get link() {
+    return this.cardData.calculateLink
+      ? this.cardData.calculateLink(this)
+      : this.cardData.link;
+  }
 
   get engaged() {
     return this.#engaged;
@@ -373,6 +386,36 @@ class Enemy {
       doAnimate,
       fast
     );
+  }
+
+  updateStats() {
+    const jStrength = this.#jObj.find(".card-text-strength");
+    const jLink = this.#jObj.find(".card-text-link");
+
+    jStrength.html(this.strength);
+    jLink.html(this.link);
+
+    if (this.strength > this.cardData.strength) {
+      jStrength.addClass("buffed");
+    } else {
+      jStrength.removeClass("buffed");
+    }
+    if (this.strength < this.cardData.strength) {
+      jStrength.addClass("nerfed");
+    } else {
+      jStrength.removeClass("nerfed");
+    }
+
+    if (this.link > this.cardData.link) {
+      jLink.addClass("buffed");
+    } else {
+      jLink.removeClass("buffed");
+    }
+    if (this.link < this.cardData.link) {
+      jLink.addClass("nerfed");
+    } else {
+      jLink.removeClass("nerfed");
+    }
   }
 
   remove() {
@@ -447,6 +490,11 @@ class Enemy {
         animate(jDamage, 500);
       }
     } else {
+      if (this.cardData.deathEffect) {
+        Audio.playEffect(this.cardData.deathEffect);
+      } else {
+        Audio.playEffect(AUDIO_TRASH);
+      }
       await Broadcast.signal("onEnemyDies", { enemy: this });
       this.remove();
       UiMode.setFlag("engaged", Enemy.getEngagedEnemies().length > 0);
@@ -553,7 +601,11 @@ class Enemy {
   async attack() {
     this.#jObj.addClass("attacking");
     await UiMode.setMode(UIMODE_WAITING);
-    Audio.playEffect(AUDIO_ATTACK);
+    if (this.cardData.attackEffect) {
+      Audio.playEffect(this.cardData.attackEffect);
+    } else {
+      Audio.playEffect(AUDIO_ATTACK);
+    }
     await wait(1000);
     await this.#cardData.attack(this);
     await Broadcast.signal("onEnemyAttacks", { enemy: this });

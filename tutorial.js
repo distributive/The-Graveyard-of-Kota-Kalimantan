@@ -72,7 +72,6 @@ class Tutorial {
   static #active;
   static #hintTimeout;
   static #hintAlert;
-  static #unlockedCatalyst = false;
 
   static get mode() {
     return this.#mode;
@@ -86,10 +85,10 @@ class Tutorial {
   }
 
   static unlockCatalyst() {
-    this.#unlockedCatalyst = true;
+    Serialisation.saveSetting("catalyst-unlocked", true);
   }
   static get catalystIsUnlocked() {
-    return this.#unlockedCatalyst;
+    return Serialisation.loadSetting("catalyst-unlocked") ? true : false;
   }
 
   static serialise() {
@@ -97,7 +96,6 @@ class Tutorial {
       index: this.#stageIndex,
       triggers: Object.keys(this.#triggers),
       active: this.#active,
-      unlocked: this.#unlockedCatalyst,
     };
   }
   static deserialise(json) {
@@ -107,7 +105,6 @@ class Tutorial {
       this.#triggers[trigger] = true;
     });
     this.active = json.active;
-    this.#unlockedCatalyst = json.unlocked;
     this.#mode = TUTORIAL_MODE_NONE; // Ensure it is not stuck in WAITING
   }
 
@@ -164,7 +161,7 @@ class Tutorial {
     // Check if the tutorial is over
     if (this.#stageIndex >= this.#stages.length - 1) {
       this.#active = false;
-      this.#unlockedCatalyst = true;
+      this.unlockCatalyst();
     }
   }
 
@@ -635,19 +632,6 @@ class Tutorial {
 
   // Async tutorials that are triggered by unscripted events
   static #tutorials = {
-    // Intro cutscene
-    intro: {
-      cutscene: [
-        {
-          header: "Introductions",
-          body: ``,
-          options: [new Option("", "Next")],
-          allowKeyboard: false,
-          slowRoll: true,
-          size: "lg",
-        },
-      ],
-    },
     // Agenda explainer
     agenda: {
       requireTutorialActive: true,
