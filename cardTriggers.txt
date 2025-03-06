@@ -6,6 +6,7 @@ onGainCredits(source, {old, new, increase})
 onLoseCredits(source, {old, new, decrease})
 onGainClicks(source, {oldValue, newValue})
 onLoseClicks(source, {oldValue, newValue})
+onGainClues(source, {oldValue, newValue})
 
 onCardsDrawn(source, {number})
 onCardPlayed(source, {card})

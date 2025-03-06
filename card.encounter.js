@@ -69,7 +69,7 @@ const TreacheryClumsy = new TreacheryData("clumsy", {
       return;
     }
     const cluesRemoved = Math.min(2, Stats.clues);
-    Stats.addClues(-cluesRemoved);
+    await Stats.addClues(-cluesRemoved);
     Location.getCurrentLocation().addClues(cluesRemoved);
   },
 });

@@ -749,5 +749,73 @@ class Tutorial {
         },
       ],
     },
+    // Act2 -> Act3 (broadcast terminals revealed)
+    exitAct2: {
+      cutscene: [
+        {
+          header: "Broadcast terminals found",
+          body: "TODO TODO TODO TODO TODO",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // Act3 -> Act4 (broadcast successful, enter netspace)
+    exitAct3: {
+      cutscene: [
+        {
+          header: "Broadcast terminals found",
+          body: "TODO TODO TODO TODO TODO",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // Agenda2 -> Agenda3 (broadcast failed, enter netspace)
+    exitAgenda2: {
+      cutscene: [
+        {
+          header: "Broadcast failed",
+          body: "TODO TODO TODO TODO TODO",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // Agenda2 -> Agenda3 (broadcast never started, enter netspace)
+    exitAgenda2NoBroadcast: {
+      cutscene: [
+        {
+          header: "Uh oh...",
+          body: "TODO TODO TODO TODO TODO",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // Act4 -> Act5 (found the source)
+    exitAct4: {
+      cutscene: [
+        {
+          header: "Something's coming...",
+          body: "TODO TODO TODO TODO TODO",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "lg",
+        },
+      ],
+    },
   };
 }

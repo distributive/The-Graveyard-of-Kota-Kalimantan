@@ -75,7 +75,7 @@ class Modal {
     this.#allowKeyboard = allowKeyboard;
     this.#image = image;
     this.#cardData = cardData;
-    this.#slowRoll = false; //slowRoll; // TODO: remove
+    this.#slowRoll = slowRoll;
     this.#size = size;
     if (id) {
       if (Modal.find(id)) {
@@ -184,6 +184,9 @@ class Modal {
             p.append(paragraph[0]);
             for (let i = 1; i < paragraph.length; i++) {
               await wait(30);
+              if (i % 2 == 0) {
+                Audio.playEffect(randomElement(AUDIO_VOICES));
+              }
               p.append(" " + paragraph[i]);
             }
           }

@@ -114,15 +114,35 @@ class Stats {
   static get clues() {
     return this.#clues;
   }
-  static addClues(value) {
-    this.setClues(this.#clues + value);
+  static async addClues(value) {
+    await this.setClues(this.#clues + value);
   }
-  static setClues(value) {
+  static async setClues(value) {
+    value = Math.max(0, value);
+
     $("#clue-count").html(value);
     if (this.#clues != value) {
       animate($("#clue-count"));
     }
+
+    // Update value
+    const oldClues = this.#clues;
     this.#clues = value;
+
+    // Broadcast event
+    if (value > oldClues) {
+      await Broadcast.signal("onGainClues", {
+        old: oldClues,
+        new: value,
+        increase: value - oldClues,
+      });
+    } else {
+      await Broadcast.signal("onLoseClues", {
+        old: oldClues,
+        new: value,
+        decrease: oldClues - value,
+      });
+    }
   }
 
   static get clicks() {

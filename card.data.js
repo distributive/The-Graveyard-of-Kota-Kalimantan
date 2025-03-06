@@ -120,6 +120,8 @@ class NonTreacheryData extends CardData {
   async onLoseCredits(source, data) {CardData.log("onLoseCredits", data)}
   async onGainClicks(source, data) {CardData.log("onGainClicks", data)}
   async onLoseClicks(source, data) {CardData.log("onLoseClicks", data)}
+  async onGainClues(source, data) {CardData.log("onGainClues", data)}
+  async onLoseClues(source, data) {CardData.log("onLoseClues", data)}
 
   async onCardsDrawn(source, data) {CardData.log("onCardsDrawn", data)}
   async onCardPlayed(source, data) {CardData.log("onCardPlayed", data)}

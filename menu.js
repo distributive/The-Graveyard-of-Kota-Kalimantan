@@ -239,6 +239,7 @@ class Menu {
       options: [new Option("", "Begin")],
       image: "img/character/sahasraraHappy.png",
       allowKeyboard: false,
+      slowRoll: true,
       size: "lg",
     }).display();
 

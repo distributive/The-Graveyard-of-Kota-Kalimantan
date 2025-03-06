@@ -116,7 +116,11 @@ $(document).ready(function () {
         `The current agenda; each turn 1 doom is placed on this until it reaches its threshold (${
           Agenda.cardData.requirement
         }) and advances (${
-          Agenda.cardData == Agenda4 ? "this time it's good" : "bad"
+          Agenda.cardData == Agenda4
+            ? "this time it's good"
+            : Agenda.cardData == Agenda3
+            ? "very bad"
+            : "bad"
         })`
       );
     })

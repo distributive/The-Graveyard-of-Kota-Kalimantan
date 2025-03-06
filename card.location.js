@@ -92,7 +92,7 @@ const LocationUnknownMeat = new LocationData("unknown_meat", {
       cardData = LocationCorridor;
     }
     source.setCard(cardData);
-    source.setClues(cardData.clues);
+    source.addClues(cardData.clues);
   },
 });
 
@@ -166,10 +166,10 @@ const LocationBroadcastInfluence = new LocationData("broadcast_influence", {
   shroud: 4,
   clues: 1,
   statOverride: "influence",
-  async onInvestigation(source, data) {
-    if (data.location == source && source.clues == 0) {
+  async onGainClues(source, data) {
+    if (source.clues == 0) {
       source.setCard(LocationBroadcastActive);
-      Story.activateBroadcastTerminal(this);
+      await Story.activateBroadcastTerminal(this);
     }
   },
 });
@@ -182,10 +182,10 @@ const LocationBroadcastMu = new LocationData("broadcast_mu", {
   image: "img/card/location/broadcastPurple.png",
   shroud: 4,
   clues: 1,
-  async onInvestigation(source, data) {
-    if (data.location == source && source.clues == 0) {
+  async onGainClues(source, data) {
+    if (source.clues == 0) {
       source.setCard(LocationBroadcastActive);
-      Story.activateBroadcastTerminal(this);
+      await Story.activateBroadcastTerminal(this);
     }
   },
 });
@@ -199,10 +199,10 @@ const LocationBroadcastStrength = new LocationData("broadcast_strength", {
   shroud: 4,
   clues: 1,
   statOverride: "strength",
-  async onInvestigation(source, data) {
-    if (data.location == source && source.clues == 0) {
+  async onGainClues(source, data) {
+    if (source.clues == 0) {
       source.setCard(LocationBroadcastActive);
-      Story.activateBroadcastTerminal(this);
+      await Story.activateBroadcastTerminal(this);
     }
   },
 });
@@ -216,10 +216,10 @@ const LocationBroadcastLink = new LocationData("broadcast_link", {
   shroud: 4,
   clues: 1,
   statOverride: "link",
-  async onInvestigation(source, data) {
-    if (data.location == source && source.clues == 0) {
+  async onGainClues(source, data) {
+    if (source.clues == 0) {
       source.setCard(LocationBroadcastActive);
-      Story.activateBroadcastTerminal(this);
+      await Story.activateBroadcastTerminal(this);
     }
   },
 });
@@ -250,11 +250,11 @@ const LocationUnknownNet = new LocationData("unknown_net", {
 
     // Reveal the location
     let cardData;
-    // After 4 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
+    // After 5 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
     if (
       !Story.isSourceRevealed &&
       (Story.randomNetLocations.length == 0 ||
-        (Story.netLocationsRevealed > 4 && randomInt(0, 3) == 0))
+        (Story.netLocationsRevealed > 5 && randomInt(0, 3) == 0))
     ) {
       cardData = LocationSource;
       Story.isSourceRevealed = true;
@@ -271,7 +271,7 @@ const LocationUnknownNet = new LocationData("unknown_net", {
       cardData = LocationVoid;
     }
     source.setCard(cardData);
-    source.setClues(cardData.clues);
+    source.addClues(cardData.clues);
 
     // Summon neighbouring locations
     const [x, y] = source.pos;

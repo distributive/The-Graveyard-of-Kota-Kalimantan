@@ -65,7 +65,7 @@ class Story {
   }
 
   // Broadcast terminals
-  static activateBroadcastTerminal(locationData) {
+  static async activateBroadcastTerminal(locationData) {
     this.broadcastTerminalsActivated++;
     if (
       !this.broadcastTerminalsCompleted &&
@@ -73,7 +73,7 @@ class Story {
     ) {
       this.broadcastTerminalsCompleted = true;
       if (Act.cardData == Act3) {
-        Act.advance();
+        await Act.advance();
       }
     }
   }

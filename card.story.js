@@ -45,13 +45,13 @@ Act2 = new ActData("act_2", {
     }
   },
   async advance() {
-    // TODO - lore
+    await Tutorial.run("exitAct2");
     Act.setCard(Act3);
     const corners = shuffle([
-      Location.getLocationAtPosition(2, 1),
-      Location.getLocationAtPosition(2, -1),
-      Location.getLocationAtPosition(6, 1),
-      Location.getLocationAtPosition(6, -1),
+      Location.getLocationAtPosition(3, 1),
+      Location.getLocationAtPosition(3, -1),
+      Location.getLocationAtPosition(5, 1),
+      Location.getLocationAtPosition(5, -1),
     ]);
     // These checks are for safety but should never fail
     if (corners[0]) {
@@ -85,7 +85,7 @@ Act3 = new ActData("act_3", {
   image: "img/card/act/bg.png",
   // Triggered by story.js
   async advance() {
-    // TODO - lore
+    await Tutorial.run("exitAct3");
     Act.setCard(Act4);
     Agenda.setDoom(0);
     Agenda.setCard(Agenda4);
@@ -102,7 +102,7 @@ Act4 = new ActData("act_4", {
   image: "img/card/act/bg.png",
   // Triggered by the location itself
   async advance() {
-    // TODO - lore
+    await Tutorial.run("exitAct4");
     await UiMode.setMode(UIMODE_WAITING);
     Act.setCard(Act4);
     await wait(250);
@@ -132,19 +132,23 @@ Agenda1 = new AgendaData("agenda_1", {
 
 Agenda2 = new AgendaData("agenda_2", {
   title: "Agenda i",
-  requirement: 10,
+  requirement: 12,
   agenda: 1,
-  text: "When this hosts 10 or more doom, lose all data and advance the agenda.",
+  text: "When this hosts 12 or more doom, lose all data and advance the agenda.",
   image: "img/card/agenda/bg.png",
   async onDoomPlaced(data) {
     // For now we assume only the agenda can host doom
     if (data.doom >= this.requirement) {
-      Stats.setClues(0);
+      await Stats.setClues(0);
       await Agenda.advance();
     }
   },
   async advance() {
-    // TODO - lore
+    if (Act.cardData == Act3) {
+      await Tutorial.run("exitAgenda2");
+    } else {
+      await Tutorial.run("exitAgenda2NoBroadcast");
+    }
     if (Act.cardData.act < 4) {
       Act.setCard(Act4);
     }

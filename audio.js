@@ -13,6 +13,9 @@ AUDIO_MOVE_OUTSIDE = "./audio/walk_outside.mp3";
 
 AUDIO_SUCCESS = "./audio/success.mp3";
 AUDIO_FAIL = "./audio/fail.mp3";
+AUDIO_ROLL_0 = "./audio/roll0.mp3";
+AUDIO_ROLL_1 = "./audio/roll1.mp3";
+AUDIO_ROLLS = [AUDIO_ROLL_0, AUDIO_ROLL_1];
 
 AUDIO_ATTACK = "./audio/attack.mp3";
 AUDIO_ATTACK_RAT = "./audio/ratAttack.mp3";
@@ -30,6 +33,10 @@ AUDIO_DEATH = "./audio/death.mp3";
 
 AUDIO_CLICK = "./audio/click.mp3";
 AUDIO_CHARACTER_SELECT = "./audio/characterSelect.mp3";
+
+AUDIO_VOICE_0 = "./audio/voice0.mp3";
+AUDIO_VOICE_1 = "./audio/voice1.mp3";
+AUDIO_VOICES = [AUDIO_VOICE_0, AUDIO_VOICE_1];
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -123,8 +130,7 @@ $(document).ready(function () {
     debounce = true;
     Audio.playMusic(AUDIO_TRACK_TEST);
   });
-  $("html").on("click", "button", function () {
-    console.log("!");
+  $("body").on("click", "button", function () {
     Audio.playEffect(AUDIO_CLICK);
   });
 });

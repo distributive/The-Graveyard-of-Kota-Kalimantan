@@ -226,10 +226,13 @@ CardDownloadTheSigns = new EventData("download_the_signs", {
     return Location.getCurrentLocation().clues > 0;
   },
   async onPlay(source, data) {
+    const statOverride = Location.getCurrentLocation().cardData.statOverride;
+    const base =
+      statOverride && statOverride != "mu" ? null : Stats.strength + Stats.mu;
     await Game.actionInvestigate({
       clues: 2,
       costsClick: false,
-      base: Stats.strength + Stats.mu,
+      base: base,
     });
   },
 });

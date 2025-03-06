@@ -355,7 +355,7 @@ class Game {
     const { success } = results;
     if (success) {
       location.addClues(-clues);
-      Stats.addClues(clues);
+      await Stats.addClues(clues);
     }
     await Broadcast.signal("onInvestigation", {
       location: location,
@@ -388,7 +388,7 @@ class Game {
       }).display();
       if (Act.cardData == Act1) {
         Ending.show(ENDING_BAD_ACT_ONE);
-      } else if (Act.cardData == Act1) {
+      } else if (Act.cardData == Act2) {
         Ending.show(ENDING_BAD_ACT_TWO);
       } else {
         Ending.show(ENDING_BAD_ACT_THREE);

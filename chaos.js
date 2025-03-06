@@ -191,6 +191,7 @@ class Chaos {
             $("#chaos-roll").addClass("negative");
           }
         }
+        Audio.playEffect(randomElement(AUDIO_ROLLS));
       }, 150);
 
       await new Modal(null, {
