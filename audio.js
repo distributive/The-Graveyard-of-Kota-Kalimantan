@@ -38,12 +38,14 @@ AUDIO_VOICE_0 = "./audio/voice0.mp3";
 AUDIO_VOICE_1 = "./audio/voice1.mp3";
 AUDIO_VOICES = [AUDIO_VOICE_0, AUDIO_VOICE_1];
 
+AUDIO_VOICE_SAD_0 = "./audio/voiceSad0.mp3";
+AUDIO_VOICE_SAD_1 = "./audio/voiceSad1.mp3";
+AUDIO_VOICES_SAD = [AUDIO_VOICE_SAD_0, AUDIO_VOICE_SAD_1];
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class Audio {
   static #audioMusic;
-  static #musicMuted;
-  static #sfxMuted;
 
   static playMusic(track, loop = true) {
     // Cancel previous track
@@ -52,7 +54,7 @@ class Audio {
     // Play new track
     this.#audioMusic = document.createElement("audio");
     this.#audioMusic.setAttribute("src", track);
-    this.#audioMusic.muted = this.#musicMuted;
+    this.#audioMusic.muted = this.musicMuted;
     this.#audioMusic.addEventListener("canplay", function () {
       this.play();
     });
@@ -74,8 +76,8 @@ class Audio {
     }
   }
 
-  static playEffect(effect) {
-    if (this.#sfxMuted) {
+  static playEffect(effect, force = false) {
+    if (this.sfxMuted && !force) {
       return;
     }
     const audio = document.createElement("audio");
@@ -93,29 +95,27 @@ class Audio {
   }
 
   static toggleMusic() {
-    this.#musicMuted = !this.#musicMuted;
-    this.#audioMusic.muted = this.#musicMuted;
+    Serialisation.saveSetting("music-muted", !this.musicMuted);
+    this.#audioMusic.muted = this.musicMuted;
   }
   static toggleSfx() {
-    this.#sfxMuted = !this.#sfxMuted;
+    Serialisation.saveSetting("sfx-muted", !this.sfxMuted);
+  }
+  static toggleButtons() {
+    Serialisation.saveSetting("buttons-muted", !this.buttonsMuted);
   }
 
   static get musicMuted() {
-    return this.#musicMuted;
+    const muted = Serialisation.loadSetting("music-muted");
+    return muted ? muted == "true" : false;
   }
   static get sfxMuted() {
-    return this.#sfxMuted;
+    const muted = Serialisation.loadSetting("sfx-muted");
+    return muted ? muted == "true" : false;
   }
-
-  static serialise() {
-    return {
-      music: this.#musicMuted,
-      sfx: this.#sfxMuted,
-    };
-  }
-  static deserialise(json) {
-    this.#musicMuted = json.music;
-    this.#sfxMuted = json.sfx;
+  static get buttonsMuted() {
+    const muted = Serialisation.loadSetting("buttons-muted");
+    return muted ? muted == "true" : false;
   }
 }
 
@@ -131,6 +131,8 @@ $(document).ready(function () {
     Audio.playMusic(AUDIO_TRACK_TEST);
   });
   $("body").on("click", "button", function () {
-    Audio.playEffect(AUDIO_CLICK);
+    if (!Audio.buttonsMuted) {
+      Audio.playEffect(AUDIO_CLICK, true);
+    }
   });
 });

@@ -9,7 +9,7 @@ const ENDING_GOOD = ending_i++;
 ///////////////////////////////////////////////////////////////////////////////
 
 class Ending {
-  static show(ending) {
+  static show(ending, resetProgress = true) {
     let text = "";
     switch (ending) {
       case ENDING_SKIP_GAME:
@@ -61,6 +61,11 @@ class Ending {
           .attr("src", "img/game/scoop.png");
       });
     }, 5000);
+
+    // Wipe save
+    if (resetProgress) {
+      Serialisation.deleteSave();
+    }
   }
 }
 

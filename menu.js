@@ -159,6 +159,9 @@ class Menu {
         ? CardBaz
         : CardTheCatalyst;
 
+    // Once the player has gone this far, it's probably safe to wipe their previous save
+    Serialisation.deleteSave();
+
     // Offer to skip the tutorial if it has already been completed
     let tutorialActive = true;
     if (Tutorial.catalystIsUnlocked) {
@@ -202,14 +205,19 @@ class Menu {
         image: "img/character/sahasraraPensive.png",
         allowKeyboard: false,
         slowRoll: true,
+        rollSpeed: 40,
         size: "lg",
       }),
       new Modal(null, {
         body: `We uh, spent a lot of time working on this.<br><br>Are you sure you don't want to try it?`,
-        options: [new Option("", "No"), new Option("skip", "Scoop please")],
+        options: [
+          new Option("", "Oh okay"),
+          new Option("skip", "Scoop please"),
+        ],
         image: "img/character/sahasrara.png",
         allowKeyboard: false,
         slowRoll: true,
+        rollSpeed: 70,
         size: "lg",
       }),
       new Modal(null, {
@@ -221,6 +229,7 @@ class Menu {
         image: "img/character/sahasraraSad.png",
         allowKeyboard: false,
         slowRoll: true,
+        voices: [AUDIO_VOICE_SAD_1],
         size: "lg",
       }),
     ];
@@ -271,6 +280,7 @@ class Menu {
           new Option("main", "Main Menu"),
           new Option("music", Audio.musicMuted ? "Unmute music" : "Mute music"),
           new Option("sfx", Audio.sfxMuted ? "Unmute SFX" : "Mute SFX"),
+          new Option("buttons", Audio.buttonsMuted ? "Unmute UI" : "Mute UI"),
           new Option("credits", "Credits"),
           new Option("about", "About"),
         ],
@@ -292,6 +302,8 @@ class Menu {
         Audio.toggleMusic();
       } else if (option == "sfx") {
         Audio.toggleSfx();
+      } else if (option == "buttons") {
+        Audio.toggleButtons();
       } else {
         inMenu = false;
       }

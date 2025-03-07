@@ -3,7 +3,6 @@ class Serialisation {
   static serialise() {
     const act = Act.serialise();
     const agenda = Agenda.serialise();
-    const audio = Audio.serialise();
     const cards = Cards.serialise();
     const chaos = Chaos.serialise();
     const encounter = Encounter.serialise();
@@ -17,7 +16,6 @@ class Serialisation {
     return {
       act: act,
       agenda: agenda,
-      audio: audio,
       cards: cards,
       chaos: chaos,
       encounter: encounter,
@@ -38,7 +36,6 @@ class Serialisation {
     Location.deserialise(json.location); // Enemies require locations to be loaded before them
     Act.deserialise(json.act);
     await Agenda.deserialise(json.agenda);
-    Audio.deserialise(json.audio);
     await Cards.deserialise(json.cards);
     Chaos.deserialise(json.chaos);
     Encounter.deserialise(json.encounter);
@@ -90,18 +87,6 @@ class Serialisation {
     window.localStorage.removeItem("netrunner-sahasrara");
   }
 
-  static saveSetting(key, value) {
-    window.localStorage.setItem(`netrunner-sahasrara-${key}`, value);
-  }
-  static loadSetting(key) {
-    return window.localStorage.getItem(`netrunner-sahasrara-${key}`);
-  }
-  static deleteSetting(key) {
-    value = window.localStorage.getItem(`netrunner-sahasrara-${key}`);
-    window.localStorage.removeItem(`netrunner-sahasrara-${key}`);
-    return value;
-  }
-
   // Checks if a save data object exists, not if it's valid
   static get saveExists() {
     const json = window.localStorage.getItem("netrunner-sahasrara");
@@ -114,5 +99,39 @@ class Serialisation {
     } catch (e) {
       return false;
     }
+  }
+
+  // Settings
+  static saveSetting(key, value) {
+    const address = `netrunner-sahasrara-${key}`;
+    window.localStorage.setItem(address, value);
+    // Record that this setting exists in case we need to delete it later
+    let data = window.localStorage.getItem(`netrunner-sahas-flags`);
+    data = data ? JSON.parse(data) : {};
+    data[address] = true;
+    window.localStorage.setItem(`netrunner-sahas-flags`, JSON.stringify(data));
+  }
+  static loadSetting(key) {
+    return window.localStorage.getItem(`netrunner-sahasrara-${key}`);
+  }
+  static deleteSetting(key) {
+    const address = `netrunner-sahasrara-${key}`;
+    const value = window.localStorage.getItem(address);
+    window.localStorage.removeItem(address);
+    return value;
+  }
+  static deleteAllSettings() {
+    let data = window.localStorage.getItem(`netrunner-sahas-flags`);
+    if (data) {
+      try {
+        data = JSON.parse(data);
+        for (const key of Object.keys(data)) {
+          this.deleteSetting(key);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    // window.localStorage.removeItem(`netrunner-sahas-flags`);
   }
 }

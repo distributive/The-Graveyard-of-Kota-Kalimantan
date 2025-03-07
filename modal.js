@@ -55,6 +55,8 @@ class Modal {
   #image; // Mutually exclusive with cardData
   #cardData; // Mutually exclusive with image
   #slowRoll; // bool => true makes the text in #body appear word by word (assumes #body is a container of <p>s)
+  #rollSpeed; // number => how many ms between words if slowRoll is true
+  #voices; // [AUDIO] => array of audio clips to randomly play for each word if slowRoll is true
   #size; // string => [xl, lg, sm] (default is medium) - Preference is xl for meta game modals, lg for image modals, and md for game mechanics
 
   constructor(id, data) {
@@ -67,6 +69,8 @@ class Modal {
       image,
       cardData,
       slowRoll,
+      rollSpeed,
+      voices,
       size,
     } = data;
     this.#header = header;
@@ -76,7 +80,10 @@ class Modal {
     this.#image = image;
     this.#cardData = cardData;
     this.#slowRoll = slowRoll;
+    this.#rollSpeed = rollSpeed ? rollSpeed : 30;
+    this.#voices = voices ? voices : AUDIO_VOICES;
     this.#size = size;
+
     if (id) {
       if (Modal.find(id)) {
         throw new DuplicateModalIdError(id);
@@ -172,6 +179,8 @@ class Modal {
 
     // Start slow roll animation
     if (this.#slowRoll) {
+      const rollSpeed = this.#rollSpeed;
+      const voices = this.#voices;
       (async function () {
         jOptions.forEach(([option, jOption]) => {
           jOption.attr("disabled", true);
@@ -182,10 +191,11 @@ class Modal {
             const p = $(`<p></p>`);
             bodyContainer.append(p);
             p.append(paragraph[0]);
+            Audio.playEffect(randomElement(voices));
             for (let i = 1; i < paragraph.length; i++) {
-              await wait(30);
+              await wait(rollSpeed);
               if (i % 2 == 0) {
-                Audio.playEffect(randomElement(AUDIO_VOICES));
+                Audio.playEffect(randomElement(voices));
               }
               p.append(" " + paragraph[i]);
             }
