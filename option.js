@@ -1,5 +1,3 @@
-// TODO: abstract this into anonymous objects?
-
 class Option {
   constructor(id, text, classes) {
     this.id = id;

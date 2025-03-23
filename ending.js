@@ -10,6 +10,7 @@ const ENDING_GOOD = ending_i++;
 
 class Ending {
   static show(ending, resetProgress = true) {
+    Audio.fadeOutMusic(1000);
     let text = "";
     switch (ending) {
       case ENDING_SKIP_GAME:
@@ -59,13 +60,12 @@ class Ending {
           .find(".ending-image")
           .removeClass("flipping")
           .attr("src", "img/game/scoop.png");
+        // Wipe save once they interact with the scoop
+        if (resetProgress) {
+          Serialisation.deleteSave();
+        }
       });
     }, 5000);
-
-    // Wipe save
-    if (resetProgress) {
-      Serialisation.deleteSave();
-    }
   }
 }
 
@@ -74,7 +74,7 @@ class Ending {
 const ENDING_SKIP_GAME_TEXT = `
 <p>You turn off your PAD, ignoring the job. You don’t need to waste time with such frivolities.</p>
 <p>The next morning, someone is at your door. They sheepishly introduce themselves as the client of the job you rejected last night.</p>
-<p><em>"We were really counting on you to show up. We had the whole building set up and everything. We were there all night waiting. I was told to give you this."</em></p>
+<p><em>"We were really counting on you to show up. The whole building had been prepared and everything. We were there all night waiting. I was told to give you this."</em></p>
 <p class="mb-0">They hand you a business card, and you turn it over to see the latest Anarch killer from the hit card game Netrunner.</p>
 <br>
 {image}
@@ -125,8 +125,18 @@ const ENDING_BAD_ACT_THREE_TEXT = `
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const ENDING_NEUTRAL_TEXT = `TODO`;
+const ENDING_NEUTRAL_TEXT = `
+UNWRITTEN
+<br>
+<br>
+{image}
+`;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const ENDING_GOOD_TEXT = `TODO`;
+const ENDING_GOOD_TEXT = `
+UNWRITTEN
+<br>
+<br>
+{image}
+`;

@@ -5,20 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="utf-8" />
     <link
+      rel="icon"
+      type="image/png"
+      href="meta/favicon-96x96.png"
+      sizes="96x96"
+    />
+    <link rel="icon" type="image/svg+xml" href="meta/favicon.svg" />
+    <link rel="shortcut icon" href="meta/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="meta/apple-touch-icon.png"
+    />
+    <link rel="manifest" href="meta/site.webmanifest" />
+    <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <!-- TODO - replcace these with non-dev versions -->
+    <!-- TODO - NOCOMMIT - replace these with non-dev versions -->
     <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
     <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
     <!---->
     <link href="main.css" rel="stylesheet" />
+    <link href="bootstrap-extensions.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Anta&family=Delius&family=Eagle+Lake&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Anta&family=Delius&family=Montserrat:ital,wght@0,100..900;1,100..900&EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
       rel="stylesheet"
     />
     <link href="fa/css/all.css" rel="stylesheet" />
@@ -63,9 +78,22 @@
     <script src="game.js"></script>
     <script src="menu.js"></script>
     <script src="main.js"></script>
-    <title>Test Story</title>
+    <title>The Graveyard of Kota Kalimantan</title>
   </head>
   <body>
+    <noscript>
+      <div class="modal" id="modal" style="display: block">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div id="modal-body" class="modal-body">
+              This game requires Javascript to run. To play, enable Javascript
+              in your browser settings and refresh this page.
+            </div>
+          </div>
+        </div>
+      </div>
+    </noscript>
+
     <div id="ui-mode">
       <div id="ui-flags">
         <div id="tutorial-flags">
@@ -209,13 +237,28 @@
               </div>
             </div>
             <div class="row h-30">
-              <div class="col-6 col-lg-7 col-xl-8 col-xxl-9 h-100">
+              <div class="col-8 col-xxl-9 h-100">
                 <div id="runner-cards" class="d-flex no-wrap py-2 h-100">
                   <div id="stack" class="mx-2 h-100">
                     <img
                       id="stack-empty"
                       class="h-100"
                       src="img/card/emptyStack.png"
+                    />
+                    <img
+                      id="stack-body"
+                      class="h-100"
+                      src="img/card/back/neutral.png"
+                    />
+                    <img
+                      id="stack-shuffle-cw"
+                      class="stack-shuffle-card h-100"
+                      src="img/card/back/neutral.png"
+                    />
+                    <img
+                      id="stack-shuffle-ccw"
+                      class="stack-shuffle-card h-100"
+                      src="img/card/back/neutral.png"
                     />
                     <img
                       id="stack-top-card"
@@ -243,6 +286,7 @@
                         class="card-image h-100"
                         src=""
                       />
+                      <div class="card-text" style="font-size: 1.2vh"></div>
                     </div>
                     <div class="hosted-counters">
                       <div
@@ -259,10 +303,12 @@
               </div>
               <div
                 id="control-panel"
-                class="col-6 col-lg-5 col-xl-4 col-xxl-3 d-flex flex-column"
+                class="col-4 col-xxl-3 d-flex flex-column"
               >
                 <div id="stats">
-                  <div class="d-flex justify-content-center font-size-27">
+                  <div
+                    class="d-flex justify-content-center font-size-20 font-size-lg-24 font-size-xl-25"
+                  >
                     <div id="stat-influence" class="stat mx-2">
                       <span id="influence-count" class="bouncy">3</span>
                       <img class="skill-icon" src="img/game/influence.png" />
@@ -283,14 +329,19 @@
                       <img class="skill-icon" src="img/game/link.png" />
                     </div>
                     <div id="chaos-bag-button-container">
-                      <button id="chaos-bag-button" class="font-size-20">
-                        <i class="fa-solid fa-sack-xmark"></i>
+                      <button
+                        id="chaos-bag-button"
+                        class="font-size-14 font-size-xl-18"
+                      >
+                        <i class="fa-solid fa-circle-question"></i>
                       </button>
                     </div>
                   </div>
                 </div>
                 <div id="resources">
-                  <div class="d-flex justify-content-between font-size-24">
+                  <div
+                    class="d-flex justify-content-between px-1 font-size-20 font-size-lg-23"
+                  >
                     <div id="click-count"></div>
                     <div>
                       Data:
@@ -302,7 +353,10 @@
                     </div>
                   </div>
                 </div>
-                <div id="basic-actions" class="flex-grow-1 font-size-20">
+                <div
+                  id="basic-actions"
+                  class="flex-grow-1 font-size-18 font-size-lg-20"
+                >
                   <div
                     class="col-4 w-100 d-flex justify-content-between gap-1 mt-1"
                   >

@@ -22,12 +22,12 @@ class Story {
     this.randomNetLocations = [
       LocationCloister,
       LocationCloister,
-      LocationCloister,
       LocationNebula,
       LocationNebula,
       LocationDataWell,
       LocationTagStorm,
       LocationTagStorm,
+      LocationNest,
       LocationNest,
       LocationTheDestroyersEye,
       LocationTheDestroyersEye,
@@ -67,7 +67,17 @@ class Story {
   // Broadcast terminals
   static async activateBroadcastTerminal(locationData) {
     this.broadcastTerminalsActivated++;
-    if (
+    if (this.broadcastTerminalsActivated == 1) {
+      // Wait for modal to close
+      UiMode.setMode(UIMODE_WAITING);
+      await wait(500);
+      await Tutorial.run("firstBroadcast");
+    } else if (this.broadcastTerminalsActivated == 2) {
+      // Wait for modal to close
+      UiMode.setMode(UIMODE_WAITING);
+      await wait(500);
+      await Tutorial.run("secondBroadcast");
+    } else if (
       !this.broadcastTerminalsCompleted &&
       this.broadcastTerminalsActivated >= 3
     ) {
@@ -84,6 +94,8 @@ class Story {
       return;
     }
     this.isInNetspace = true;
+
+    Audio.fadeInMusic(AUDIO_TRACK_LEVEL_2, 5000);
     Location.focusMapOffsetCurrentLocation();
     Location.setZoomIndex(0);
     this.setNetspace(true);
@@ -132,6 +144,19 @@ class Story {
     const spawnLoc = locations.length
       ? locations[0]
       : Location.getCurrentLocation();
+
+    // Remove all unknown locations (may remove this)
+    for (const location of Location.instances.filter(
+      (location) =>
+        location.cardData == LocationUnknownNet &&
+        location != Location.getCurrentLocation()
+    )) {
+      Location.remove(location);
+    }
+    Location.recalculatePlayerDistance();
+
+    // Update encounters
+    Encounter.addPool(BOSS_ENCOUNTERS);
 
     // Make sure the player sees the spawn
     Location.focusMapOffsetToLocation(spawnLoc);

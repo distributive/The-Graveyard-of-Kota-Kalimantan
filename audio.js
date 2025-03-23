@@ -1,50 +1,82 @@
-AUDIO_TRACK_TEST = "./audio/temp.mp3";
+const AUDIO_TRACK_MAIN = "./audio/track0.mp3";
+const AUDIO_TRACK_LEVEL_1 = "./audio/track1.mp3";
+const AUDIO_TRACK_LEVEL_2 = "./audio/track2.mp3";
 
-AUDIO_CREDIT = "./audio/credit.mp3";
+const AUDIO_CREDIT = "./audio/credit.mp3";
 
-AUDIO_DRAW = "./audio/draw.mp3";
-AUDIO_SHUFFLE = "./audio/shuffle.mp3";
-AUDIO_PLAY = "./audio/play.mp3";
-AUDIO_TRASH = "./audio/trash.mp3";
+const AUDIO_DRAW = "./audio/draw.mp3";
+const AUDIO_SHUFFLE = "./audio/shuffle.mp3";
+const AUDIO_PLAY = "./audio/play.mp3";
+const AUDIO_TRASH = "./audio/trash.mp3";
 
-AUDIO_MOVE_MEATSPACE = "./audio/walk_inside.mp3";
-AUDIO_MOVE_NETSPACE = "./audio/walk_netspace.mp3";
-AUDIO_MOVE_OUTSIDE = "./audio/walk_outside.mp3";
+const AUDIO_FLICK_0 = "./audio/flick0.mp3";
+const AUDIO_FLICK_1 = "./audio/flick1.mp3";
+const AUDIO_FLICK_2 = "./audio/flick2.mp3";
+const AUDIO_FLICK_3 = "./audio/flick3.mp3";
+const AUDIO_FLICK_4 = "./audio/flick4.mp3";
+const AUDIO_FLICK_5 = "./audio/flick5.mp3";
+const AUDIO_FLICKS = [
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_0,
+  AUDIO_FLICK_1,
+  AUDIO_FLICK_1,
+  AUDIO_FLICK_1,
+  AUDIO_FLICK_1,
+  AUDIO_FLICK_1,
+  AUDIO_FLICK_1,
+  AUDIO_FLICK_1,
+  AUDIO_FLICK_1,
+  // AUDIO_FLICK_2,
+  AUDIO_FLICK_3,
+  AUDIO_FLICK_4,
+  AUDIO_FLICK_5,
+];
 
-AUDIO_SUCCESS = "./audio/success.mp3";
-AUDIO_FAIL = "./audio/fail.mp3";
-AUDIO_ROLL_0 = "./audio/roll0.mp3";
-AUDIO_ROLL_1 = "./audio/roll1.mp3";
-AUDIO_ROLLS = [AUDIO_ROLL_0, AUDIO_ROLL_1];
+const AUDIO_MOVE_MEATSPACE = "./audio/walk_inside.mp3";
+const AUDIO_MOVE_NETSPACE = "./audio/walk_netspace.mp3";
+const AUDIO_MOVE_OUTSIDE = "./audio/walk_outside.mp3";
 
-AUDIO_ATTACK = "./audio/attack.mp3";
-AUDIO_ATTACK_RAT = "./audio/ratAttack.mp3";
-AUDIO_ATTACK_ARROW = "./audio/arrowAttack.mp3";
-AUDIO_ATTACK_BIRD = "./audio/birdAttack.mp3";
-AUDIO_ATTACK_BOSS = "./audio/bossAttack.mp3";
-AUDIO_ATTACK_BUG = "./audio/bugAttack.mp3";
-AUDIO_ATTACK_DESIGNER = "./audio/designerAttack.mp3";
-AUDIO_ATTACK_SPIDER = "./audio/spiderAttack.mp3";
+const AUDIO_SUCCESS = "./audio/success.mp3";
+const AUDIO_FAIL = "./audio/fail.mp3";
+const AUDIO_ROLL_0 = "./audio/roll0.mp3";
+const AUDIO_ROLL_1 = "./audio/roll1.mp3";
+const AUDIO_ROLLS = [AUDIO_ROLL_0, AUDIO_ROLL_1];
 
-AUDIO_DEATH_BOSS = "./audio/bossDeath.mp3";
+const AUDIO_ATTACK = "./audio/attack.mp3";
+const AUDIO_ATTACK_RAT = "./audio/ratAttack.mp3";
+const AUDIO_ATTACK_ARROW = "./audio/arrowAttack.mp3";
+const AUDIO_ATTACK_BIRD = "./audio/birdAttack.mp3";
+const AUDIO_ATTACK_BOSS = "./audio/bossAttack.mp3";
+const AUDIO_ATTACK_BUG = "./audio/bugAttack.mp3";
+const AUDIO_ATTACK_DESIGNER = "./audio/designerAttack.mp3";
+const AUDIO_ATTACK_SPIDER = "./audio/spiderAttack.mp3";
 
-AUDIO_PAIN = "./audio/pain.mp3";
-AUDIO_DEATH = "./audio/death.mp3";
+const AUDIO_DEATH_BOSS = "./audio/bossDeath.mp3";
 
-AUDIO_CLICK = "./audio/click.mp3";
-AUDIO_CHARACTER_SELECT = "./audio/characterSelect.mp3";
+const AUDIO_PAIN = "./audio/pain.mp3";
+const AUDIO_DEATH = "./audio/death.mp3";
 
-AUDIO_VOICE_0 = "./audio/voice0.mp3";
-AUDIO_VOICE_1 = "./audio/voice1.mp3";
-AUDIO_VOICES = [AUDIO_VOICE_0, AUDIO_VOICE_1];
+const AUDIO_CLICK = "./audio/click.mp3";
+const AUDIO_CHARACTER_SELECT = "./audio/characterSelect.mp3";
 
-AUDIO_VOICE_SAD_0 = "./audio/voiceSad0.mp3";
-AUDIO_VOICE_SAD_1 = "./audio/voiceSad1.mp3";
-AUDIO_VOICES_SAD = [AUDIO_VOICE_SAD_0, AUDIO_VOICE_SAD_1];
+const AUDIO_VOICE_0 = "./audio/voice0.mp3";
+const AUDIO_VOICE_1 = "./audio/voice1.mp3";
+const AUDIO_VOICES = [AUDIO_VOICE_0, AUDIO_VOICE_1];
+
+const AUDIO_VOICE_SAD_0 = "./audio/voiceSad0.mp3";
+const AUDIO_VOICE_SAD_1 = "./audio/voiceSad1.mp3";
+const AUDIO_VOICES_SAD = [AUDIO_VOICE_SAD_0, AUDIO_VOICE_SAD_1];
 
 ///////////////////////////////////////////////////////////////////////////////
 
 class Audio {
+  // MUSIC
   static #audioMusic;
 
   static playMusic(track, loop = true) {
@@ -76,6 +108,45 @@ class Audio {
     }
   }
 
+  // delay is in ms
+  static async fadeOutMusic(delay) {
+    if (delay > 0) {
+      const steps = delay / 50;
+      for (let i = 0; i < steps; i++) {
+        this.#audioMusic.volume = 1 - i / steps;
+        await wait(50);
+      }
+    }
+    this.stopMusic();
+  }
+  static async fadeInMusic(track, delay, loop = true) {
+    this.playMusic(track, loop);
+    if (delay > 0) {
+      this.#audioMusic.volume = 0;
+      const steps = delay / 50;
+      for (let i = 0; i < steps; i++) {
+        this.#audioMusic.volume = i / steps;
+        await wait(50);
+      }
+      this.#audioMusic.volume = 1;
+    }
+  }
+
+  static async transitionMusic(
+    track,
+    outroLength,
+    delay,
+    introLength,
+    loop = true
+  ) {
+    if (this.#audioMusic) {
+      await this.fadeOutMusic(outroLength);
+    }
+    await wait(delay);
+    await this.fadeInMusic(track, introLength, loop);
+  }
+
+  // SFX
   static playEffect(effect, force = false) {
     if (this.sfxMuted && !force) {
       return;
@@ -94,6 +165,7 @@ class Audio {
     );
   }
 
+  // SETTINGS
   static toggleMusic() {
     Serialisation.saveSetting("music-muted", !this.musicMuted);
     this.#audioMusic.muted = this.musicMuted;
@@ -128,11 +200,32 @@ $(document).ready(function () {
       return;
     }
     debounce = true;
-    Audio.playMusic(AUDIO_TRACK_TEST);
+    if (Menu.isInMainMenu) {
+      Audio.playMusic(AUDIO_TRACK_MAIN);
+    } else if (!Story.isInNetspace) {
+      Audio.fadeInMusic(AUDIO_TRACK_LEVEL_1, 3000);
+    } else {
+      Audio.fadeInMusic(AUDIO_TRACK_LEVEL_2, 3000);
+    }
   });
-  $("body").on("click", "button", function () {
+  $("body").on("click", "button:not(.modal-option)", function () {
     if (!Audio.buttonsMuted) {
       Audio.playEffect(AUDIO_CLICK, true);
+    }
+  });
+  $("body").on("click", "input[type='checkbox']", function () {
+    if (!Audio.buttonsMuted) {
+      Audio.playEffect(AUDIO_CLICK, true);
+    }
+  });
+  $("body").on("mouseenter", "button:not(.character-button)", function () {
+    if (!Audio.buttonsMuted) {
+      Audio.playEffect(AUDIO_FLICK_0, true);
+    }
+  });
+  $("body").on("mouseenter", ".selectable", function () {
+    if (!Audio.buttonsMuted) {
+      Audio.playEffect(AUDIO_FLICK_0, true);
     }
   });
 });

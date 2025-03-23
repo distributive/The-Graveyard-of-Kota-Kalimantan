@@ -85,10 +85,17 @@ class Identity {
         .addClass("selectable")
         .off("click")
         .click(async function () {
-          await cardData.onUse(instance);
-          if (!Game.checkTurnEnd()) {
-            UiMode.setMode(UIMODE_SELECT_ACTION);
+          const confirmed = await Enemy.confirmAttackOfOpportunity();
+          if (!confirmed) {
+            return;
           }
+          await Enemy.attackOfOpportunity();
+          if (instance.cardData.canUse(this)) {
+            await cardData.onUse(instance);
+          } else {
+            Alert.send("Topan: You no longer have a valid target.", ALERT_WARNING);
+          }
+          await Game.nextAction();
         });
     } else {
       $("#runner-id").removeClass("selectable").off("click");

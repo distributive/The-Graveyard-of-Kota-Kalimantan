@@ -16,17 +16,32 @@ class Chaos {
     "fail",
     "elder",
   ];
+  static #seed = 0;
 
   // SERIALISATION
   static serialise() {
-    return this.#chaosTokens;
+    return {
+      seed: this.#seed,
+      tokens: this.#chaosTokens,
+    };
   }
   static deserialise(json) {
-    this.#chaosTokens = json;
+    this.#seed = json.seed;
+    this.#chaosTokens = json.tokens;
+  }
+
+  // SEEDING
+  static randomiseSeed() {
+    this.#seed = randomInt(0, 65536);
   }
 
   // UTIL
   static randomToken() {
+    const token = randomElementSeeded(this.#chaosTokens, this.#seed);
+    this.randomiseSeed();
+    return token;
+  }
+  static trueRandomToken() {
     return randomElement(this.#chaosTokens);
   }
   static randomSuccessToken(minimum) {
@@ -36,7 +51,9 @@ class Chaos {
         (minimum <= 0 && token == "skull" && !Tutorial.active) ||
         (typeof token == "number" && token >= minimum)
     );
-    return randomElement(successfulTokens);
+    const token = randomElementSeeded(successfulTokens, this.#seed);
+    this.randomiseSeed();
+    return token;
   }
   static randomFailToken(minimum) {
     const failingTokens = this.#chaosTokens.filter(
@@ -45,7 +62,9 @@ class Chaos {
         (minimum > 0 && token == "skull" && !Tutorial.active) ||
         (typeof token == "number" && token < minimum)
     );
-    return randomElement(failingTokens);
+    const token = randomElementSeeded(failingTokens, this.#seed);
+    this.randomiseSeed();
+    return token;
   }
 
   static performCheck(stat, base, target, forceOutcome) {
@@ -103,7 +122,7 @@ class Chaos {
       ${description ? description : ""}
       <p>You may commit ${Stats.getSymbol(
         stat
-      )} cards to increase your base strength.</p>
+      )} cards to increase your base ${Stats.getName(stat)}.</p>
       <p>Your chaos pool contains:
       <br>
         <span class="ms-3">
@@ -122,7 +141,7 @@ class Chaos {
       if (canCancel) {
         options.push(new Option("cancel", "Cancel", "warning w-100"));
       }
-      response = await new Modal(null, {
+      response = await new Modal({
         header: header,
         body: body,
         options: options,
@@ -144,7 +163,9 @@ class Chaos {
           card.cardData.skills.includes(stat)
       );
       await UiMode.setMode(UIMODE_SELECT_GRIP_CARD, {
-        message: `Select any number of cards to commit to this test. Each card committed with be discarded and grant you +1 strength to this skill test (base strength ${base}).`,
+        message: `Select any number of cards to commit to this test. Each card committed with be discarded and grant you +1 ${Stats.getSymbol(
+          stat
+        )} to this skill test (your base ${Stats.getName(stat)} is ${base}).`,
         minCards: 0,
         maxCards: Cards.grip.length,
         canCancel: true,
@@ -157,9 +178,6 @@ class Chaos {
         }
       }
     }
-
-    // TODO: the modal won't close to show the affects of this broadcast - willfix?
-    await Broadcast.signal("onTestAttempted", { stat: stat });
 
     // Second panel
     {
@@ -176,7 +194,7 @@ class Chaos {
       const options = [new Option("continue", "Pick a random token")];
 
       intervalID = setInterval(function () {
-        const randomToken = Chaos.randomToken();
+        const randomToken = Chaos.trueRandomToken();
         $("#chaos-roll")
           .css("--x-offset", `${Math.random() * 2 - 1}px`)
           .css("--y-offset", `${Math.random() * 2 - 1}px`)
@@ -194,7 +212,7 @@ class Chaos {
         Audio.playEffect(randomElement(AUDIO_ROLLS));
       }, 150);
 
-      await new Modal(null, {
+      await new Modal({
         header: header,
         body: body,
         options: options,
@@ -248,7 +266,7 @@ class Chaos {
         Audio.playEffect(AUDIO_FAIL);
       }
 
-      await new Modal(null, {
+      await new Modal({
         header: header,
         body: body,
         options: options,
@@ -261,7 +279,7 @@ class Chaos {
     Game.logTurnEvent(success ? "testSuccess" : "testFail");
 
     if (token == "skull" && !success) {
-      await Game.sufferDamage(1);
+      await Game.sufferDamage(1, "You failed a test with a skull token");
     }
 
     return results;

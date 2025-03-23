@@ -178,7 +178,7 @@ class UiMode {
     UiMode.setFlag("can-fight", canFight);
     UiMode.setFlag("can-evade", canEvade);
 
-    UiMode.setFlag("engaged", Enemy.getEngagedEnemies().length > 0);
+    UiMode.setFlag("engaged", Enemy.getAttackingEnemies().length > 0); // The UI only cares if the enemies are ready
 
     Serialisation.save();
   }
@@ -364,6 +364,7 @@ class UiMode {
   // UIMODE_ASSIGN_DAMAGE
   // data {
   //   damage,
+  //   source,
   //  [Defined by enterAssignDamage]
   //   destroyedCardIds,
   // }
@@ -372,7 +373,8 @@ class UiMode {
     RigCard.highlightDamageableCards();
 
     // Create the alert
-    const message = `Choose up to ${this.data.damage} damage to split among installed cards. Any excess will be dealt to your identity.`;
+    const source = this.data.source ? `${this.data.source}: ` : "";
+    const message = `${source}Choose up to ${this.data.damage} damage to split among installed cards. Any excess will be dealt to your identity.`;
     const options = [
       new Option("accept", "Accept"),
       new Option("reset", "Reset", "warning"),

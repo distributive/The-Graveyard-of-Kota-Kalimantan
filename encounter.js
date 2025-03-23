@@ -11,17 +11,20 @@ const MEAT_ENCOUNTERS = [
 
 const NET_ENCOUNTERS = [
   TreacherySomethingInTheDark,
-  TreacherySomethingInTheDark,
+  TreacheryRapidDecay,
   TreacheryRapidDecay,
   EnemyArcher,
   EnemyArchitect,
-  EnemyDataRaven,
   EnemyHydra,
+];
+
+const BOSS_ENCOUNTERS = [
+  TreacherySomethingInTheDark,
+  EnemyDataRaven,
   EnemyAnansi,
   EnemySurveyor,
 ];
 
-// TODO - implement changing the encounter deck
 class Encounter {
   static #encounterCards = [];
   static #discardedCards = [];
@@ -61,7 +64,7 @@ class Encounter {
       cardData = Story.isInNetspace ? EnemyNetRat : EnemyRat;
     }
 
-    await new Modal(null, {
+    await new Modal({
       header: "Random Encounter",
       body: `You encounter ${cardData.title}.`,
       options: [new Option("continue", "Resolve encounter")],
@@ -83,6 +86,10 @@ class Encounter {
   static setPool(pool) {
     this.#encounterCards = pool;
     this.#discardedCards = [];
+    shuffle(this.#encounterCards);
+  }
+  static addPool(pool) {
+    this.#encounterCards.push(...pool);
     shuffle(this.#encounterCards);
   }
 

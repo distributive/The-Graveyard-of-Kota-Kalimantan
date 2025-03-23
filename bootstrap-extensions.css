@@ -1,0 +1,471 @@
+/* HEIGHT */
+.h-95 {
+  height: 95% !important;
+}
+.h-90 {
+  height: 90% !important;
+}
+.h-85 {
+  height: 85% !important;
+}
+.h-80 {
+  height: 80% !important;
+}
+.h-75 {
+  height: 75% !important;
+}
+.h-70 {
+  height: 70% !important;
+}
+.h-65 {
+  height: 65% !important;
+}
+.h-60 {
+  height: 60% !important;
+}
+.h-40 {
+  height: 40% !important;
+}
+.h-35 {
+  height: 35% !important;
+}
+.h-30 {
+  height: 30% !important;
+}
+.h-25 {
+  height: 25% !important;
+}
+.h-20 {
+  height: 20% !important;
+}
+.h-15 {
+  height: 15% !important;
+}
+.h-10 {
+  height: 10% !important;
+}
+.h-5 {
+  height: 5% !important;
+}
+
+.h-33 {
+  height: 33.3333% !important;
+}
+.h-67 {
+  height: 66.6667% !important;
+}
+
+/* FONT SIZE */
+
+/* X-Small devices (portrait phones, less than 576px, default) */
+.font-size-8 {
+  font-size: 9px !important;
+}
+.font-size-9 {
+  font-size: 9px !important;
+}
+.font-size-10 {
+  font-size: 10px !important;
+}
+.font-size-11 {
+  font-size: 11px !important;
+}
+.font-size-12 {
+  font-size: 12px !important;
+}
+.font-size-13 {
+  font-size: 13px !important;
+}
+.font-size-14 {
+  font-size: 14px !important;
+}
+.font-size-15 {
+  font-size: 15px !important;
+}
+.font-size-16 {
+  font-size: 16px !important;
+}
+.font-size-17 {
+  font-size: 17px !important;
+}
+.font-size-18 {
+  font-size: 18px !important;
+}
+.font-size-19 {
+  font-size: 19px !important;
+}
+.font-size-20 {
+  font-size: 20px !important;
+}
+.font-size-21 {
+  font-size: 21px !important;
+}
+.font-size-22 {
+  font-size: 22px !important;
+}
+.font-size-23 {
+  font-size: 23px !important;
+}
+.font-size-24 {
+  font-size: 24px !important;
+}
+.font-size-25 {
+  font-size: 25px !important;
+}
+.font-size-26 {
+  font-size: 26px !important;
+}
+.font-size-27 {
+  font-size: 27px !important;
+}
+.font-size-28 {
+  font-size: 28px !important;
+}
+.font-size-29 {
+  font-size: 29px !important;
+}
+.font-size-30 {
+  font-size: 30px !important;
+}
+.font-size-31 {
+  font-size: 31px !important;
+}
+.font-size-32 {
+  font-size: 32px !important;
+}
+/* skip (add as needed) */
+.font-size-72 {
+  font-size: 72px !important;
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  .font-size-sm-8 {
+    font-size: 9px !important;
+  }
+  .font-size-sm-9 {
+    font-size: 9px !important;
+  }
+  .font-size-sm-10 {
+    font-size: 10px !important;
+  }
+  .font-size-sm-11 {
+    font-size: 11px !important;
+  }
+  .font-size-sm-12 {
+    font-size: 12px !important;
+  }
+  .font-size-sm-13 {
+    font-size: 13px !important;
+  }
+  .font-size-sm-14 {
+    font-size: 14px !important;
+  }
+  .font-size-sm-15 {
+    font-size: 15px !important;
+  }
+  .font-size-sm-16 {
+    font-size: 16px !important;
+  }
+  .font-size-sm-17 {
+    font-size: 17px !important;
+  }
+  .font-size-sm-18 {
+    font-size: 18px !important;
+  }
+  .font-size-sm-19 {
+    font-size: 19px !important;
+  }
+  .font-size-sm-20 {
+    font-size: 20px !important;
+  }
+  .font-size-sm-21 {
+    font-size: 21px !important;
+  }
+  .font-size-sm-22 {
+    font-size: 22px !important;
+  }
+  .font-size-sm-23 {
+    font-size: 23px !important;
+  }
+  .font-size-sm-24 {
+    font-size: 24px !important;
+  }
+  .font-size-sm-25 {
+    font-size: 25px !important;
+  }
+  .font-size-sm-26 {
+    font-size: 26px !important;
+  }
+  .font-size-sm-27 {
+    font-size: 27px !important;
+  }
+  .font-size-sm-28 {
+    font-size: 28px !important;
+  }
+  .font-size-sm-29 {
+    font-size: 29px !important;
+  }
+  .font-size-sm-30 {
+    font-size: 30px !important;
+  }
+  .font-size-sm-31 {
+    font-size: 31px !important;
+  }
+  .font-size-sm-32 {
+    font-size: 32px !important;
+  }
+  /* skip (add as needed) */
+  .font-size-sm-72 {
+    font-size: 72px !important;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .font-size-md-8 {
+    font-size: 9px !important;
+  }
+  .font-size-md-9 {
+    font-size: 9px !important;
+  }
+  .font-size-md-10 {
+    font-size: 10px !important;
+  }
+  .font-size-md-11 {
+    font-size: 11px !important;
+  }
+  .font-size-md-12 {
+    font-size: 12px !important;
+  }
+  .font-size-md-13 {
+    font-size: 13px !important;
+  }
+  .font-size-md-14 {
+    font-size: 14px !important;
+  }
+  .font-size-md-15 {
+    font-size: 15px !important;
+  }
+  .font-size-md-16 {
+    font-size: 16px !important;
+  }
+  .font-size-md-17 {
+    font-size: 17px !important;
+  }
+  .font-size-md-18 {
+    font-size: 18px !important;
+  }
+  .font-size-md-19 {
+    font-size: 19px !important;
+  }
+  .font-size-md-20 {
+    font-size: 20px !important;
+  }
+  .font-size-md-21 {
+    font-size: 21px !important;
+  }
+  .font-size-md-22 {
+    font-size: 22px !important;
+  }
+  .font-size-md-23 {
+    font-size: 23px !important;
+  }
+  .font-size-md-24 {
+    font-size: 24px !important;
+  }
+  .font-size-md-25 {
+    font-size: 25px !important;
+  }
+  .font-size-md-26 {
+    font-size: 26px !important;
+  }
+  .font-size-md-27 {
+    font-size: 27px !important;
+  }
+  .font-size-md-28 {
+    font-size: 28px !important;
+  }
+  .font-size-md-29 {
+    font-size: 29px !important;
+  }
+  .font-size-md-30 {
+    font-size: 30px !important;
+  }
+  .font-size-md-31 {
+    font-size: 31px !important;
+  }
+  .font-size-md-32 {
+    font-size: 32px !important;
+  }
+  /* skip (add as needed) */
+  .font-size-md-72 {
+    font-size: 72px !important;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .font-size-lg-8 {
+    font-size: 9px !important;
+  }
+  .font-size-lg-9 {
+    font-size: 9px !important;
+  }
+  .font-size-lg-10 {
+    font-size: 10px !important;
+  }
+  .font-size-lg-11 {
+    font-size: 11px !important;
+  }
+  .font-size-lg-12 {
+    font-size: 12px !important;
+  }
+  .font-size-lg-13 {
+    font-size: 13px !important;
+  }
+  .font-size-lg-14 {
+    font-size: 14px !important;
+  }
+  .font-size-lg-15 {
+    font-size: 15px !important;
+  }
+  .font-size-lg-16 {
+    font-size: 16px !important;
+  }
+  .font-size-lg-17 {
+    font-size: 17px !important;
+  }
+  .font-size-lg-18 {
+    font-size: 18px !important;
+  }
+  .font-size-lg-19 {
+    font-size: 19px !important;
+  }
+  .font-size-lg-20 {
+    font-size: 20px !important;
+  }
+  .font-size-lg-21 {
+    font-size: 21px !important;
+  }
+  .font-size-lg-22 {
+    font-size: 22px !important;
+  }
+  .font-size-lg-23 {
+    font-size: 23px !important;
+  }
+  .font-size-lg-24 {
+    font-size: 24px !important;
+  }
+  .font-size-lg-25 {
+    font-size: 25px !important;
+  }
+  .font-size-lg-26 {
+    font-size: 26px !important;
+  }
+  .font-size-lg-27 {
+    font-size: 27px !important;
+  }
+  .font-size-lg-28 {
+    font-size: 28px !important;
+  }
+  .font-size-lg-29 {
+    font-size: 29px !important;
+  }
+  .font-size-lg-30 {
+    font-size: 30px !important;
+  }
+  .font-size-lg-31 {
+    font-size: 31px !important;
+  }
+  .font-size-lg-32 {
+    font-size: 32px !important;
+  }
+  /* skip (add as needed) */
+  .font-size-lg-72 {
+    font-size: 72px !important;
+  }
+}
+
+/* X-Large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .font-size-xl-8 {
+    font-size: 9px !important;
+  }
+  .font-size-xl-9 {
+    font-size: 9px !important;
+  }
+  .font-size-xl-10 {
+    font-size: 10px !important;
+  }
+  .font-size-xl-11 {
+    font-size: 11px !important;
+  }
+  .font-size-xl-12 {
+    font-size: 12px !important;
+  }
+  .font-size-xl-13 {
+    font-size: 13px !important;
+  }
+  .font-size-xl-14 {
+    font-size: 14px !important;
+  }
+  .font-size-xl-15 {
+    font-size: 15px !important;
+  }
+  .font-size-xl-16 {
+    font-size: 16px !important;
+  }
+  .font-size-xl-17 {
+    font-size: 17px !important;
+  }
+  .font-size-xl-18 {
+    font-size: 18px !important;
+  }
+  .font-size-xl-19 {
+    font-size: 19px !important;
+  }
+  .font-size-xl-20 {
+    font-size: 20px !important;
+  }
+  .font-size-xl-21 {
+    font-size: 21px !important;
+  }
+  .font-size-xl-22 {
+    font-size: 22px !important;
+  }
+  .font-size-xl-23 {
+    font-size: 23px !important;
+  }
+  .font-size-xl-24 {
+    font-size: 24px !important;
+  }
+  .font-size-xl-25 {
+    font-size: 25px !important;
+  }
+  .font-size-xl-26 {
+    font-size: 26px !important;
+  }
+  .font-size-xl-27 {
+    font-size: 27px !important;
+  }
+  .font-size-xl-28 {
+    font-size: 28px !important;
+  }
+  .font-size-xl-29 {
+    font-size: 29px !important;
+  }
+  .font-size-xl-30 {
+    font-size: 30px !important;
+  }
+  .font-size-xl-31 {
+    font-size: 31px !important;
+  }
+  .font-size-xl-32 {
+    font-size: 32px !important;
+  }
+  /* skip (add as needed) */
+  .font-size-xl-72 {
+    font-size: 72px !important;
+  }
+}

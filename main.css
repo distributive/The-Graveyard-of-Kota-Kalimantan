@@ -81,6 +81,8 @@ body.netspace:before {
   border-left: solid 3px black;
   border-top: solid 3px black;
   background-color: white;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 #location-window {
   border-bottom-right-radius: 14px;
@@ -139,7 +141,8 @@ body.netspace:before {
 }
 
 /* Buttons */
-button {
+button,
+.modal-checkbox {
   color: whitesmoke;
   background-color: #080808;
   border-image-slice: 6 6 6 6;
@@ -149,16 +152,20 @@ button {
   border-image-source: url("img/misc/fancyButtonBorder.png");
   border-style: solid;
   border-radius: 0 !important;
+  transition: background-color 0.05s;
 }
-button:hover {
+button:hover,
+.modal-checkbox:hover {
   color: white;
-  background-color: #4f628e;
+  background-color: #615292;
 }
-button:active {
+button:active,
+.modal-checkbox:active {
   color: white;
-  background-color: #2e4172;
+  background-color: #413175;
 }
-button:disabled {
+button:disabled,
+.modal-checkbox:disabled {
   color: #888888;
   background-color: #ababab;
 }
@@ -166,23 +173,52 @@ button:disabled .inline-icon {
   filter: invert() brightness(0.5) !important;
 }
 
+.modal-checkbox {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  -o-appearance: none;
+  margin-right: 0.7em;
+  width: 18px;
+  height: 18px;
+  border-image-width: 8px;
+  border-image-outset: 8px;
+  transform: translateY(4px);
+  cursor: pointer;
+}
+.modal-checkbox:checked {
+  background-color: #fff;
+}
+.modal-checkbox:checked:hover {
+  background-color: #ccc;
+}
+.modal-checkbox:checked:active {
+  background-color: #999;
+}
+
+.modal-checkbox-container {
+  display: flex;
+  font-family: "Delius", sans-serif;
+  user-select: none;
+  cursor: pointer;
+}
+
 /* Action/alert buttons do not have fancy outlines */
 .action-button,
 .alert-option {
   border-radius: 6px;
   color: black;
-  border: 2px solid #4f628e;
-  background-color: #7887ab;
+  border: 2px solid #615292;
+  background-color: #b4abcf;
 }
 .action-button:hover {
   color: white;
-  border: 2px solid #2e4172;
-  background-color: #4f628e;
+  border: 2px solid #413175;
+  background-color: #615292;
 }
 .action-button:active {
   color: white;
-  border: 2px solid #7887ab;
-  background-color: #2e4172;
+  border: 2px solid #b4abcf;
+  background-color: #413175;
 }
 button:disabled {
   color: #888888;
@@ -221,7 +257,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 #ui-flags:not(.can-engage, .can-cancel-engage) #action-engage,
 #ui-flags:not(.can-fight, .can-cancel-fight) #action-fight,
 #ui-flags:not(.can-evade, .can-cancel-evade) #action-evade,
-#ui-mode.ui-mode-select-location #ui-flags:not(.can-cancel-move) #action-move,
+#ui-mode.uimode-select-location #ui-flags:not(.can-cancel-move) #action-move,
 #tutorial-flags.waiting .action-button,
 #tutorial-flags.force-end-turn .action-button:not(#action-end-turn),
 #tutorial-flags.force-credit .action-button:not(#action-credit),
@@ -299,12 +335,22 @@ button:not(.action-button, .alert-option) .inline-icon,
 #ui-flags.engaged #action-draw,
 #ui-flags.engaged #action-move,
 #ui-flags.engaged #action-investigate,
-#ui-flags.engaged #runner-id.selectable,
-#ui-flags.engaged .installed-card.selectable:not(.prevent-attacks),
+#ui-flags.engaged #runner-id.selectable .card-image-container,
+#ui-mode:not(.uimode-select-installed-card)
+  #ui-flags.engaged
+  .installed-card.selectable:not(.prevent-attacks)
+  .card-image-container,
 #ui-flags.engaged
   .grip-card.playable:not(.prevent-attacks)
   .card-image-container {
   box-shadow: 0 0 20px red;
+}
+#ui-flags.engaged .playable:not(.prevent-attacks) .card-image-container::after,
+#ui-mode:not(.uimode-select-grip-card, .uimode-select-installed-card)
+  #ui-flags.engaged
+  .selectable:not(.prevent-attacks)
+  .card-image-container::after {
+  box-shadow: inset 0 0 10px red;
 }
 
 /* Chaos bag */
@@ -356,7 +402,7 @@ button:not(.action-button, .alert-option) .inline-icon,
   opacity: 1;
 }
 #card-focused-image.unfocused {
-  opacity: 0.75;
+  opacity: 0.85;
 }
 #card-focused .card-image-container:hover {
   transform: scale(1.05);
@@ -405,7 +451,7 @@ button:not(.action-button, .alert-option) .inline-icon,
   box-shadow: 0 0 10px white, 0 0 25px #8ebe60, 0 0 15px #8ebe60;
 }
 .playable .card-image-container::after,
-.selectable .card-image-container::after {
+.selectable:not(.selected-card) .card-image-container::after {
   border-radius: 5px;
   box-shadow: inset 0 0 10px #8ebe60;
   content: "";
@@ -428,9 +474,10 @@ button:not(.action-button, .alert-option) .inline-icon,
   --size: 10px;
   position: relative;
 }
-#stack-top-card,
+#stack-body,
 #heap-top-card {
   position: absolute;
+  top: 0;
   left: 0;
   border-radius: 5px;
   transform: translate(var(--size), calc(-1 * var(--size)));
@@ -458,6 +505,8 @@ button:not(.action-button, .alert-option) .inline-icon,
   transition: all 0.2s;
 }
 #stack.empty #stack-top-card,
+#stack.empty #stack-body,
+#stack.empty .stack-shuffle-card,
 #heap.empty #heap-top-card {
   display: none;
 }
@@ -468,6 +517,35 @@ button:not(.action-button, .alert-option) .inline-icon,
 #stack-empty,
 #heap-empty {
   border-radius: 5px;
+}
+
+.stack-shuffle-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 5px;
+  transform: translate(var(--size), calc(-1 * var(--size))) rotate(0deg);
+}
+#stack-shuffle-cw.animate {
+  animation: shuffle-spin 0.45s linear;
+}
+#stack-shuffle-ccw.animate {
+  animation: shuffle-spin 0.4s linear reverse;
+}
+@keyframes shuffle-spin {
+  0% {
+    transform: translate(var(--size), calc(-1 * var(--size))) rotate(0deg);
+  }
+  100% {
+    transform: translate(var(--size), calc(-1 * var(--size))) rotate(360deg);
+  }
+}
+#stack-top-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 5px;
+  transform: translate(var(--size), calc(-1 * var(--size)));
 }
 
 /* Grip */
@@ -509,6 +587,12 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 .grip-card:not(.selected-card, .playable):hover .card-image-container {
   transform: translate(0, 6px);
+}
+
+#ui-mode.uimode-end-turn
+  .grip-card:not(.selected-card, .playable):hover
+  .card-image-container {
+  transform: translate(0, 40px);
 }
 
 .grip-card.in-play {
@@ -566,10 +650,19 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 
 .grip-card.transition-out {
+  --discard-distance: 0px;
   transform: translateX(
-      calc(-50% + 90px * (var(--index) - (var(--hand-size) - 1) / 2))
+      calc(
+        -50% + 90px * (var(--index) - (var(--hand-size) - 1) / 2) + var(--discard-distance)
+      )
     )
-    scale(0);
+    rotate(-80deg) scale(0);
+  transition: transform 0.4s;
+  z-index: -1;
+}
+.grip-card.installing {
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 /* Installed cards */
@@ -604,13 +697,24 @@ button:not(.action-button, .alert-option) .inline-icon,
   transform: scale(1.01);
 }
 .uimode-select-installed-card .installed-card:hover .card-image-container {
-  transform: translateY(-20px);
+  transform: translateY(-5px), scale(1.01);
+}
+#ui-mode.uimode-select-installed-card
+  .installed-card.selectable
+  .card-image-container {
+  transition: scale 0.1s, box-shadow 0.1s, filter 0.1s;
+}
+#ui-mode.uimode-select-installed-card
+  .installed-card.selectable:not(.selected-card)
+  .card-image-container {
+  filter: brightness(0.8);
 }
 .installed-card.selected-card .card-image-container {
+  scale: 1.1;
+  z-index: 1000;
+}
+.installed-card.selected-card:not(:hover) .card-image-container {
   box-shadow: 0 0 15px white;
-}
-.installed-card.selected-card .card-image-container {
-  scale: 1.05;
 }
 
 .installed-card.perceived-trashed .card-image {
@@ -633,7 +737,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 
 .installed-card.tapped:not(.selectable, .transition-out) {
-  transform: rotate(4deg);
+  transform: rotate(6deg);
 }
 
 .installed-card .card-image-container {
@@ -769,7 +873,7 @@ button:not(.action-button, .alert-option) .inline-icon,
     rotate(var(--rotation));
   width: var(--length);
   height: 0;
-  border: 2px dotted #7887ab;
+  border: 2px dotted #b4abcf;
   z-index: 5;
 }
 .uimode-select-location .location-connector.valid-connection {
@@ -908,7 +1012,7 @@ button:not(.action-button, .alert-option) .inline-icon,
   transition: transform 0.2s;
 }
 #runner-id.tapped:not(.selectable, .transition-out) {
-  transform: rotate(4deg);
+  transform: rotate(6deg);
 }
 
 /* Enemies */
@@ -943,7 +1047,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 
 .enemy-container.engaged:not(.attacking) .card-image-container {
-  animation: engaged-enemy 1s ease calc(-0.2s * var(--index)) infinite;
+  animation: engaged-enemy 0.789s ease calc(-0.2s * var(--index)) infinite;
 }
 @keyframes engaged-enemy {
   75% {
@@ -969,7 +1073,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 .enemy-container.tapped:not(.selectable, .transition-out)
   .card-image-container {
-  transform: rotate(4deg);
+  transform: rotate(6deg);
 }
 
 .uimode-select-enemy .enemy-container.selectable:hover .card-image-container {
@@ -1107,6 +1211,19 @@ button:not(.action-button, .alert-option) .inline-icon,
   transform: translate(0.015em, -0.08em);
 }
 
+.identity .card-text-health {
+  color: white;
+  text-shadow: -0.08em -0.08em 0 #ca4343, 0.08em -0.08em 0 #ca4343,
+    -0.08em 0.08em 0 #ca4343, 0.08em 0.08em 0 #ca4343, -0.08em 0 0 #ca4343,
+    0.08em 0 0 #ca4343;
+  bottom: 5.5%;
+  left: 0%;
+  right: 0%;
+  text-align: center;
+  font-size: 1.5em;
+  font-family: "Anta", sans-serif !important;
+}
+
 .asset .card-text-cost {
   top: 0.35%;
   left: 3.8%;
@@ -1139,8 +1256,9 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 .asset .card-text-health {
   color: white;
-  text-shadow: -1px -1px 0 #ca4343, 1px -1px 0 #ca4343, -1px 1px 0 #ca4343,
-    1px 1px 0 #ca4343, -1px 0 0 #ca4343, 1px 0 0 #ca4343;
+  text-shadow: -0.08em -0.08em 0 #ca4343, 0.08em -0.08em 0 #ca4343,
+    -0.08em 0.08em 0 #ca4343, 0.08em 0.08em 0 #ca4343, -0.08em 0 0 #ca4343,
+    0.08em 0 0 #ca4343;
   bottom: 0%;
   left: 0%;
   right: 0%;
@@ -1268,8 +1386,9 @@ button:not(.action-button, .alert-option) .inline-icon,
   top: 9%;
   left: 25.5%;
   color: white;
-  text-shadow: -1px -1px 0 #181613, 1px -1px 0 #181613, -1px 1px 0 #181613,
-    1px 1px 0 #181613, -1px 0 0 #181613, 1px 0 0 #181613;
+  text-shadow: -0.08em -0.08em 0 #181613, 0.08em -0.08em 0 #181613,
+    -0.08em 0.08em 0 #181613, 0.08em 0.08em 0 #181613, -0.08em 0 0 #181613,
+    0.08em 0 0 #181613;
   font-size: 1em;
   font-weight: 900;
 }
@@ -1278,8 +1397,9 @@ button:not(.action-button, .alert-option) .inline-icon,
   right: 25.5%;
   text-align: right;
   color: white;
-  text-shadow: -1px -1px 0 #181613, 1px -1px 0 #181613, -1px 1px 0 #181613,
-    1px 1px 0 #181613, -1px 0 0 #181613, 1px 0 0 #181613;
+  text-shadow: -0.08em -0.08em 0 #181613, 0.08em -0.08em 0 #181613,
+    -0.08em 0.08em 0 #181613, 0.08em 0.08em 0 #181613, -0.08em 0 0 #181613,
+    0.08em 0 0 #181613;
   font-size: 1em;
   font-weight: 900;
 }
@@ -1289,8 +1409,9 @@ button:not(.action-button, .alert-option) .inline-icon,
   transform: translateX(-50%);
   text-align: center;
   color: white;
-  text-shadow: -1px -1px 0 #181613, 1px -1px 0 #181613, -1px 1px 0 #181613,
-    1px 1px 0 #181613, -1px 0 0 #181613, 1px 0 0 #181613;
+  text-shadow: -0.08em -0.08em 0 #181613, 0.08em -0.08em 0 #181613,
+    -0.08em 0.08em 0 #181613, 0.08em 0.08em 0 #181613, -0.08em 0 0 #181613,
+    0.08em 0 0 #181613;
   font-size: 1.2em;
   font-weight: 900;
 }
@@ -1372,7 +1493,7 @@ button:not(.action-button, .alert-option) .inline-icon,
   text-align: center;
 }
 .card-text-text.long {
-  font-size: 0.95em;
+  font-size: 0.8em;
 }
 .enemy .card-text-text.long {
   font-size: 0.7em;
@@ -1393,7 +1514,7 @@ button:not(.action-button, .alert-option) .inline-icon,
   margin-right: 1em;
   margin-bottom: 1em;
 }
-#modal .card-image-container {
+#modal .card-image-container:not(.character-selection-image) {
   width: 320px;
   max-height: 80%;
   max-width: 50%;
@@ -1543,6 +1664,10 @@ button:not(.action-button, .alert-option) .inline-icon,
 .modal-options {
   margin-top: 20px;
   gap: 20px;
+}
+.modal-checkboxes {
+  margin-top: 20px;
+  padding-bottom: 12px;
 }
 .alert-options {
   margin: 2px 0;
@@ -1861,146 +1986,11 @@ button:not(.action-button, .alert-option) .inline-icon,
   font-style: normal;
 }
 .font-fancy {
-  font-family: "Eagle Lake", serif !important;
+  font-family: "EB Garamond", serif !important;
   font-weight: 400;
   font-style: normal;
 }
 
-/* BOOTSTRAP EXTENSIONS */
-
-.h-95 {
-  height: 95% !important;
-}
-.h-90 {
-  height: 90% !important;
-}
-.h-85 {
-  height: 85% !important;
-}
-.h-80 {
-  height: 80% !important;
-}
-.h-75 {
-  height: 75% !important;
-}
-.h-70 {
-  height: 70% !important;
-}
-.h-65 {
-  height: 65% !important;
-}
-.h-60 {
-  height: 60% !important;
-}
-.h-40 {
-  height: 40% !important;
-}
-.h-35 {
-  height: 35% !important;
-}
-.h-30 {
-  height: 30% !important;
-}
-.h-25 {
-  height: 25% !important;
-}
-.h-20 {
-  height: 20% !important;
-}
-.h-15 {
-  height: 15% !important;
-}
-.h-10 {
-  height: 10% !important;
-}
-.h-5 {
-  height: 5% !important;
-}
-
-.h-33 {
-  height: 33.3333% !important;
-}
-.h-67 {
-  height: 66.6667% !important;
-}
-
-/* FONT SIZE */
-.font-size-8 {
-  font-size: 9px !important;
-}
-.font-size-9 {
-  font-size: 9px !important;
-}
-.font-size-10 {
-  font-size: 10px !important;
-}
-.font-size-11 {
-  font-size: 11px !important;
-}
-.font-size-12 {
-  font-size: 12px !important;
-}
-.font-size-13 {
-  font-size: 13px !important;
-}
-.font-size-14 {
-  font-size: 14px !important;
-}
-.font-size-15 {
-  font-size: 15px !important;
-}
-.font-size-16 {
-  font-size: 16px !important;
-}
-.font-size-17 {
-  font-size: 17px !important;
-}
-.font-size-18 {
-  font-size: 18px !important;
-}
-.font-size-19 {
-  font-size: 19px !important;
-}
-.font-size-20 {
-  font-size: 20px !important;
-}
-.font-size-21 {
-  font-size: 21px !important;
-}
-.font-size-22 {
-  font-size: 22px !important;
-}
-.font-size-23 {
-  font-size: 23px !important;
-}
-.font-size-24 {
-  font-size: 24px !important;
-}
-.font-size-25 {
-  font-size: 25px !important;
-}
-.font-size-26 {
-  font-size: 26px !important;
-}
-.font-size-27 {
-  font-size: 27px !important;
-}
-.font-size-28 {
-  font-size: 28px !important;
-}
-.font-size-29 {
-  font-size: 29px !important;
-}
-.font-size-30 {
-  font-size: 30px !important;
-}
-.font-size-31 {
-  font-size: 31px !important;
-}
-.font-size-32 {
-  font-size: 32px !important;
-}
-/* skip (add as needed) */
-.font-size-72 {
-  font-size: 72px !important;
+.tippy-box {
+  font-family: "Delius", sans-serif;
 }

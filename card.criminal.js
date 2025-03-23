@@ -3,7 +3,7 @@
 
 CardDocklandsPass = new AssetData("docklands_pass", {
   title: "Elevator Depot Pass",
-  text: "The first time each turn you successfully jack in, download another data from the same location, or an adjacent location.",
+  text: "The first time each turn you successfully jack in at a location with data, download another data from the same location, or an adjacent location.",
   flavour: `"It fell off the back of a hopper."`,
   subtypes: ["item", "unique"],
   unique: true,
@@ -67,7 +67,7 @@ CardPennyearner = new AssetData("pennyearner", {
 
 CardAkauntan = new AssetData("akauntan", {
   title: "Akauntan",
-  text: "Whenever you evade an enemy, do 1 damage to it.\nThe first time each turn you evade an enemy, gain 2{c}.",
+  text: "The first time each turn you evade an enemy, do 1 damage to it and gain 2{c}.",
   subtypes: ["icebreaker"],
   unique: false,
   faction: FACTION_CRIMINAL,
@@ -79,9 +79,8 @@ CardAkauntan = new AssetData("akauntan", {
     if (data.results && !data.results.success) {
       return;
     }
-    const { enemy } = data;
-    enemy.addDamage(1);
     if (!Game.getTurnEvent("evaded")) {
+      data.enemy.addDamage(1);
       await Stats.addCredits(2);
     }
   },
@@ -95,7 +94,7 @@ CardForgedDocuments = new AssetData("forged_documents", {
   unique: false,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/forgedDocuments.png",
-  cost: 0,
+  cost: 1,
   health: 1,
   skills: ["link"],
   async onCardInstalled(source, data) {
@@ -121,7 +120,7 @@ CardCrowbar = new AssetData("crowbar", {
   unique: false,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/crowbar.png",
-  cost: 2,
+  cost: 3,
   health: 1,
   skills: ["influence", "link"],
   smallText: true,
@@ -135,21 +134,21 @@ CardCrowbar = new AssetData("crowbar", {
   async onUse(source, data) {
     await Stats.addClicks(-1);
     source.addPower(-1);
+    const statOverride = Location.getCurrentLocation().cardData.statOverride;
+    const base =
+      statOverride && statOverride != "mu" ? null : Stats.link + Stats.mu;
     await Game.actionInvestigate({
       clues: 2,
       costsClick: false,
-      base: Stats.link + Stats.mu,
+      base: base,
     });
-    // if (source.power <= 0) {
-    //   await Cards.trashInstalledCard(source);
-    // }
   },
 });
 
 CardShiv = new AssetData("shiv", {
   title: "Shiv",
   text: "Uses 2 power counters.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.",
-  subtypes: ["item", "weapon"],
+  subtypes: ["item", "weapon", "attack"],
   unique: false,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/shiv.png",
@@ -174,16 +173,13 @@ CardShiv = new AssetData("shiv", {
       costsClick: false,
       base: Stats.link + Stats.strength,
     });
-    // if (source.power <= 0) {
-    //   await Cards.trashInstalledCard(source);
-    // }
   },
 });
 
 CardSpike = new AssetData("spike", {
   title: "Spike",
-  text: "Uses 2 power counters.\n{click}, power counter: Move up to 2 locations. Enemies at those locations do not engage you.",
-  subtypes: ["item", "weapon"],
+  text: "Uses 2 power counters.\n{click}, power counter: Move twice. Enemies at those locations do not engage you.",
+  subtypes: ["item", "weapon", "stealth"],
   unique: false,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/spike.png",
@@ -214,9 +210,6 @@ CardSpike = new AssetData("spike", {
       costsClick: false,
       enemiesCanEngage: false,
     });
-    // if (source.power <= 0) {
-    //   await Cards.trashInstalledCard(source);
-    // }
   },
 });
 
@@ -227,7 +220,7 @@ CardBackflip = new EventData("backflip", {
   title: "Backflip",
   text: "<b>Evade.</b> If successful, download a data from this location.",
   flavour: `"I've still got it."`,
-  subtypes: ["talent"],
+  subtypes: ["talent", "evade"],
   faction: FACTION_CRIMINAL,
   image: "img/card/event/bgCriminal.png",
   cost: 2,
@@ -258,6 +251,7 @@ CardDifficultJohn = new EventData("difficult_john", {
   faction: FACTION_CRIMINAL,
   image: "img/card/event/bgCriminal.png",
   cost: 0,
+  skills: ["influence"],
   async onPlay() {
     await Stats.addCredits(6);
     await Stats.addCredits(-3);
@@ -290,7 +284,7 @@ CardEmpDevice = new EventData("emp_device", {
   title: '"EMP" Device',
   text: "Evade all enemies. Do 1 damage to all enemies at your location, then move each to a random adjacent location.",
   flavour: `<b>"Something</b> happens when it goes off. Want to find out what?"`,
-  subtypes: ["tactic"],
+  subtypes: ["tactic", "evade"],
   faction: FACTION_CRIMINAL,
   image: "img/card/event/empDevice.png",
   cost: 4,
@@ -343,7 +337,7 @@ CardInsideJob = new EventData("inside_job", {
 CardPush = new EventData("push", {
   title: "Push",
   text: "Spend up to 4{c}. <b>Fight.</b> During this fight, gain +1{strength} for each credit spent. If successful, evade all enemies.",
-  subtypes: ["tactic"],
+  subtypes: ["tactic", "attack"],
   faction: FACTION_CRIMINAL,
   image: "img/card/event/push.png",
   cost: 0,
@@ -386,8 +380,8 @@ CardPush = new EventData("push", {
 
 CardTreadLightly = new EventData("tread_lightly", {
   title: "Tread Lightly",
-  text: "Move up to 2 locations. Enemies at those locations do not engage you.",
-  subtypes: ["talent"],
+  text: "Move twice. Enemies at those locations do not engage you.",
+  subtypes: ["talent", "stealth"],
   faction: FACTION_CRIMINAL,
   image: "img/card/event/bgCriminal.png",
   cost: 1,

@@ -28,8 +28,8 @@ CardIllHaveWorse = new AssetData("ill_have_worse", {
 });
 
 CardNol = new AssetData("nol", {
-  title: "n0l",
-  text: "Once per turn → {click}, discard a card: Draw 2 cards and gain 1{c}.",
+  title: "N0L",
+  text: "Once per turn → {click}, discard a card: Draw 2 cards.",
   subtypes: ["unique"],
   unique: true,
   faction: FACTION_ANARCH,
@@ -51,7 +51,6 @@ CardNol = new AssetData("nol", {
     });
     await Cards.discard(UiMode.data.selectedCards[0]);
     await Cards.draw(2);
-    await Stats.addCredits(1);
   },
   async onTurnEnd(source, data) {
     source.setTapped(false);
@@ -61,7 +60,7 @@ CardNol = new AssetData("nol", {
 CardSifar = new AssetData("sifar", {
   title: "Sifar",
   text: "You get +3{strength} during your turn until you complete a {strength} test.\nWhenever you reveal a symbol during a {strength} test, suffer 1 damage.",
-  subtypes: ["unique"],
+  subtypes: ["unique", "item"],
   unique: true,
   faction: FACTION_ANARCH,
   image: "img/card/asset/sifar.png",
@@ -86,7 +85,7 @@ CardSifar = new AssetData("sifar", {
         source.setTapped(true);
       }
       if (typeof data.results.token != "number") {
-        await Game.sufferDamage(1);
+        await Game.sufferDamage(1, "Sifar");
       }
     }
   },
@@ -149,20 +148,58 @@ CardMeniru = new AssetData("meniru", {
 
 CardTormentNexus = new AssetData("torment_nexus", {
   title: "Torment Nexus",
-  text: "When you install this, place 1 damage on it.\nAt the end of your turn, heal 1 damage from this.",
-  subtypes: [],
-  unique: false,
+  text: "When you install this, do 1 damage to it. When your turn ends, heal 1 damage from it.\nWhen this is trashed, download 1 data from your current location.",
+  flavour: `"You can't deny it <b>is</b> convenient."`,
+  subtypes: ["omen"],
+  unique: true,
   faction: FACTION_ANARCH,
   image: "img/card/asset/tormentNexus.png",
-  cost: 2,
+  cost: 4,
   health: 2,
   skills: ["influence"],
+  // smallText: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.addDamage(1);
   },
   async onTurnEnd(source, data) {
     source.addDamage(-1);
+  },
+  async onAssetTrashed(source, data) {
+    if (source != data.card) return;
+    if (Location.getCurrentLocation().clues > 0) {
+      Location.getCurrentLocation().addClues(-1);
+      await Stats.addClues(1);
+      Alert.send("Torment Nexus: You downloaded 1 data!");
+    }
+  },
+});
+
+CardFast = new AssetData("fast", {
+  title: "Fast",
+  text: "Once per turn → {click}, 2{c}: Move. Gain {click}.",
+  flavour: "Fast.",
+  subtypes: ["fast"],
+  unique: true,
+  faction: FACTION_ANARCH,
+  image: "img/card/asset/bgAnarch.png",
+  cost: 2,
+  canUse(source, data) {
+    return !source.tapped && Stats.clicks >= 1 && Stats.credits >= 2;
+  },
+  async onUse(source, data) {
+    await source.setTapped(true);
+    await Stats.addClicks(-1);
+    await Stats.addCredits(-2);
+    await UiMode.setMode(UIMODE_SELECT_LOCATION, {
+      canCancel: false,
+    });
+    Game.actionMoveTo(UiMode.data.selectedLocation, {
+      costsClick: false,
+    });
+  },
+  async onTurnEnd(source, data) {
+    source.setTapped(false);
   },
 });
 
@@ -172,9 +209,9 @@ CardTormentNexus = new AssetData("torment_nexus", {
 CardBackAway = new EventData("back_away", {
   title: "Back Away",
   text: "This costs 2{c} less for each enemy engaged with you.\nEvade all enemies and move to an adjacent location.",
-  subtypes: [""],
+  subtypes: ["tactic", "evade"],
   faction: FACTION_ANARCH,
-  image: "img/card/event/bgAnarch.png",
+  image: "img/card/event/backAway.png",
   cost: 8,
   skills: ["link"],
   preventAttacks: true,
@@ -185,7 +222,9 @@ CardBackAway = new EventData("back_away", {
     for (const enemy of Enemy.getEngagedEnemies()) {
       enemy.evade();
     }
-    await UiMode.setMode(UIMODE_SELECT_LOCATION);
+    await UiMode.setMode(UIMODE_SELECT_LOCATION, {
+      canCancel: false,
+    });
     Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
     });
@@ -194,8 +233,8 @@ CardBackAway = new EventData("back_away", {
 
 CardKickItDown = new EventData("kick_it_down", {
   title: "Kick It Down!",
-  text: "Move to an adjacent location and do 3 damage, randomly split among enemies at that location.",
-  subtypes: [""],
+  text: "Move to an adjacent location then do 3 damage, randomly split among enemies at that location.",
+  subtypes: ["tactic"],
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
   cost: 2,
@@ -203,21 +242,25 @@ CardKickItDown = new EventData("kick_it_down", {
   onPlay: async (card) => {
     await UiMode.setMode(UIMODE_SELECT_LOCATION, { canCancel: false });
     const enemies = Enemy.getEnemiesAtLocation(UiMode.data.selectedLocation);
-    if (enemies.length) {
-      await randomElement(enemies).addDamage(1);
-      await randomElement(enemies).addDamage(1);
-      await randomElement(enemies).addDamage(1);
-    }
     Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
     });
+    if (enemies.length) {
+      await randomElement(enemies).addDamage(1);
+    }
+    if (enemies.length) {
+      await randomElement(enemies).addDamage(1);
+    }
+    if (enemies.length) {
+      await randomElement(enemies).addDamage(1);
+    }
   },
 });
 
 CardDownloadTheSigns = new EventData("download_the_signs", {
   title: "Download the Signs",
   text: "<b>Jack in.</b> Add your {strength} to your {mu} for this test. If successful, download an additional data from this location.",
-  subtypes: [""],
+  subtypes: ["hack"],
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
   cost: 2,
@@ -261,7 +304,7 @@ CardGritAndDetermination = new EventData("grit_and_determination", {
 CardLastDitch = new EventData("last_ditch", {
   title: "Last Ditch",
   text: "This costs 2{c} more for each other card in your hand.\n<b>Fight.</b> You gain +1 {strength} for this fight. If successful, instead attack each engaged enemy.",
-  subtypes: ["tactic"],
+  subtypes: ["tactic", "attack"],
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
   cost: 0,
@@ -315,7 +358,7 @@ CardLastDitch = new EventData("last_ditch", {
 CardProjectile = new EventData("projectile", {
   title: "Projectile",
   text: "As an additional cost to play this, trash an installed card.\n<b>Fight.</b> During this fight, add the cost of that card to your {strength}.\nIf successful, do 2 additional damage.",
-  subtypes: ["tactic"],
+  subtypes: ["tactic", "attack"],
   faction: FACTION_ANARCH,
   image: "img/card/event/projectile.png",
   cost: 1,
@@ -327,6 +370,13 @@ CardProjectile = new EventData("projectile", {
     return canFight && Cards.installedCards.length > 0;
   },
   async onPlay(source, data) {
+    if (Cards.installedCards.length == 0) {
+      Alert.send(
+        "Repurpose: There is no longer a valid installed target.",
+        ALERT_WARNING
+      );
+      return;
+    }
     await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
       minCards: 1,
       maxCards: 1,
@@ -335,7 +385,7 @@ CardProjectile = new EventData("projectile", {
     const cost = UiMode.data.selectedCards[0].cost;
     await Cards.trashInstalledCard(UiMode.data.selectedCards[0]);
     await Enemy.actionFight({
-      damage: 1,
+      damage: 3,
       canCancel: false,
       costsClick: false,
       base: Stats.getBase("strength") + cost,
@@ -345,7 +395,7 @@ CardProjectile = new EventData("projectile", {
 
 CardRepurpose = new EventData("repurpose", {
   title: "Repurpose",
-  text: "As an additional cost to play this, trash an installed card.\nGain 3{c} and draw 3 cards.",
+  text: "As an additional cost to play this, trash an installed card.\nGain 2{c} and draw 2 cards.",
   subtypes: ["talent"],
   faction: FACTION_ANARCH,
   image: "img/card/event/repurpose.png",
@@ -354,29 +404,19 @@ CardRepurpose = new EventData("repurpose", {
     return Cards.installedCards.length > 0;
   },
   async onPlay(source, data) {
+    if (Cards.installedCards.length == 0) {
+      Alert.send(
+        "Repurpose: There is no longer a valid installed target.",
+        ALERT_WARNING
+      );
+      return;
+    }
     await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
       minCards: 1,
       maxCards: 1,
       canCancel: false,
     });
     await Cards.trashInstalledCard(UiMode.data.selectedCards[0]);
-    await Stats.addCredits(3);
-    await Cards.draw(3);
-  },
-});
-
-CardTakeInspiration = new EventData("take_inspiration", {
-  title: "Take Inspiration",
-  text: "Play only if you have failed a test this turn. Gain 2{c} and draw 2 cards.",
-  flavour: "The idea fell off the back of a hopper.",
-  subtypes: ["skill"],
-  faction: FACTION_ANARCH,
-  image: "img/card/event/takeInspiration.png",
-  cost: 0,
-  canPlay(source, data) {
-    return Game.getTurnEvent("testFail");
-  },
-  async onPlay(source, data) {
     await Stats.addCredits(2);
     await Cards.draw(2);
   },

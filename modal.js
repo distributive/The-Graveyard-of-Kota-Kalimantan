@@ -1,23 +1,3 @@
-class DuplicateModalIdError extends Error {
-  constructor(modalId) {
-    super(
-      `The modal ID '${modalId}' is already in use and cannot be reassigned.`
-    );
-    this.name = "DuplicateModalIdError";
-  }
-}
-
-// class MultipleModalError extends Error {
-//   constructor(activeModalId, newModalId) {
-//     super(
-//       `Modal with id '${newModalId}' cannot be displayed as there is already an active modal with ID '${activeModalId}'.`
-//     );
-//     this.name = "MultipleModalError";
-//   }
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-
 class Modal {
   // STATIC
   static #visible = false;
@@ -37,20 +17,15 @@ class Modal {
     this.#visible = false;
   }
 
-  static instances = {};
-  static find(id) {
-    return Modal.instances[id];
-  }
-
   static get isModalVisible() {
     return $("#modal").css("display") != "none";
   }
 
   // INSTANCE
-  #id;
   #header;
   #body;
   #options;
+  #checkboxes;
   #allowKeyboard; // bool => true allows the modal to be closed by keyboard/clicking outside the modal
   #image; // Mutually exclusive with cardData
   #cardData; // Mutually exclusive with image
@@ -59,12 +34,12 @@ class Modal {
   #voices; // [AUDIO] => array of audio clips to randomly play for each word if slowRoll is true
   #size; // string => [xl, lg, sm] (default is medium) - Preference is xl for meta game modals, lg for image modals, and md for game mechanics
 
-  constructor(id, data) {
-    this.#id = id; // null => temporary modal that does not need referencing later
+  constructor(data) {
     const {
       header,
       body,
       options,
+      checkboxes,
       allowKeyboard,
       image,
       cardData,
@@ -76,6 +51,7 @@ class Modal {
     this.#header = header;
     this.#body = body;
     this.#options = options;
+    this.#checkboxes = checkboxes;
     this.#allowKeyboard = allowKeyboard;
     this.#image = image;
     this.#cardData = cardData;
@@ -83,18 +59,12 @@ class Modal {
     this.#rollSpeed = rollSpeed ? rollSpeed : 30;
     this.#voices = voices ? voices : AUDIO_VOICES;
     this.#size = size;
-
-    if (id) {
-      if (Modal.find(id)) {
-        throw new DuplicateModalIdError(id);
-      }
-      Modal.instances[id] = this;
-    }
   }
 
   async display() {
     // Create modal
     const jOptions = [];
+    const jCheckboxes = [];
     const jModal = $("#modal");
 
     // Set size
@@ -146,19 +116,46 @@ class Modal {
       this.#body = $(`<div></div>`).append(bodyContainer);
     }
 
+    // Checkboxes
+    const checkboxesParent = $(
+      this.#checkboxes
+        ? `<div id="modal-checkboxes" class="modal-checkboxes mx-3"></div>`
+        : ""
+    );
+    if (this.#checkboxes) {
+      this.#checkboxes.forEach((option) => {
+        const jCheckbox = $(
+          `<label class="modal-checkbox-container">
+            <input type="checkbox" class="modal-checkbox ${
+              option.classes ? option.classes : ""
+            }"></input>
+            <div class="mx-2" >–</div>
+            <div>${option.text}</div>
+          </label>`
+        );
+        jCheckboxes.push([option, jCheckbox]);
+        checkboxesParent.append(jCheckbox);
+      });
+    }
+
     // Options
     const optionsParent = $(
       `<div id="modal-options" class="modal-options"></div>`
     );
     this.#options.forEach((option) => {
-      const optionContainer = $(
-        `<button class="modal-option ${
-          option.classes ? option.classes : ""
-        }"></button>`
-      );
-      const jOption = optionContainer.append(option.text);
-      jOptions.push([option, jOption]);
-      optionsParent.append(jOption);
+      // Entering null as an option inserts a line break
+      if (option) {
+        const optionContainer = $(
+          `<button class="modal-option ${
+            option.classes ? option.classes : ""
+          }"></button>`
+        );
+        const jOption = optionContainer.append(option.text);
+        jOptions.push([option, jOption]);
+        optionsParent.append(jOption);
+      } else {
+        optionsParent.append(`<br style="margin:1em 0 0 0">`);
+      }
     });
     Modal.show(this.#allowKeyboard);
 
@@ -175,7 +172,12 @@ class Modal {
     }
 
     // Combine the elements
-    jModal.find("#modal-body").empty().append(this.#body).append(optionsParent);
+    jModal
+      .find("#modal-body")
+      .empty()
+      .append(this.#body)
+      .append(checkboxesParent)
+      .append(optionsParent);
 
     // Start slow roll animation
     if (this.#slowRoll) {
@@ -194,7 +196,7 @@ class Modal {
             Audio.playEffect(randomElement(voices));
             for (let i = 1; i < paragraph.length; i++) {
               await wait(rollSpeed);
-              if (i % 2 == 0) {
+              if (rollSpeed >= 50 || i % 2 == 0) {
                 Audio.playEffect(randomElement(voices));
               }
               p.append(" " + paragraph[i]);
@@ -213,54 +215,26 @@ class Modal {
       return await new Promise(function (resolve) {
         jOptions.forEach(([option, jOption]) => {
           jOption.click(async function () {
-            resolve(option.id);
+            if (jCheckboxes.length == 0) {
+              resolve(option.id);
+            } else {
+              const checkboxResults = {};
+              jCheckboxes.forEach(([option, jCheckbox]) => {
+                checkboxResults[option.id] = jCheckbox
+                  .find("input[type='checkbox']")
+                  .is(":checked");
+              });
+              resolve({
+                option: option.id,
+                checkboxes: checkboxResults,
+              });
+            }
+            if (!Audio.buttonsMuted) {
+              Audio.playEffect(AUDIO_CLICK, true);
+            }
           });
         });
       });
     }
   }
 }
-
-$(document).ready(async function () {
-  const a = new Modal("a", {
-    header: "Test Character",
-    body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry.`,
-    options: [new Option("next", "Next")],
-    allowKeyboard: false,
-    image: "img/character/sahasrara.png",
-    slowRoll: true,
-    size: "xl",
-  });
-  const b = new Modal("b", {
-    header: "Test Character",
-    body: `<p>Contrary to popular belief, Lorem Ipsum is not simply random text.</p><p>It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p><p>Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC.</p><p>This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</p><p>The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.</p>`,
-    options: [new Option("next", "Next")],
-    allowKeyboard: false,
-    image: "img/character/sahasraraHappy.png",
-    slowRoll: true,
-    size: "lg",
-  });
-  const c = new Modal("c", {
-    header: "Test Character",
-    body: "Test text",
-    options: [new Option("next", "Next")],
-    allowKeyboard: false,
-    image: "img/character/sahasraraPensive.png",
-    slowRoll: true,
-  });
-  const d = new Modal("d", {
-    header: "Test Character",
-    body: "Test text",
-    options: [new Option("next", "Next")],
-    allowKeyboard: false,
-    image: "img/character/sahasraraSad.png",
-    slowRoll: true,
-    size: "sm",
-  });
-
-  // await Modal.find("a").display();
-  // await Modal.find("b").display();
-  // await Modal.find("c").display();
-  // await Modal.find("d").display();
-  // Modal.hide();
-});

@@ -1,4 +1,10 @@
 class Menu {
+  static #inMainMenu = false;
+
+  static get isInMainMenu() {
+    return this.#inMainMenu;
+  }
+
   static enableInGameMenuButton() {
     $("#menu-button").attr("disabled", false);
   }
@@ -9,13 +15,17 @@ class Menu {
   // Main menu
   static async showMainMenu() {
     this.showMainBG();
+    Audio.transitionMusic(AUDIO_TRACK_MAIN, 2000, 0, 0);
 
-    const modal = new Modal(null, {
-      body: `<div class="text-center font-size-32">Netham Horror</div>`,
+    const modal = new Modal({
+      body: `
+        <h1 class="text-center font-fancy font-size-36 text-decoration-underline">The Graveyard of Kota Kalimantan</h1>
+        <h2 class="text-center font-scifi font-size-24">A Netrunner scenario</h2>
+      `,
       options: [
-        new Option("about", "About", "secondary"),
+        new Option("options", "Options", "secondary"),
         new Option("play", "Play"),
-        new Option("credits", "Credits", "secondary"),
+        new Option("about", "About", "secondary"),
       ],
       allowKeyboard: false,
       size: "xl",
@@ -25,8 +35,8 @@ class Menu {
     let inMenu = true;
     while (inMenu) {
       const option = await modal.display();
-      if (option == "credits") {
-        await this.showCredits();
+      if (option == "options") {
+        await this.showOptionsMenu(false);
       } else if (option == "about") {
         await this.showAbout();
       } else if (option == "play") {
@@ -36,7 +46,7 @@ class Menu {
 
     // Determine if there is a save to be loaded
     if (Serialisation.saveExists) {
-      const saveFoundModal = new Modal(null, {
+      const saveFoundModal = new Modal({
         body: `An existing save has been found. Do you wish to resume or restart the scenario?`,
         options: [
           new Option("resume", "Resume"),
@@ -45,13 +55,13 @@ class Menu {
         allowKeyboard: false,
         size: "md",
       });
-      const confirmModal = new Modal(null, {
+      const confirmModal = new Modal({
         body: `Are you sure you want to restart?`,
         options: [new Option("y", "Yes"), new Option("n", "No")],
         allowKeyboard: false,
         size: "md",
       });
-      const failModal = new Modal(null, {
+      const failModal = new Modal({
         body: "The save file was corrupted and could not be loaded.",
         options: [new Option("", "Restart")],
         allowKeyboard: false,
@@ -66,6 +76,7 @@ class Menu {
             Modal.hide();
             await wait(500);
             this.hideMainBG();
+            Audio.transitionMusic(AUDIO_TRACK_LEVEL_1, 3000, 1000, 3000);
             return;
           } else {
             await failModal.display();
@@ -84,7 +95,7 @@ class Menu {
     Story.setNetspace(false);
 
     // Pick an ID
-    const characterModal = new Modal(null, {
+    const characterModal = new Modal({
       body: `<div class="w-100 text-center font-size-20">Choose your character</div>`,
       options: [
         new Option("topan", "", "character-button topan-select"),
@@ -104,49 +115,67 @@ class Menu {
     // Set images and add listeners for the mouseover animations
     setTimeout(function () {
       $(".topan-select").append(
-        $(
-          `<img id="topan-image" class="card-image character-selection-image" src="img/card/identity/topanFull.png" />`
-        )
+        $(`
+          <div id="topan-image" class="card-image-container character-selection-image">
+            <img class="card-image w-100" src="img/card/identity/topanFull.png" />
+          </div>
+        `)
       );
       $(".baz-select").append(
-        $(
-          `<img id="baz-image" class="card-image character-selection-image" src="img/card/identity/bazFull.png" />`
-        )
+        $(`
+          <div id="baz-image" class="card-image-container character-selection-image">
+            <img class="card-image w-100" src="img/card/identity/bazFull.png" />
+          </div>
+        `)
       );
       $(".catalyst-select").append(
-        $(
-          `<img id="catalyst-image" class="card-image character-selection-image" src="img/card/identity/theCatalystFull.png" />`
-        )
+        $(`
+          <div id="catalyst-image" class="card-image-container character-selection-image">
+            <img class="card-image w-100" src="img/card/identity/theCatalyst.png" />
+          </div>
+        `)
       );
       $("#topan-image").hover(
         function () {
-          $(this).attr("src", "img/card/identity/topan.png");
+          $(this)
+            .find(".card-image")
+            .attr("src", "img/card/identity/topan.png");
           Audio.playEffect(AUDIO_CHARACTER_SELECT);
+          Cards.populateData($(this), CardTopan, "1.4em");
         },
         function () {
-          $(this).attr("src", "img/card/identity/topanFull.png");
+          $(this)
+            .find(".card-image")
+            .attr("src", "img/card/identity/topanFull.png");
+          $(this).find(".card-text").remove();
         }
       );
       $("#baz-image").hover(
         function () {
-          $(this).attr("src", "img/card/identity/baz.png");
+          $(this).find(".card-image").attr("src", "img/card/identity/baz.png");
           Audio.playEffect(AUDIO_CHARACTER_SELECT);
+          Cards.populateData($(this), CardBaz, "1.4em");
         },
         function () {
-          $(this).attr("src", "img/card/identity/bazFull.png");
+          $(this)
+            .find(".card-image")
+            .attr("src", "img/card/identity/bazFull.png");
+          $(this).find(".card-text").remove();
         }
       );
       $("#catalyst-image").hover(
         function () {
           $(this)
-            .addClass("hover")
+            .find(".card-image")
             .attr("src", "img/card/identity/theCatalyst.png");
           Audio.playEffect(AUDIO_CHARACTER_SELECT);
+          Cards.populateData($(this), CardTheCatalyst, "1.4em");
         },
         function () {
           $(this)
-            .removeClass("hover")
+            .find(".card-image")
             .attr("src", "img/card/identity/theCatalystFull.png");
+          $(this).find(".card-text").remove();
         }
       );
     }, 1);
@@ -162,10 +191,13 @@ class Menu {
     // Once the player has gone this far, it's probably safe to wipe their previous save
     Serialisation.deleteSave();
 
+    // If they previously wiped all local data but then got this far, mark them as a returning player again
+    Serialisation.saveSetting("returning", true);
+
     // Offer to skip the tutorial if it has already been completed
     let tutorialActive = true;
     if (Tutorial.catalystIsUnlocked) {
-      const skipTutorialModal = new Modal(null, {
+      const skipTutorialModal = new Modal({
         body: `Would you like to skip the tutorial, or replay it?`,
         options: [new Option("skip", "Skip"), new Option("", "Replay")],
         allowKeyboard: false,
@@ -178,8 +210,8 @@ class Menu {
     }
 
     // Lore cutscene
-    new Modal(null, {
-      body: `TODO TODO TODO TODO TODO`,
+    new Modal({
+      body: `UNWRITTEN`,
       options: [new Option("", "Continue")],
       allowKeyboard: false,
       size: "md",
@@ -188,8 +220,8 @@ class Menu {
     // Skip cutscene (giving the player the opportunity to skip straight to the end)
     let choice = "skip";
     const skipCutscenes = [
-      new Modal(null, {
-        body: `TODO TODO TODO TODO TODO`,
+      new Modal({
+        body: `UNWRITTEN`,
         options: [
           new Option("", "Continue"),
           new Option("skip", "I just want to see the scoop"),
@@ -199,7 +231,7 @@ class Menu {
         slowRoll: true,
         size: "lg",
       }),
-      new Modal(null, {
+      new Modal({
         body: `Oh, uh. You do?`,
         options: [new Option("skip", "Yes"), new Option("", "Just kidding!")],
         image: "img/character/sahasraraPensive.png",
@@ -208,7 +240,7 @@ class Menu {
         rollSpeed: 40,
         size: "lg",
       }),
-      new Modal(null, {
+      new Modal({
         body: `We uh, spent a lot of time working on this.<br><br>Are you sure you don't want to try it?`,
         options: [
           new Option("", "Oh okay"),
@@ -220,7 +252,7 @@ class Menu {
         rollSpeed: 70,
         size: "lg",
       }),
-      new Modal(null, {
+      new Modal({
         body: `ok`,
         options: [
           new Option("skip", "Scoop"),
@@ -243,8 +275,8 @@ class Menu {
     }
 
     // Intro cutscene
-    await new Modal(null, {
-      body: `Splendid!<br><br>TODO TODO TODO TODO TODO`,
+    await new Modal({
+      body: `Splendid!<br><br>UNWRITTEN`,
       options: [new Option("", "Begin")],
       image: "img/character/sahasraraHappy.png",
       allowKeyboard: false,
@@ -256,34 +288,56 @@ class Menu {
     await Game.initGameState(identity, tutorialActive);
     await wait(500);
     this.hideMainBG();
+    Audio.transitionMusic(AUDIO_TRACK_LEVEL_1, 3000, 1000, 3000);
   }
 
   static showMainBG() {
+    this.#inMainMenu = true;
     $("#main-menu-bg").addClass("show");
     $("#main-menu-bg").show();
   }
   static hideMainBG(doAnimate = true) {
+    this.#inMainMenu = false;
     $("#main-menu-bg").removeClass("show");
     if (!doAnimate) {
       $("#main-menu-bg").hide();
     }
   }
 
-  // In-game menu
-  static async showInGameMenu() {
+  // Options menu
+  static async showOptionsMenu(inGame = true) {
     let inMenu = true;
     while (inMenu) {
-      const modal = new Modal(null, {
+      const options = [];
+      if (inGame) {
+        options.push(new Option("", "Resume"));
+        options.push(null);
+        options.push(new Option("main", "Main Menu"));
+      } else {
+        options.push(new Option("", "Back"));
+      }
+      options.push(null);
+      options.push(
+        new Option("music", Audio.musicMuted ? "Unmute music" : "Mute music")
+      );
+      options.push(
+        new Option("sfx", Audio.sfxMuted ? "Unmute SFX" : "Mute SFX")
+      );
+      options.push(
+        new Option("buttons", Audio.buttonsMuted ? "Unmute UI" : "Mute UI")
+      );
+      if (inGame) {
+        options.push(null);
+        options.push(new Option("credits", "Credits"));
+        options.push(new Option("about", "About"));
+      } else {
+        options.push(null);
+        options.push(new Option("reset", "Reset save data"));
+        options.push(new Option("delete", "Delete all data"));
+      }
+      const modal = new Modal({
         body: `<div class="text-center font-size-32">Options</div>`,
-        options: [
-          new Option("", "Resume"),
-          new Option("main", "Main Menu"),
-          new Option("music", Audio.musicMuted ? "Unmute music" : "Mute music"),
-          new Option("sfx", Audio.sfxMuted ? "Unmute SFX" : "Mute SFX"),
-          new Option("buttons", Audio.buttonsMuted ? "Unmute UI" : "Mute UI"),
-          new Option("credits", "Credits"),
-          new Option("about", "About"),
-        ],
+        options: options,
         allowKeyboard: false,
         size: "sm",
       });
@@ -304,12 +358,37 @@ class Menu {
         Audio.toggleSfx();
       } else if (option == "buttons") {
         Audio.toggleButtons();
+      } else if (option == "reset") {
+        const confirm = await new Modal({
+          body: `This will delete your current game progress.`,
+          options: [new Option("confirm", "Confirm"), new Option("", "Cancel")],
+          allowKeyboard: false,
+          size: "md",
+        }).display();
+        if (confirm == "confirm") {
+          Serialisation.deleteSave();
+          inMenu = false;
+        }
+      } else if (option == "delete") {
+        const confirm = await new Modal({
+          body: `This will delete all local game data, including your current game progress and any settings.`,
+          options: [new Option("confirm", "Confirm"), new Option("", "Cancel")],
+          allowKeyboard: false,
+          size: "md",
+        }).display();
+        if (confirm == "confirm") {
+          Serialisation.deleteSave();
+          Serialisation.deleteAllSettings();
+          inMenu = false;
+        }
       } else {
         inMenu = false;
       }
     }
 
-    Modal.hide();
+    if (inGame) {
+      Modal.hide();
+    }
   }
 
   // Does not close the modal
@@ -317,7 +396,7 @@ class Menu {
     const body = `
       <div>
         <div>This game was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
-        <div>Although it was made with the help of members of NSG, it is not an official NSG product and is not endorsed as such.</div>
+        <div>Although it was made with the help of members of NSG, it is not an official NSG product nor is it endorsed as such.</div>
         <div class="mt-2 font-size-20">Content warnings</div>
         <ul>
           <li>Mild horror themes</li>
@@ -328,7 +407,7 @@ class Menu {
         </div>
       </div>
       `;
-    const option = await new Modal(null, {
+    const option = await new Modal({
       header: "About",
       body: body,
       options: [new Option("", "Back"), new Option("credits", "Credits")],
@@ -366,12 +445,33 @@ class Menu {
           <li>Royalty free sound effects taken from freesound.org</li>
         </ul>
         <div class="mt-2 font-size-20">Playtesters</div>
-        <ul>
-          <li>TBD</li>
-        </ul>
+        <div class="container">
+          <div class="row px-4">
+            <ul class="col-3">
+              <li>Mandoline</li>
+              <li>-</li>
+              <li>-</li>
+            </ul>
+            <ul class="col-3">
+              <li>Hello</li>
+              <li>-</li>
+              <li>-</li>
+            </ul>
+            <ul class="col-3">
+              <li>-</li>
+              <li>-</li>
+              <li>-</li>
+            </ul>
+            <ul class="col-3">
+              <li>-</li>
+              <li>-</li>
+              <li>-</li>
+            </ul>
+          </div>
+        </div>
       </div>
       `;
-    const option = await new Modal(null, {
+    const option = await new Modal({
       header: "Credits",
       body: body,
       options: [new Option("", "Back"), new Option("about", "About")],
@@ -389,6 +489,6 @@ class Menu {
 $(document).ready(function () {
   $("#menu-button").click((e) => {
     e.preventDefault();
-    Menu.showInGameMenu();
+    Menu.showOptionsMenu(true);
   });
 });

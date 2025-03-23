@@ -4,7 +4,8 @@ Act1 = new ActData("act_1", {
   act: 1,
   textRequirement: "end your turn with 1 data",
   text: "When your turn ends, spend 1 data to advance the act, if able.",
-  image: "img/card/act/bg.png",
+  image: "img/card/act/act1.png",
+  faction: FACTION_MEAT,
   async onTurnEnd() {
     if (Stats.clues >= this.requirement) {
       await Stats.addClues(-this.requirement);
@@ -37,7 +38,8 @@ Act2 = new ActData("act_2", {
   act: 2,
   textRequirement: "end your turn with 3 data",
   text: "When you reveal this act, summon a rat.\n\nWhen your turn ends, spend 3 data to advance the act, if able.",
-  image: "img/card/act/bg.png",
+  image: "img/card/act/act2.png",
+  faction: FACTION_MEAT,
   async onTurnEnd() {
     if (Stats.clues >= this.requirement) {
       await Stats.addClues(-this.requirement);
@@ -82,14 +84,21 @@ Act3 = new ActData("act_3", {
   act: 3,
   textRequirement: "",
   text: "When you activate three broadcast terminals, advance the act.",
-  image: "img/card/act/bg.png",
+  image: "img/card/act/act3.png",
+  faction: FACTION_MEAT,
   // Triggered by story.js
   async advance() {
-    await Tutorial.run("exitAct3");
+    Audio.fadeOutMusic(5000);
+    // Delay for a second to let the Chaos modal close
+    UiMode.setMode(UIMODE_WAITING);
+    await wait(1000);
+    await Tutorial.run("exitAct3", false);
+    await Tutorial.run("enterNetspace");
     Act.setCard(Act4);
     Agenda.setDoom(0);
-    Agenda.setCard(Agenda4);
-    Story.enterNetspace();
+    Agenda.setCard(Agenda3);
+    await Story.enterNetspace();
+    await Game.nextAction();
   },
 });
 
@@ -99,20 +108,21 @@ Act4 = new ActData("act_4", {
   act: 4,
   textRequirement: "find the source - it's a location somewhere around you",
   text: "When you find the source, advance the act and the agenda.",
-  image: "img/card/act/bg.png",
+  image: "img/card/act/act4.png",
+  faction: FACTION_NET,
   // Triggered by the location itself
   async advance() {
-    await Tutorial.run("exitAct4");
     await UiMode.setMode(UIMODE_WAITING);
-    Act.setCard(Act4);
+    await wait(1000);
+    await Tutorial.run("exitAct4");
+    await wait(250);
+    Act.setCard(Act5);
     await wait(250);
     Agenda.setDoom(0);
     Agenda.setCard(Agenda4);
     await wait(1500);
     await Story.summonBoss();
-    if (!Game.checkTurnEnd()) {
-      UiMode.setMode(UIMODE_SELECT_ACTION);
-    }
+    await Game.nextAction();
   },
 });
 
@@ -122,7 +132,8 @@ Act5 = new ActData("act_5", {
   act: 5,
   textRequirement: "survive until the agenda advances",
   text: "Survive.",
-  image: "img/card/act/bg.png",
+  image: "img/card/act/act5.png",
+  faction: FACTION_NET,
 });
 
 // Does nothing - is not visible
@@ -135,7 +146,8 @@ Agenda2 = new AgendaData("agenda_2", {
   requirement: 12,
   agenda: 1,
   text: "When this hosts 12 or more doom, lose all data and advance the agenda.",
-  image: "img/card/agenda/bg.png",
+  image: "img/card/agenda/agenda2.png",
+  faction: FACTION_MEAT,
   async onDoomPlaced(data) {
     // For now we assume only the agenda can host doom
     if (data.doom >= this.requirement) {
@@ -144,11 +156,13 @@ Agenda2 = new AgendaData("agenda_2", {
     }
   },
   async advance() {
+    Audio.fadeOutMusic(5000);
     if (Act.cardData == Act3) {
-      await Tutorial.run("exitAgenda2");
+      await Tutorial.run("exitAgenda2", false);
     } else {
-      await Tutorial.run("exitAgenda2NoBroadcast");
+      await Tutorial.run("exitAgenda2NoBroadcast", false);
     }
+    await Tutorial.run("enterNetspace");
     if (Act.cardData.act < 4) {
       Act.setCard(Act4);
     }
@@ -163,11 +177,42 @@ Agenda3 = new AgendaData("agenda_3", {
   requirement: 6,
   agenda: 2,
   text: "When this hosts 6 or more doom, succumb to the void.",
-  image: "img/card/agenda/bg.png",
+  image: "img/card/agenda/agenda3.png",
+  faction: FACTION_NET,
   async onDoomPlaced(data) {
     // For now we assume only the agenda can host doom
     if (data.doom >= this.requirement) {
       await Agenda.advance();
+    } else if (data.doom == this.requirement - 1) {
+      await new Modal({
+        header: "One turn remains",
+        body: "The agenda is one doom away from advancing...",
+        options: [new Option("", "Okay")],
+        cardData: this,
+        allowKeyboard: false,
+        size: "lg",
+      }).display();
+      Modal.hide();
+    } else if (data.doom == this.requirement - 2) {
+      await new Modal({
+        header: "Two turns remain",
+        body: "The agenda is two doom away from advancing...",
+        options: [new Option("", "Okay")],
+        cardData: this,
+        allowKeyboard: false,
+        size: "lg",
+      }).display();
+      Modal.hide();
+    } else if (data.doom == this.requirement - 3) {
+      await new Modal({
+        header: "Three turns remain",
+        body: "The agenda is three doom away from advancing...",
+        options: [new Option("", "Okay")],
+        cardData: this,
+        allowKeyboard: false,
+        size: "lg",
+      }).display();
+      Modal.hide();
     }
   },
   async advance() {
@@ -182,7 +227,8 @@ Agenda4 = new AgendaData("agenda_4", {
   agenda: 3,
   // Note: the Hantu effect is implemented on Hantu
   text: "When this hosts 12 or more doom, escape the simulation.\n\nAt the end of each turn, spend 1 data to do 1 damage to Hantu.",
-  image: "img/card/agenda/bg.png",
+  image: "img/card/agenda/agenda4.png",
+  faction: FACTION_NET,
   async onDoomPlaced(data) {
     // For now we assume only the agenda can host doom
     if (data.doom >= this.requirement) {

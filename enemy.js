@@ -2,12 +2,19 @@ class Enemy {
   // STATIC
   static instances = [];
 
+  static #nextId = 0;
+  static #idToInstance = {};
+
   static async spawn(cardData, location) {
     if (!location) {
       location = Location.getCurrentLocation();
     }
     new Enemy(cardData, location);
     await Broadcast.signal("onEnemySpawns", { enemy: this });
+  }
+
+  static getInstance(id) {
+    return this.#idToInstance[id];
   }
 
   static canEngageFightEvade() {
@@ -22,6 +29,11 @@ class Enemy {
   static getEngagedEnemies() {
     const localEnemies = this.getEnemiesAtCurrentLocation();
     return localEnemies.filter((enemy) => enemy.engaged);
+  }
+  static getAttackingEnemies() {
+    // Enemies that are engaged and ready
+    const localEnemies = this.getEnemiesAtCurrentLocation();
+    return localEnemies.filter((enemy) => enemy.engaged && !enemy.exhausted);
   }
   static getEnemiesAtLocation(location) {
     return this.instances.filter((enemy) => enemy.#currentLocation == location);
@@ -39,7 +51,7 @@ class Enemy {
   }
 
   static async engagedEnemiesAttack() {
-    for (const enemy of this.getEngagedEnemies()) {
+    for (const enemy of this.getAttackingEnemies()) {
       await enemy.attack();
     }
   }
@@ -49,23 +61,41 @@ class Enemy {
     for (const enemy of this.instances.filter(
       (enemy) => !enemy.exhausted && enemy.cardData.isHunter
     )) {
-      const distance = enemy.#currentLocation.playerDistance;
-      if (distance > 0) {
-        const directions = enemy.#currentLocation.neighbours.filter(
-          (location) => location.playerDistance < distance
-        );
-        if (directions.length) {
-          await enemy.moveTo(randomElement(directions));
+      let distance = enemy.#currentLocation.playerDistance;
+      let moves = 1; //enemy.cardData == EnemyHantu ? 2 : 1;
+      while (moves > 0) {
+        if (distance > 0) {
+          const directions = enemy.#currentLocation.neighbours.filter(
+            (location) => location.playerDistance < distance
+          );
+          if (directions.length) {
+            await enemy.moveTo(randomElement(directions));
+          }
+          moves--;
+          distance = enemy.#currentLocation.playerDistance;
+          await wait(500);
+        } else {
+          if (!enemy.engaged) {
+            Alert.send(
+              `You have been engaged by ${enemy.cardData.title}!`,
+              ALERT_WARNING
+            );
+            await enemy.engage();
+            await wait(500);
+          }
+          moves = 0;
         }
-      } else if (!enemy.engaged) {
-        await enemy.engage();
       }
     }
   }
 
-  static readyAll() {
+  static async readyAll() {
     for (const enemy of this.instances) {
+      const wasExhausted = enemy.exhausted;
       enemy.exhausted = false;
+      if (wasExhausted && enemy.location == Location.getCurrentLocation()) {
+        await enemy.engage();
+      }
     }
   }
 
@@ -218,7 +248,7 @@ class Enemy {
   // Call this whenever there should be an attack of opportunity
   // i.e. before any action that isn't fighting, evading, or parleying
   static async attackOfOpportunity() {
-    if (this.getEngagedEnemies().length == 0) {
+    if (this.getAttackingEnemies().length == 0) {
       return;
     }
     Alert.send(
@@ -226,6 +256,31 @@ class Enemy {
       ALERT_DANGER
     );
     await this.engagedEnemiesAttack();
+  }
+
+  // Confirm with the player if they want to perform the current action if it would trigger an attack of opportunity
+  static showAttackOfOpportunityWarning = true; // Intended to reset on refresh
+  static async confirmAttackOfOpportunity() {
+    if (
+      !this.showAttackOfOpportunityWarning ||
+      this.getAttackingEnemies().length == 0
+    ) {
+      return true;
+    }
+    const modal = new Modal({
+      header: "Attack of opportunity",
+      body: "Performing this action will trigger an attack of opportunity: before it resolves each unexhausted enemy engaged with you will attack.<br><br>Any action that does not directly interact with an enemy will trigger an attack of opportunity.<br><br>Do you wish to continue?",
+      options: [new Option("", "Continue"), new Option("cancel", "Cancel")],
+      checkboxes: [new Option("noWarn", "Don't show again")],
+      allowKeyboard: false,
+      size: "md",
+    });
+    const { option, checkboxes } = await modal.display();
+    Modal.hide();
+    if (checkboxes.noWarn) {
+      this.showAttackOfOpportunityWarning = false;
+    }
+    return option != "cancel";
   }
 
   // Moves all engaged enemies to the current location
@@ -241,13 +296,15 @@ class Enemy {
   static deleteState() {
     this.instances.forEach((enemy) => enemy.remove());
     this.instances = [];
+    this.#idToInstance = {};
+    this.#nextId = 0;
     // For safety
     $(".enemy-container").remove();
   }
 
   // SERIALISATION
   static serialise() {
-    return this.instances.map((enemy) => {
+    const enemies = this.instances.map((enemy) => {
       return {
         id: enemy.cardData.id,
         damage: enemy.damage,
@@ -258,14 +315,20 @@ class Enemy {
         location: enemy.location.id,
       };
     });
+    return {
+      nextId: this.#nextId,
+      enemies: enemies,
+    };
   }
 
   static async deserialise(json) {
+    this.#nextId = json.nextId;
+
     // Remove all existing enemies
     this.deleteState();
 
     // Create new enemies
-    json.forEach((data) => {
+    json.enemies.forEach((data) => {
       const enemy = new Enemy(
         CardData.getCard(data.id),
         Location.getInstance(data.location),
@@ -276,6 +339,7 @@ class Enemy {
   }
 
   // INSTANCE
+  #id;
   #cardData;
 
   #jObj;
@@ -291,6 +355,9 @@ class Enemy {
   #doom;
 
   constructor(cardData, location, doAnimate = true, data) {
+    this.#id = data && data.id ? data.id : Enemy.#nextId++;
+    Enemy.#idToInstance[this.#id] = this;
+
     Enemy.instances.push(this);
     this.#cardData = cardData;
 
@@ -310,11 +377,13 @@ class Enemy {
           <div class="doom shake-counter"></div>
         </div>
       </div>`);
+    this.#jObj.data("enemy-id", this.#id);
     Cards.populateData(
       this.#jObj.find(".card-image-container"),
       this.#cardData,
       "9px"
     );
+    this.updateStats();
     this.#jObj.data("card-id", cardData.id);
     Location.root.append(this.#jObj);
 
@@ -322,7 +391,7 @@ class Enemy {
       const jObj = this.#jObj;
       setTimeout(function () {
         jObj.find(".flipping").removeClass("flipping");
-      }, 1);
+      }, 10);
     }
 
     this.#jDamage = this.#jObj.find(".damage");
@@ -343,7 +412,10 @@ class Enemy {
       }
     }
 
-    this.setLocation(location, !data);
+    this.setLocation(
+      location ? location : Location.getCurrentLocation(),
+      !data
+    );
   }
 
   get cardData() {
@@ -495,9 +567,9 @@ class Enemy {
       } else {
         Audio.playEffect(AUDIO_TRASH);
       }
-      await Broadcast.signal("onEnemyDies", { enemy: this });
       this.remove();
-      UiMode.setFlag("engaged", Enemy.getEngagedEnemies().length > 0);
+      await Broadcast.signal("onEnemyDies", { enemy: this });
+      UiMode.setFlag("engaged", Enemy.getAttackingEnemies().length > 0); // The UI only cares if the enemies are ready
     }
     this.#damage = value;
     return this;
@@ -549,7 +621,7 @@ class Enemy {
     await this.setDoom(this.#doom + value, doAnimate);
   }
 
-  // if not in the current location, move there (maybe this behaviour is not wanted)
+  // If not in the current location, move there (maybe this behaviour is not wanted)
   async engage() {
     if (this.#engaged) {
       return;
@@ -557,10 +629,10 @@ class Enemy {
     if (this.#currentLocation != Location.getCurrentLocation()) {
       await this.moveTo(Location.getCurrentLocation());
     }
-    await Broadcast.signal("onPlayerEngages", { enemy: this });
     this.#engaged = true;
     this.#jObj.addClass("engaged");
-    UiMode.setFlag("engaged", true);
+    UiMode.setFlag("engaged", Enemy.getAttackingEnemies().length > 0); // The UI only cares if the enemies are ready
+    await Broadcast.signal("onPlayerEngages", { enemy: this });
     return this;
   }
 
@@ -582,7 +654,7 @@ class Enemy {
   async disengage() {
     this.#engaged = false;
     this.#jObj.removeClass("engaged");
-    UiMode.setFlag("engaged", Enemy.getEngagedEnemies().length > 0);
+    UiMode.setFlag("engaged", Enemy.getAttackingEnemies().length > 0); // The UI only cares if the enemies are ready
     return this;
   }
 

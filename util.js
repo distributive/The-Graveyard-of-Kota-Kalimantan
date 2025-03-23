@@ -21,6 +21,11 @@ function randomElement(array) {
   return array[randomIndex(array)];
 }
 
+// Look, okay, JavaScript doesn't natively allow you to seed random numbers, and this is not worth building a custom RNG for, so if you find this and use it to rig your rolls, good for you
+function randomElementSeeded(array, seed) {
+  return array[seed % array.length];
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 Object.defineProperty(String.prototype, "toTitleCase", {

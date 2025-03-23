@@ -12,16 +12,33 @@ class Cards {
   static focusCard(jCardImage) {
     const focusedCardId = jCardImage.parent().data("card-id");
     const cardData = CardData.getCard(focusedCardId);
-    if (cardData.hidden) {
+    if (!cardData || cardData.hidden) {
       return;
     }
     this.focusedCardId = focusedCardId;
     $("#card-focused-image")
       .attr("src", jCardImage.find(".card-image").attr("src"))
-      // .attr("src", jCardImage.attr("src").replace(".png", "_full.png")) // TODO
       .removeClass("unfocused")
       .addClass("focused");
     Cards.populateData($("#card-focused-image").parent(), cardData, "1.73vh");
+    // Surveyor is the only card with variable stats, so we're hardcoding support for that
+    if (cardData == EnemySurveyor) {
+      const enemyId = jCardImage.parent().data("enemy-id");
+      const enemy = Enemy.getInstance(enemyId);
+      const focusedImage = $("#card-focused-image");
+      if (enemy && focusedImage) {
+        focusedImage
+          .parent()
+          .find(".card-text-strength")
+          .html(enemy.strength)
+          .addClass("buffed");
+        focusedImage
+          .parent()
+          .find(".card-text-link")
+          .html(enemy.link)
+          .addClass("buffed");
+      }
+    }
   }
   static unfocusCard() {
     $("#card-focused-image").removeClass("focused").addClass("unfocused");
@@ -100,7 +117,7 @@ class Cards {
   // Hand/deck/discard
 
   // cardData may be an array of classes
-  static addToStack(cardData, shuffleInto = false) {
+  static addToStack(cardData, shuffleInto = false, doAnimate = true) {
     if (typeof cardData == "object") {
       this.stack.push(...cardData);
     } else {
@@ -108,6 +125,11 @@ class Cards {
     }
     if (shuffleInto) {
       shuffle(this.stack);
+      if (doAnimate) {
+        animate($("#stack-shuffle-cw"), 1000);
+        animate($("#stack-shuffle-ccw"), 1000);
+        Audio.playEffect(AUDIO_SHUFFLE);
+      }
     }
     this.updateStackHeapHeights();
     this.determineCanDraw();
@@ -185,7 +207,7 @@ class Cards {
     }
   }
 
-  static shuffleHeap() {
+  static shuffleHeap(doAnimate = true) {
     if (this.heap.length == 0) {
       return;
     }
@@ -193,18 +215,26 @@ class Cards {
     this.heap = [];
     this.updateStackHeapHeights();
     this.determineCanDraw();
+    if (doAnimate) {
+      animate($("#stack-shuffle-cw"), 1000);
+      animate($("#stack-shuffle-ccw"), 1000);
+      Audio.playEffect(AUDIO_SHUFFLE);
+    }
   }
 
-  static removeGripCard(card) {
+  static removeGripCard(card, installing = false) {
     const index = typeof card == "object" ? this.grip.indexOf(card) : card;
     if (index >= 0 && index < this.grip.length) {
       const card = this.grip[index];
-      this.grip[index].remove();
+      this.grip[index].remove(true, installing);
       this.grip.splice(index, 1);
       this.updateHandPositions();
-      setTimeout(function () {
-        Cards.updateHandPositions();
-      }, 210);
+      setTimeout(
+        function () {
+          Cards.updateHandPositions();
+        },
+        installing ? 210 : 10
+      );
       return card;
     }
     return null;
@@ -252,8 +282,12 @@ class Cards {
 
   static updateHandPositions() {
     // Unselected cards (default)
-    $(".grip-card:not(.selected-card)")
-      .css("--hand-size", $("#grip .grip-card:not(.selected-card)").length)
+    $(".grip-card:not(.selected-card, .installing, .transition-out)")
+      .css(
+        "--hand-size",
+        $("#grip .grip-card:not(.selected-card, .installing, .transition-out)")
+          .length
+      )
       .each((i, card) => {
         $(card).css("--index", i);
       });
@@ -407,10 +441,8 @@ class GripCard {
         jObj.addClass("in-play");
         const { success, reason } = await Game.actionPlayCard(instance);
         if (success) {
-          Cards.removeGripCard(instance);
-          if (!Game.checkTurnEnd()) {
-            UiMode.setMode(UIMODE_SELECT_ACTION); // TODO - is it true that this will always be the correct mode to return to?
-          }
+          Cards.removeGripCard(instance, instance.cardData.type == TYPE_ASSET);
+          await Game.nextAction();
         } else {
           jObj.removeClass("in-play");
           animate(instance.#jObj, 300);
@@ -456,6 +488,9 @@ class GripCard {
           }
         }
       }
+    });
+    this.#jObj.on("mouseenter", function () {
+      Audio.playEffect(randomElement(AUDIO_FLICKS));
     });
   }
 
@@ -520,27 +555,28 @@ class GripCard {
     return this.#jObj.hasClass("in-play");
   }
 
-  remove(doAnimate = true) {
+  remove(doAnimate = true, installing = false) {
     let jObj = this.#jObj;
-    jObj.addClass("transition-out");
     if (doAnimate) {
-      setTimeout(function () {
-        jObj.remove();
-      }, 200);
+      if (installing) {
+        jObj.addClass("installing");
+      } else {
+        jObj.addClass("transition-out");
+        jObj.find(".card-text").remove();
+        jObj.find(".card-image").attr("src", "img/card/back/neutral.png");
+        const distance = $("#heap").offset().left - jObj.offset().left;
+        jObj.css("--discard-distance", `${distance}px`);
+      }
+      setTimeout(
+        function () {
+          jObj.remove();
+        },
+        installing ? 200 : 400
+      );
     } else {
       jObj.remove();
     }
   }
-
-  // // Releases the card from the grip and moves it to a given point
-  // freeAndMove(x, y) {
-  //   Cards.removeGripCard(this);
-  //   this.#jObj.detach();
-  //   $("body").append(this.#jObj);
-  //   Cards.updateHandPositions();
-  //   this.#jObj.css("left", `${x}px`);
-  //   this.#jObj.css("bottom", `${y}px`);
-  // }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -680,11 +716,14 @@ class RigCard {
       } else if (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD) {
         if (RigCard.selectedCards.has(instance)) {
           instance.deselect();
+          Audio.playEffect(AUDIO_FLICK_0);
         } else if (UiMode.data.maxCards == 1) {
           RigCard.deselectAll();
           instance.select();
+          Audio.playEffect(AUDIO_FLICK_2);
         } else if (RigCard.selectedCards.size < UiMode.data.maxCards) {
           instance.select();
+          Audio.playEffect(AUDIO_FLICK_2);
         } else {
           const message =
             UiMode.data.minCards != UiMode.data.maxCards
@@ -902,9 +941,11 @@ $(document).ready(function () {
       return;
     }
 
-    // Do not display the faction if it's meatspace (spoilers!)
+    // Do not display the faction if it's meatspace (spoilers!) or an act/agenda
     const factionText =
-      cardData.faction == FACTION_MEAT
+      cardData.faction == FACTION_MEAT ||
+      cardData.type == TYPE_ACT ||
+      cardData.type == TYPE_AGENDA
         ? ""
         : `${FACTION_TO_TEXT[cardData.faction]} `;
 
@@ -945,7 +986,7 @@ $(document).ready(function () {
     } 
         </div>
         ${stats ? `<hr><div class="font-size-18">${stats}</div>` : ""}
-        <hr>
+        ${cardData.formattedText ? "<hr>" : ""}
         <div class="quote">${cardData.formattedText}</div>
         ${
           cardData.flavour
@@ -955,7 +996,7 @@ $(document).ready(function () {
       </div>`;
 
     const options = [new Option("close", "Close", "close")];
-    const modal = new Modal(null, {
+    const modal = new Modal({
       body: body,
       cardData: cardData,
       options: options,
@@ -978,7 +1019,7 @@ $(document).ready(function () {
       "mouseleave",
       ":not(.modal) .card-image-container:not(#card-focused-image, #card-modal-image)",
       function () {
-        Cards.unfocusCard($(this));
+        Cards.unfocusCard();
       }
     )
     .on(

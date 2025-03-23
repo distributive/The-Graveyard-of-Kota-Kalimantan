@@ -99,6 +99,8 @@ const LocationUnknownMeat = new LocationData("unknown_meat", {
 const LocationCorridor = new LocationData("corridor", {
   title: "Corridor",
   text: "",
+  flavour:
+    "In the dark, windowless hallways, it almost feels like it twists onwards forever.",
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/corridor.png",
@@ -107,8 +109,9 @@ const LocationCorridor = new LocationData("corridor", {
 });
 
 const LocationTerminal = new LocationData("terminal", {
-  title: "Public Access Terminal",
+  title: "Private Access Terminal",
   text: "",
+  flavour: `You see some grafiti etched into the side of the hardware.<br>It reads: "try jacking in at this location to download the data from it".`,
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/terminal.png",
@@ -129,6 +132,7 @@ const LocationOffice = new LocationData("office", {
 const LocationStairs = new LocationData("stairs", {
   title: "Stairs",
   text: "",
+  flavour: "Up or down; it makes no difference.",
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/stairs.png",
@@ -160,6 +164,8 @@ const LocationJunction = new LocationData("junction", {
 const LocationBroadcastInfluence = new LocationData("broadcast_influence", {
   title: "Broadcast Terminal",
   text: "When you jack in at this location, test against {influence} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  flavour:
+    "You're sure you've seen this model before. If only you could remember where.",
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastRed.png",
@@ -177,6 +183,7 @@ const LocationBroadcastInfluence = new LocationData("broadcast_influence", {
 const LocationBroadcastMu = new LocationData("broadcast_mu", {
   title: "Broadcast Terminal",
   text: "When you download the last data from this location, activate this terminal.",
+  flavour: "This tech has seen better days.",
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastPurple.png",
@@ -193,6 +200,7 @@ const LocationBroadcastMu = new LocationData("broadcast_mu", {
 const LocationBroadcastStrength = new LocationData("broadcast_strength", {
   title: "Broadcast Terminal",
   text: "When you jack in at this location, test against {strength} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  flavour: "It looks like it needs prying open.",
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastGreen.png",
@@ -210,6 +218,7 @@ const LocationBroadcastStrength = new LocationData("broadcast_strength", {
 const LocationBroadcastLink = new LocationData("broadcast_link", {
   title: "Broadcast Terminal",
   text: "When you jack in at this location, test against {link} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  flavour: "It's encrypted.",
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastYellow.png",
@@ -227,6 +236,7 @@ const LocationBroadcastLink = new LocationData("broadcast_link", {
 const LocationBroadcastActive = new LocationData("broadcast_active", {
   title: "Broadcast Terminal",
   text: "",
+  flavour: "UNWRITTEN",
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastActive.png",
@@ -240,6 +250,7 @@ const LocationBroadcastActive = new LocationData("broadcast_active", {
 const LocationUnknownNet = new LocationData("unknown_net", {
   title: "Unknown",
   text: "When you enter this location, flip it.",
+  flavour: "Tread carefully.",
   subtypes: ["netspace", "hidden"],
   faction: FACTION_NET,
   image: "img/card/location/unknownNet.png",
@@ -250,11 +261,16 @@ const LocationUnknownNet = new LocationData("unknown_net", {
 
     // Reveal the location
     let cardData;
-    // After 5 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
+    // After 7 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
+    // If it is the last two clicks before the agenda would advance, remove the random chance
     if (
       !Story.isSourceRevealed &&
       (Story.randomNetLocations.length == 0 ||
-        (Story.netLocationsRevealed > 5 && randomInt(0, 3) == 0))
+        (Story.netLocationsRevealed > 7 &&
+          ((Agenda.cardData == Agenda3 &&
+            Agenda.doom == Agenda.cardData.requirement - 1 &&
+            Stats.clicks < 2) ||
+            randomInt(0, 3) == 0)))
     ) {
       cardData = LocationSource;
       Story.isSourceRevealed = true;
@@ -303,6 +319,12 @@ const LocationUnknownNet = new LocationData("unknown_net", {
         }
       }
     }
+    Location.recalculatePlayerDistance();
+
+    // Story progression
+    if (cardData == LocationSource && Act.cardData == Act4) {
+      await Act.advance();
+    }
   },
 });
 
@@ -320,12 +342,16 @@ const LocationEntrance = new LocationData("entrance", {
 const LocationSource = new LocationData("source", {
   title: "Source",
   text: "",
-  flavour: `"Come to me."`,
+  flavour: `"Come to me. I am awake."`,
   subtypes: ["netspace", "lair"],
   faction: FACTION_NET,
   image: "img/card/location/source.png",
   shroud: 2,
   clues: 0,
+  async onPlayerMoves(source, data) {
+    if (data.toLocation != source || Act.cardData != Act4) return;
+    await Act.advance();
+  },
 });
 
 const LocationVoid = new LocationData("void", {
@@ -379,14 +405,14 @@ const LocationDataWell = new LocationData("data_well", {
 const LocationTagStorm = new LocationData("tag_storm", {
   title: "Tag Storm",
   text: "Whenever you successfully jack in while at this location, suffer 1 damage.",
-  subtypes: ["netspace"],
+  subtypes: ["netspace", "hostile"],
   faction: FACTION_NET,
   image: "img/card/location/tagStorm.png",
   shroud: 1,
   clues: 2,
   async onInvestigation(source, data) {
     if (data.results.success && source == Location.getCurrentLocation()) {
-      await Game.sufferDamage(1);
+      await Game.sufferDamage(1, "Tag Storm");
     }
   },
 });

@@ -69,7 +69,8 @@ Note: When the tutorial is active, you start with 0 cards in hand.
 class Tutorial {
   static #triggers = {};
   static #mode = TUTORIAL_MODE_NONE;
-  static #active;
+  static #active; // Is the tutorial currently happening
+  static #enabled; // Is/was the tutorial enabled for this run
   static #hintTimeout;
   static #hintAlert;
 
@@ -84,6 +85,13 @@ class Tutorial {
     return this.#active;
   }
 
+  static set enabled(value) {
+    this.#enabled = value;
+  }
+  static get enabled() {
+    return this.#enabled;
+  }
+
   static unlockCatalyst() {
     Serialisation.saveSetting("catalyst-unlocked", true);
   }
@@ -96,6 +104,7 @@ class Tutorial {
       index: this.#stageIndex,
       triggers: Object.keys(this.#triggers),
       active: this.#active,
+      enabled: this.#enabled,
     };
   }
   static deserialise(json) {
@@ -104,7 +113,8 @@ class Tutorial {
     json.triggers.forEach((trigger) => {
       this.#triggers[trigger] = true;
     });
-    this.active = json.active;
+    this.active = json.active ? true : false;
+    this.enabled = json.enabled ? true : false;
     this.#mode = TUTORIAL_MODE_NONE; // Ensure it is not stuck in WAITING
   }
 
@@ -147,13 +157,15 @@ class Tutorial {
       this.setMode(TUTORIAL_MODE_WAITING);
       await wait(1000); // TODO: time appropriately // NOTE: things break if this is too short (100 confirmed too short)
       for (const page of stage.modals) {
-        await new Modal(null, page).display();
+        await new Modal(page).display();
       }
       Modal.hide();
     }
     if (stage.hint && UiMode.mode != UIMODE_CORP_TURN) {
       this.#hintTimeout = setTimeout(function () {
-        Tutorial.#hintAlert = Alert.send(stage.hint, ALERT_INFO, false, true);
+        if (!Modal.isModalVisible) {
+          Tutorial.#hintAlert = Alert.send(stage.hint, ALERT_INFO, false, true);
+        }
       }, 3750);
     }
     // TODO: if this causes problems, add a pause here
@@ -178,20 +190,16 @@ class Tutorial {
   // Retriggers the previous tutorial cutscene - used when loading the game
   // If the trigger it was waiting for was turn start, retriggering it will softlock the game due to the timing of saves
   static async retriggerCutscene() {
-    if (
-      this.#active &&
-      this.#stageIndex > 0 &&
-      this.#stages[this.#stageIndex].trigger != "onTurnStart"
-    ) {
-      await this.triggerCutscene(this.#stageIndex - 1);
+    if (this.#active) {
+      await this.triggerCutscene(Math.max(0, this.#stageIndex - 1));
     }
   }
 
-  static async run(trigger) {
+  static async run(trigger, closeModal = true) {
     if (
       this.#triggers[trigger] ||
       !this.#tutorials[trigger] ||
-      (this.#tutorials[trigger].requireTutorialActive && !Tutorial.active)
+      (this.#tutorials[trigger].requireTutorialEnabled && !Tutorial.enabled)
     ) {
       return false;
     }
@@ -205,14 +213,16 @@ class Tutorial {
     let index = 0;
     while (index < tutorial.length) {
       const page = tutorial[index];
-      const option = await new Modal(null, page).display();
+      const option = await new Modal(page).display();
       if (Number.isInteger(option) && option >= 0) {
         index = option;
       } else {
         index++;
       }
     }
-    Modal.hide();
+    if (closeModal) {
+      Modal.hide();
+    }
     Menu.enableInGameMenuButton();
     return true;
   }
@@ -366,7 +376,7 @@ class Tutorial {
     // End turn
     {
       mode: TUTORIAL_MODE_USE_ASSET,
-      trigger: "onTurnStart",
+      trigger: "onTurnEnd",
       hint: "End your turn.",
     },
     // Move to a new location (with clues)
@@ -434,6 +444,7 @@ class Tutorial {
           allowKeyboard: false,
           image: "img/character/sahasraraSad.png",
           slowRoll: true,
+          voices: AUDIO_VOICES_SAD,
           size: "lg",
         },
         {
@@ -450,11 +461,12 @@ class Tutorial {
     // Explain acts and advancing (the act will summon a rat)
     {
       mode: TUTORIAL_MODE_END_TURN,
-      trigger: "onTurnStart",
+      trigger: "onActAdvanced",
+      hint: "End your turn.",
       modals: [
         {
           header: "Downloading data",
-          body: "There we go!",
+          body: "There we go!<br><br>You can view your chaos bag at any time with the button next to your stats.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
@@ -472,26 +484,51 @@ class Tutorial {
         },
       ],
     },
-    // NOTE: the explainer for the agenda will be triggered asynchronously by Act1
-    // Explain enemies, the hunter keyword, and engaging
-    // Explain evasion, exhaustion, and readying (guaranteed success)
     {
       mode: TUTORIAL_MODE_EVADE,
       trigger: "onPlayerEvades",
-      hint: "Use the evade button to attempt to evade the rat.",
       modals: [
         {
-          header: "Enemies",
-          body: "Unsurprising, this place has rats.<br><br>They're not going to be a major problem, but you should make sure to avoid them.",
+          header: "Agendas",
+          body: "There is now an agenda.<br><br>Agendas are acts' evil twins: advancing these makes things harder for you.<br><br>At the end of each turn, 1 doom is placed on the current agenda. When it reaches its limit, it will advance.<br><br>Advance too much, and you might not make it out of here.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
-          image: "img/character/sahasrara.png",
+          cardData: Agenda2,
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Agendas",
+          body: "I'm sure you'll be fine though!",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Agendas",
+          body: "...good luck!",
+          options: [new Option("", "Continue")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraHappy.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        // Explain enemies, the hunter keyword, and engaging
+        // Explain evasion, exhaustion, and readying (guaranteed success)
+        {
+          header: "Enemies",
+          body: "Unsurprisingly, this place has rats.<br><br>They're not going to be a major problem, but you should try avoid them.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          cardData: Act2,
           slowRoll: true,
           size: "lg",
         },
         {
           header: "Enemies",
-          body: "Unfortunately, rats are hunters.<br><br>This means that during each corp phase, they will move towards you, taking any shortest path to reach you.<br><br>Whenever an enemy moves to your current location, it will engage you.",
+          body: "Unfortunately, rats are hunters.<br><br>This means that during each corp phase, they will move towards you, taking any shortest path.<br><br>Whenever an enemy moves to your current location, it will engage you.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           cardData: EnemyRat,
@@ -500,7 +537,7 @@ class Tutorial {
         },
         {
           header: "Enemies",
-          body: "While engaged with an enemy, taking any action that does not directly interact with enemies will trigger an 'attack of opportunity', in which each engaged enemy will attack you.<br><br>When a rat attacks you, it will do 1 damage. Damage is dealt directly to you, and if you run out of health...<br><br>Well...",
+          body: "While engaged with an enemy, taking any action that does not directly interact with enemies will trigger an <em>'attack</em> <em>of</em> <em>opportunity'</em>, in which each engaged enemy will attack you.<br><br>When a rat attacks you, it will do 1 damage. Damage is dealt directly to you, and if you run out of health...<br><br><em>Well...</em>",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -509,7 +546,7 @@ class Tutorial {
         },
         {
           header: "Enemies",
-          body: "Some assets you install will have health, just like you!<br><br>When you take damage, you will have the opportunity to place that damage on these assets instead of yourself.<br><br>Of course, if they run out of health, they get trashed!",
+          body: "Some assets you install will have health, just like you!<br><br>When you take damage, you will have the opportunity to place that damage on these assets instead of yourself.<br><br>Of course, if <em>they</em> run out of health, they get trashed!",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           cardData: CardIceCarver,
@@ -518,7 +555,7 @@ class Tutorial {
         },
         {
           header: "Evading enemies",
-          body: "We should get rid of this rat though.",
+          body: "We should get rid of this rat then.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -563,9 +600,18 @@ class Tutorial {
         {
           header: "Engaging enemies",
           body: "Sometimes, you might want to engage an enemy. Whenever you attack an enemy, you automatically engage it, but you can also spend a click to engage them without attacking.<br><br>Try re-engaging the rat! It's exhausted so it most likely probably can't harm you maybe.",
-          options: [new Option("", "Close")],
+          options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Engaging enemies",
+          body: "Just remember, if you're engaged with an enemy that isn't exhausted, taking any action that doesn't interact with an enemy will trigger an attack of opportunity, and if you move, all engaged enemies will follow you.<br><br>Actions that trigger attacks are highlighted in eye-piercing red for your convenience.",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
           slowRoll: true,
           size: "lg",
         },
@@ -579,7 +625,7 @@ class Tutorial {
       modals: [
         {
           header: "Attacking enemies",
-          body: "Now, lets make sure this rat won't bother us again.",
+          body: "Now, let's make sure this rat won't bother us again.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -632,51 +678,9 @@ class Tutorial {
 
   // Async tutorials that are triggered by unscripted events
   static #tutorials = {
-    // Agenda explainer
-    agenda: {
-      requireTutorialActive: true,
-      cutscene: [
-        {
-          header: "Agendas",
-          body: "There is now an agenda.<br><br>Agendas are acts' evil twins: advancing these makes things harder for you.<br><br>At the end of each turn, 1 doom is placed on the current agenda. When it reaches its limit, it will advance.",
-          options: [new Option("", "Next")],
-          allowKeyboard: false,
-          cardData: Agenda2,
-          slowRoll: true,
-          size: "lg",
-        },
-        {
-          header: "Agendas",
-          body: "Advance too much, and you might not make it out of here.",
-          options: [new Option("", "Next")],
-          allowKeyboard: false,
-          image: "img/character/sahasraraPensive.png",
-          slowRoll: true,
-          size: "lg",
-        },
-        {
-          header: "Agendas",
-          body: "I'm sure you'll be fine though!",
-          options: [new Option("", "Next")],
-          allowKeyboard: false,
-          image: "img/character/sahasraraHappy.png",
-          slowRoll: true,
-          size: "lg",
-        },
-        {
-          header: "Agendas",
-          body: "...good luck!",
-          options: [new Option("", "Close")],
-          allowKeyboard: false,
-          image: "img/character/sahasraraHappy.png",
-          slowRoll: true,
-          size: "lg",
-        },
-      ],
-    },
     // Encounter explainer
     encounter: {
-      requireTutorialActive: true,
+      requireTutorialEnabled: true,
       cutscene: [
         {
           header: "Random encounters",
@@ -690,7 +694,7 @@ class Tutorial {
         {
           header: "Random encounters",
           body: "After each turn, you'll draw a random card from the encounter deck. Who knows what they could do...",
-          options: [new Option("", "Close")],
+          options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasrara.png",
           slowRoll: true,
@@ -718,7 +722,7 @@ class Tutorial {
     },
     // Committing cards
     commit: {
-      requireTutorialActive: true,
+      requireTutorialEnabled: true,
       cutscene: [
         {
           header: "Committing cards",
@@ -731,7 +735,7 @@ class Tutorial {
         },
         {
           header: "Committing cards",
-          body: "Cards in your hand may have skill symbols on their side. These correspond to the skill tests you may commit them to.<br><br>Whenever you make a skill test, you may select any number of valid cards to discard, and each card discarded will increase your test strength by 1. This will allow you to succeed at tests you might not otherwise be able to.",
+          body: "Cards in your hand may have symbols on their side.<br><br>Whenever you make a skill test, you may select any number of cards with the corresponding symbol to discard, where each card discarded will increase your test strength by 1. This will allow you to succeed tests you otherwise might not be able to.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           cardData: CardUnsureGamble,
@@ -754,7 +758,35 @@ class Tutorial {
       cutscene: [
         {
           header: "Broadcast terminals found",
-          body: "TODO TODO TODO TODO TODO",
+          body: "UNWRITTEN",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // First broadcast
+    firstBroadcast: {
+      cutscene: [
+        {
+          header: "First broadcast",
+          body: "UNWRITTEN",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // Second broadcast
+    secondBroadcast: {
+      cutscene: [
+        {
+          header: "Second broadcast",
+          body: "UNWRITTEN",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -767,8 +799,8 @@ class Tutorial {
     exitAct3: {
       cutscene: [
         {
-          header: "Broadcast terminals found",
-          body: "TODO TODO TODO TODO TODO",
+          header: "Broadcast sent",
+          body: "UNWRITTEN",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -782,7 +814,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Broadcast failed",
-          body: "TODO TODO TODO TODO TODO",
+          body: "UNWRITTEN",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraSad.png",
@@ -796,11 +828,114 @@ class Tutorial {
       cutscene: [
         {
           header: "Uh oh...",
-          body: "TODO TODO TODO TODO TODO",
+          body: "UNWRITTEN",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraSad.png",
           slowRoll: true,
+          size: "lg",
+        },
+      ],
+    },
+    // Enter netspace
+    enterNetspace: {
+      cutscene: [
+        {
+          header: "Uh oh...",
+          body: "Ha",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          voices: [AUDIO_VOICE_SAD_1],
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "Ha ha...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 150,
+          voices: AUDIO_VOICES_SAD,
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "I don't think we're where we think we are...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 150,
+          voices: AUDIO_VOICES_SAD,
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "I don't think we've been in the real world for a while now...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 200,
+          voices: AUDIO_VOICES_SAD,
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "I'm sorry...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 750,
+          voices: AUDIO_VOICES_SAD,
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "So sorry...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 750,
+          voices: AUDIO_VOICES_SAD,
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "It's seen me...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 400,
+          voices: AUDIO_VOICES_SAD,
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "I- I- I- I- I- I- sorry...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 800,
+          voices: [AUDIO_VOICE_SAD_0],
+          size: "lg",
+        },
+        {
+          header: "Uh oh...",
+          body: "You're on your own now...",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraSad.png",
+          slowRoll: true,
+          rollSpeed: 500,
+          voices: [AUDIO_VOICE_SAD_0],
           size: "lg",
         },
       ],
@@ -810,7 +945,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Something's coming...",
-          body: "TODO TODO TODO TODO TODO",
+          body: "UNWRITTEN",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           size: "lg",

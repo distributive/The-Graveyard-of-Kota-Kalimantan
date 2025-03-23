@@ -46,6 +46,11 @@ class Serialisation {
     Tutorial.deserialise(json.tutorial);
     await UiMode.deserialise(json.uiMode); // Should be last, as it will call setMode
 
+    // Ensure all enemies (i.e. Surveyors) update their visual stats after all enemies have spawned
+    for (const enemy of Enemy.instances) {
+      enemy.updateStats();
+    }
+
     Cards.updateStackHeapHeights();
     Cards.determineCanDraw();
 
@@ -105,11 +110,6 @@ class Serialisation {
   static saveSetting(key, value) {
     const address = `netrunner-sahasrara-${key}`;
     window.localStorage.setItem(address, value);
-    // Record that this setting exists in case we need to delete it later
-    let data = window.localStorage.getItem(`netrunner-sahas-flags`);
-    data = data ? JSON.parse(data) : {};
-    data[address] = true;
-    window.localStorage.setItem(`netrunner-sahas-flags`, JSON.stringify(data));
   }
   static loadSetting(key) {
     return window.localStorage.getItem(`netrunner-sahasrara-${key}`);
@@ -121,17 +121,11 @@ class Serialisation {
     return value;
   }
   static deleteAllSettings() {
-    let data = window.localStorage.getItem(`netrunner-sahas-flags`);
-    if (data) {
-      try {
-        data = JSON.parse(data);
-        for (const key of Object.keys(data)) {
-          this.deleteSetting(key);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    // window.localStorage.removeItem(`netrunner-sahas-flags`);
+    // We just hardcode these for simplicity - make sure this is up to date
+    window.localStorage.removeItem(`netrunner-sahasrara-returning`);
+    window.localStorage.removeItem(`netrunner-sahasrara-catalyst-unlocked`);
+    window.localStorage.removeItem(`netrunner-sahasrara-music-muted`);
+    window.localStorage.removeItem(`netrunner-sahasrara-sfx-muted`);
+    window.localStorage.removeItem(`netrunner-sahasrara-buttons-muted`);
   }
 }

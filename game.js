@@ -13,6 +13,7 @@ class Game {
     Broadcast.disable();
 
     Tutorial.active = !!tutorialActive;
+    Tutorial.enabled = Tutorial.active;
     Story.setNetspace(false);
 
     // Wipe existing game state (if any)
@@ -26,7 +27,6 @@ class Game {
     Stats.strength = identity.strength;
     Stats.link = identity.link;
 
-    // TODO unhardcode the decks
     const xs = [];
     if (identity.faction == FACTION_ANARCH) {
       for (let i = 0; i < 2; i++) {
@@ -43,7 +43,7 @@ class Game {
         xs.push(CardGritAndDetermination);
         xs.push(CardLastDitch);
         xs.push(CardRepurpose);
-        xs.push(CardTakeInspiration);
+        xs.push(CardFast);
       }
       xs.push(CardProjectile);
       xs.push(CardSoda);
@@ -79,7 +79,7 @@ class Game {
         cardPool.splice(index, 1);
       }
     }
-    Cards.addToStack(xs, true);
+    Cards.addToStack(xs, true, false);
 
     if (!Tutorial.active) {
       await Cards.draw(5);
@@ -89,7 +89,11 @@ class Game {
       Cards.addToStack([CardWarehouseKey, CardUnsureGamble]);
     }
 
-    Stats.setCredits(5);
+    if (Tutorial.active) {
+      Stats.setCredits(0);
+    } else {
+      Stats.setCredits(5);
+    }
 
     if (Tutorial.active) {
       const home =
@@ -151,9 +155,8 @@ class Game {
 
     Story.reset();
 
-    if (Tutorial.active) {
-      Tutorial.reset();
-    } else {
+    Tutorial.reset();
+    if (!Tutorial.active) {
       Tutorial.setMode(null);
     }
 
@@ -211,12 +214,13 @@ class Game {
     this.startTurn();
   }
 
-  // TODO - make async
-  static checkTurnEnd() {
+  // Resets the UI mode to UIMODE_SELECT_ACTION or UIMODE_END_TURN
+  static async nextAction() {
     if (Stats.clicks <= 0) {
-      UiMode.setMode(UIMODE_END_TURN);
+      await UiMode.setMode(UIMODE_END_TURN);
       return true;
     }
+    await UiMode.setMode(UIMODE_SELECT_ACTION);
     return false;
   }
 
@@ -252,9 +256,7 @@ class Game {
 
     Game.logTurnEvent("moved");
 
-    if (!Game.checkTurnEnd()) {
-      UiMode.setMode(UIMODE_SELECT_ACTION);
-    }
+    await Game.nextAction();
   }
 
   static async actionPlayCard(gripCard) {
@@ -274,11 +276,19 @@ class Game {
     ) {
       return { success: false, reason: "unique" };
     }
-    if (Stats.credits < cardData.cost) {
+    if (Stats.credits < cardData.calculateCost(gripCard)) {
       return { success: false, reason: "credits" };
     }
     if (!gripCard.playable) {
       return { success: false, reason: "unplayable" };
+    }
+
+    // Confirm action if it would cause an attack of opportunity
+    if (cardData.type == TYPE_ASSET || !cardData.preventAttacks) {
+      const confirmed = await Enemy.confirmAttackOfOpportunity();
+      if (!confirmed) {
+        return { success: false, reason: "cancelled" };
+      }
     }
 
     // Play/install the card
@@ -292,7 +302,7 @@ class Game {
       const rigCard = await Cards.install(cardData);
     } else {
       await cardData.onPlay(gripCard);
-      await Broadcast.signal("onCardPlayed", { card: gripCard }); // TODO - move to Cards
+      await Broadcast.signal("onCardPlayed", { card: gripCard }); // TODO: move to Cards
       Cards.addToHeap(gripCard.cardData);
       Audio.playEffect(AUDIO_PLAY);
     }
@@ -303,10 +313,15 @@ class Game {
     if (rigCard.tapped) {
       return;
     }
-    await rigCard.cardData.onUse(rigCard);
-    if (!Game.checkTurnEnd()) {
-      UiMode.setMode(UIMODE_SELECT_ACTION);
+    if (!rigCard.cardData.preventAttacks) {
+      const confirmed = await Enemy.confirmAttackOfOpportunity();
+      if (!confirmed) {
+        return;
+      }
+      await Enemy.attackOfOpportunity();
     }
+    await rigCard.cardData.onUse(rigCard);
+    await Game.nextAction();
   }
 
   // If location isn't set, use the current location
@@ -318,7 +333,14 @@ class Game {
       stat,
       base,
       target = location.cardData.shroud,
+      canCancelIfEngaged,
     } = data;
+    if (canCancelIfEngaged) {
+      const confirmed = await Enemy.confirmAttackOfOpportunity();
+      if (!confirmed) {
+        return;
+      }
+    }
     if (clues > location.clues) {
       clues = location.clues;
     }
@@ -367,10 +389,11 @@ class Game {
     return results;
   }
 
-  static async sufferDamage(damage) {
+  static async sufferDamage(damage, source) {
     if (RigCard.getDamageableCards().length > 0) {
       await UiMode.setMode(UIMODE_ASSIGN_DAMAGE, {
         damage: damage,
+        source: source,
       });
       const destroyedCardIds = UiMode.data.destroyedCardIds;
     } else {
@@ -379,13 +402,15 @@ class Game {
     // Detect death
     if (Identity.damage >= Identity.health) {
       Audio.playEffect(AUDIO_DEATH);
-      await new Modal(null, {
+      Audio.fadeOutMusic(1000);
+      await new Modal({
         header: "You died",
         body: ``,
         options: [new Option("", "Continue...")],
         allowKeyboard: false,
         size: "md",
       }).display();
+      Serialisation.deleteSave();
       if (Act.cardData == Act1) {
         Ending.show(ENDING_BAD_ACT_ONE);
       } else if (Act.cardData == Act2) {
@@ -405,6 +430,10 @@ class Game {
         if (Stats.clicks <= 0) {
           return;
         }
+        const confirmed = await Enemy.confirmAttackOfOpportunity();
+        if (!confirmed) {
+          return;
+        }
         if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
           await UiMode.setMode(UIMODE_SELECT_LOCATION, {
             message: "Pick a location to move to.",
@@ -417,9 +446,7 @@ class Game {
               costsClick: true,
             });
           }
-          if (!Game.checkTurnEnd()) {
-            UiMode.setMode(UIMODE_SELECT_ACTION);
-          }
+          await Game.nextAction();
         }
       });
   }
@@ -430,9 +457,7 @@ class Game {
       .click(async () => {
         if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
           await Enemy.actionEngage();
-          if (!Game.checkTurnEnd()) {
-            UiMode.setMode(UIMODE_SELECT_ACTION);
-          }
+          await Game.nextAction();
         }
       });
   }
@@ -447,9 +472,7 @@ class Game {
             canCancel: true,
             costsClick: true,
           });
-          if (!Game.checkTurnEnd()) {
-            UiMode.setMode(UIMODE_SELECT_ACTION);
-          }
+          await Game.nextAction();
         }
       });
   }
@@ -463,9 +486,7 @@ class Game {
             canCancel: true,
             costsClicks: true,
           });
-          if (!Game.checkTurnEnd()) {
-            UiMode.setMode(UIMODE_SELECT_ACTION);
-          }
+          await Game.nextAction();
         }
       });
   }
@@ -503,25 +524,29 @@ $(document).ready(function () {
     if (Stats.clicks <= 0) {
       return;
     }
+    const confirmed = await Enemy.confirmAttackOfOpportunity();
+    if (!confirmed) {
+      return;
+    }
     Stats.addClicks(-1);
     await Enemy.attackOfOpportunity();
     Stats.addCredits(1);
     Audio.playEffect(AUDIO_CREDIT);
-    if (!Game.checkTurnEnd()) {
-      UiMode.setMode(UIMODE_SELECT_ACTION);
-    }
+    await Game.nextAction();
   });
 
   $("#action-draw").click(async () => {
     if (Stats.clicks <= 0 || !Cards.canDraw()) {
       return;
     }
+    const confirmed = await Enemy.confirmAttackOfOpportunity();
+    if (!confirmed) {
+      return;
+    }
     await Stats.addClicks(-1);
     await Enemy.attackOfOpportunity();
     await Cards.draw(1);
-    if (!Game.checkTurnEnd()) {
-      UiMode.setMode(UIMODE_SELECT_ACTION);
-    }
+    await Game.nextAction();
   });
 
   Game.resetMoveButton();
@@ -530,10 +555,8 @@ $(document).ready(function () {
     if (Stats.clicks <= 0 || UiMode.uiMode != UIMODE_SELECT_ACTION) {
       return;
     }
-    await Game.actionInvestigate({ clues: 1 });
-    if (!Game.checkTurnEnd()) {
-      UiMode.setMode(UIMODE_SELECT_ACTION);
-    }
+    await Game.actionInvestigate({ clues: 1, canCancelIfEngaged: true });
+    await Game.nextAction();
   });
 
   Game.resetEngageButton();

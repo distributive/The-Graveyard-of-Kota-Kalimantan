@@ -91,7 +91,7 @@ const TreacheryFallingDebris = new TreacheryData("falling_debris", {
     if (results.success) {
       return;
     }
-    await Game.sufferDamage(2);
+    await Game.sufferDamage(2, "Falling Debris");
   },
 });
 
@@ -160,7 +160,7 @@ const TreacherySomethingInTheDark = new TreacheryData("something_in_the_dark", {
         true
       );
     } else {
-      await Game.sufferDamage(2);
+      await Game.sufferDamage(2, "In the Dark");
     }
   },
 });
@@ -172,7 +172,7 @@ const TreacheryRapidDecay = new EventData("rapid_decay", {
   smallText: true,
   faction: FACTION_NEUTRAL,
   image: "img/card/event/rapidDecay.png",
-  cost: 3,
+  cost: 5,
   uncollectable: true,
   async onEncounter() {
     Cards.addToStack([TreacheryRapidDecay, TreacheryRapidDecay], true);

@@ -5,7 +5,7 @@
 CardWarehouseKey = new AssetData("warehouse_key", {
   title: "Warehouse Key",
   text: "{click}: Unlock the warehouse. Draw 2 cards. Remove this asset from the game.",
-  flavour: `TODO: write some backstory as to how you got this."`,
+  flavour: `UNWRITTEN: write some backstory as to how you got this."`,
   subtypes: ["item"],
   faction: FACTION_NEUTRAL,
   image: "img/card/asset/warehouseKey.png",
@@ -76,7 +76,7 @@ CardWarehouseKey = new AssetData("warehouse_key", {
 CardUnsureGamble = new EventData("unsureGamble", {
   title: "Unsure Gamble",
   text: "Test 0{influence}. If successful, gain 4{c}.",
-  flavour: `Lady luck took the form of rolling 3 autofails in a row, proceeding to get defeated in act 3 and just looking up the scoop on Sunday instead.`,
+  flavour: `Lady luck took the form of rolling 3 autofails in a row, giving up, and looking up the scoop instead.`,
   subtypes: ["familiar", "gambit"],
   faction: FACTION_NEUTRAL,
   image: "img/card/event/offShoreFund.png",

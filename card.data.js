@@ -129,7 +129,6 @@ class NonTreacheryData extends CardData {
   async onCardDiscarded(source, data) {CardData.log("onCardDiscarded", data)} // Trashing from hand is the same as discarding
   async onAssetTrashed(source, data) {CardData.log("onAssetTrashed", data)} // Trashing means specifically while installed
 
-  async onTestAttempted(source, data) {CardData.log("onTestAttempted")}
   async onTestCompleted(source, data) {CardData.log("onTestCompleted")}
 
   async onActAdvanced(source, data) {CardData.log("onActAdvanced", data)}
@@ -175,8 +174,14 @@ class IdentityData extends NonTreacheryData {
   canUse(source, data) { return this.onUse != null; }
   // onUse(source, data) {} // Leave this unset for canUse
 
-  // TODO - complete
-  populate(jObj) {}
+  populate(jObj) {
+    jObj.addClass("identity");
+    const jCardText = $(`
+      <div class="card-text-health">${this.health}</div>
+    `);
+    jObj.append(jCardText);
+    jObj.find(".card-text-text").append(this.jText);
+  }
 }
 
 class PlayableCardData extends NonTreacheryData {

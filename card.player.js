@@ -23,7 +23,7 @@ const CardTopan = new IdentityData("topan", {
   mu: 3,
   strength: 4,
   link: 3,
-  health: 7,
+  health: 8,
   canUse(source) {
     return (
       !Tutorial.active && // Inactive during the tutorial
@@ -56,9 +56,9 @@ const CardTopan = new IdentityData("topan", {
     });
     await Cards.install(UiMode.data.selectedCards[0].cardData);
     await Stats.addCredits(
-      -Math.max(0, UiMode.data.selectedCards[0].cardData.cost - 2) // TODO: use calculateCost not cost
+      -Math.max(0, UiMode.data.selectedCards[0].cardData.cost - 2) // TODO: this will break if there is ever an asset with variable cost
     );
-    Cards.removeGripCard(UiMode.data.selectedCards[0]);
+    Cards.removeGripCard(UiMode.data.selectedCards[0], true);
 
     if (Cards.grip.length == 0) {
       return;
@@ -88,7 +88,7 @@ const CardBaz = new IdentityData("baz", {
   mu: 2,
   strength: 2,
   link: 5,
-  health: 7,
+  health: 9,
   async onPlayerEngages() {
     // Inactive in the tutorial
     if (Tutorial.active) {
@@ -119,9 +119,9 @@ const CardBaz = new IdentityData("baz", {
       await Cards.install(UiMode.data.selectedCards[0].cardData);
 
       await Stats.addCredits(
-        -UiMode.data.selectedCards[0].cardData.cost // TODO: use calculateCost not cost
+        -UiMode.data.selectedCards[0].cardData.cost // TODO: this will break if there is ever an asset with variable cost
       );
-      Cards.removeGripCard(UiMode.data.selectedCards[0]);
+      Cards.removeGripCard(UiMode.data.selectedCards[0], true);
     }
   },
 });

@@ -233,7 +233,7 @@ $(document).ready(function () {
         Whenever you resolve a test, you pick a random token from the chaos pool. You then add the value of that token to the base value of that test (equal to your base stat in the relevant skill). If your final skill value is at least the value of the test, it succeeds.
       </p>
       <p>
-        For example, if you test 4 <img class="inline-token" src="img/game/influence.png" />, and your base influence value is 3, you must pick a token with a value of at least 1 to succeed.
+        For example, if you test 4 <img class="inline-icon" src="img/game/influence.png" />, and your base influence value is 3, you must pick a token with a value of at least 1 to succeed.
       </p>
       <p>
         Whenever you resolve a test, you may first commit cards from hand with the relevant skill icon along their side. Each card committed this way is discarded and adds 1 to your base skill value.
@@ -254,7 +254,7 @@ $(document).ready(function () {
         <li><img class="inline-token" src="img/game/tokenSkull.png" /> - Skull: +0. If you fail the test, suffer 1 damage.</li>
       </ul>
     `;
-    const modal = new Modal(null, {
+    const modal = new Modal({
       header: "Chaos bag",
       body: body,
       options: [new Option("", "Close")],

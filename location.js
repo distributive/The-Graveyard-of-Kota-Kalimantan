@@ -5,7 +5,7 @@ const LOCATION_ZOOMS = [0.3, 0.39, 0.5, 0.65, 0.85, 1.1, 1.5];
 const LOCATION_ZOOM_DEFAULT = 3; // index
 
 class Location {
-  // STATIC
+  // MAP
   static get window() {
     return $("#location-window");
   }
@@ -35,11 +35,11 @@ class Location {
     this.setMapOffset(0, 0, movePeriod);
     $("#map-reset").attr(
       "disabled",
-      !this.currentLocation || this.currentLocation.pos == [0, 0]
+      !this.#currentLocation || this.#currentLocation.pos == [0, 0]
     );
   }
   static focusMapOffsetCurrentLocation() {
-    if (this.currentLocation) {
+    if (this.#currentLocation) {
       this.focusMapOffsetToLocation(this.getCurrentLocation());
       $("#map-reset").attr("disabled", true);
     } else {
@@ -78,16 +78,17 @@ class Location {
     return y * (LOCATION_HEIGHT + LOCATION_GAP);
   }
 
+  // STATIC
   static instances = [];
-  static idToInstance = {};
-  static currentLocation = null;
-  static nextId = 0;
+  static #idToInstance = {};
+  static #nextId = 0;
+  static #currentLocation = null;
 
   static getCurrentLocation() {
-    return this.currentLocation;
+    return this.#currentLocation;
   }
   static getInstance(id) {
-    return this.idToInstance[id];
+    return this.#idToInstance[id];
   }
 
   static getValidDestinations() {
@@ -128,15 +129,16 @@ class Location {
   }
 
   // Deletes all neighbour relations, hosted enemies, and the location jObj#
+  // Does not update player distance
   static remove(location, force = false) {
     if (location == this.getCurrentLocation() && !force) {
       throw new Error("Attmpted to delete current location!");
     }
-    for (const neighbour of location.#neighbours) {
-      location.removeNeighbour(neighbour);
+    while (location.#neighbours.length > 0) {
+      location.removeNeighbour(location.#neighbours[0]);
     }
-    for (const enemy of location.#enemies) {
-      enemy.remove();
+    while (location.#enemies.length > 0) {
+      location.#enemies[0].remove();
     }
     location.#jObj.remove();
     const index = this.instances.indexOf(location);
@@ -153,6 +155,8 @@ class Location {
     while (this.instances.length > 0) {
       this.remove(this.instances[0], true);
     }
+    this.#idToInstance = {};
+    this.#nextId = 0;
     // This shouldn't be necessary but until I work out why these aren't getting cleaned up properly this will ensure they do
     $(".location-connector").remove();
   }
@@ -173,7 +177,7 @@ class Location {
     });
     return {
       current: this.getCurrentLocation().id,
-      nextId: this.nextId,
+      nextId: this.#nextId,
       locations: locations,
     };
   }
@@ -192,7 +196,7 @@ class Location {
         data
       );
     });
-    this.nextId = json.nextId;
+    this.#nextId = json.nextId;
 
     // Create connections
     json.locations.forEach((data) => {
@@ -226,11 +230,11 @@ class Location {
   #jDoom = null;
 
   constructor(cardData, x, y, doAnimate = true, data = null) {
-    this.#id = data && data.id ? data.id : Location.nextId++;
+    this.#id = data && data.id ? data.id : Location.#nextId++;
     this.#cardData = cardData;
     this.#x = x;
     this.#y = y;
-    Location.idToInstance[this.#id] = this;
+    Location.#idToInstance[this.#id] = this;
     Location.instances.push(this);
     Location.recordLocationByPosition(this);
 
@@ -246,11 +250,6 @@ class Location {
         </div>
       </div>`);
     this.#jObj = jObj;
-    // Cards.populateData(
-    //   jObj.find(".card-image-container"),
-    //   this.#cardData,
-    //   "10px"
-    // );
     jObj.data("location-id", this.#id);
     jObj.data("card-id", this.#cardData.id);
     Location.root.append(jObj);
@@ -405,13 +404,13 @@ class Location {
   }
 
   setCurrentLocation(firstTime = false) {
-    if (Location.currentLocation == this) {
+    if (Location.#currentLocation == this) {
       return this;
     }
-    if (Location.currentLocation) {
-      Location.currentLocation.#jObj.removeClass("current-location");
+    if (Location.#currentLocation) {
+      Location.#currentLocation.#jObj.removeClass("current-location");
     }
-    Location.currentLocation = this;
+    Location.#currentLocation = this;
     this.#jObj.addClass("current-location");
 
     // Reassign valid destinations
@@ -452,7 +451,8 @@ class Location {
     return this;
   }
 
-  // assume all connections are bidirectional
+  // Does not recalculate player distance
+  // Assumes all connections are bidirectional
   addNeighbour(neighbour) {
     if (!neighbour || this.#neighbours.includes(neighbour)) {
       return this;
@@ -476,10 +476,10 @@ class Location {
     this.#connections[neighbour.#id] = jLine;
     neighbour.#connections[this.#id] = jLine;
 
-    if (Location.currentLocation == this) {
+    if (Location.#currentLocation == this) {
       jLine.addClass("valid-connection");
       neighbour.#jObj.addClass("valid-destination");
-    } else if (Location.currentLocation == neighbour) {
+    } else if (Location.#currentLocation == neighbour) {
       jLine.addClass("valid-connection");
       this.#jObj.addClass("valid-destination");
     }
@@ -487,6 +487,7 @@ class Location {
     return this;
   }
 
+  // Does not recalculate player distance
   removeNeighbour(neighbour) {
     // Remove neighbour relation
     let index = this.#neighbours.indexOf(neighbour);
@@ -495,7 +496,7 @@ class Location {
     }
     index = neighbour.#neighbours.indexOf(this);
     if (index > -1) {
-      this.#neighbours.splice(index, 1);
+      neighbour.#neighbours.splice(index, 1);
     }
 
     // Remove connection
