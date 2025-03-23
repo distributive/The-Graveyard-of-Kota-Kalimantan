@@ -21,6 +21,14 @@ class Modal {
     return $("#modal").css("display") != "none";
   }
 
+  static toggleSlowRoll() {
+    Serialisation.saveSetting("slow-roll-disabled", !this.slowRollDisabled);
+  }
+  static get slowRollDisabled() {
+    const disabled = Serialisation.loadSetting("slow-roll-disabled");
+    return disabled ? disabled == "true" : false;
+  }
+
   // INSTANCE
   #header;
   #body;
@@ -55,7 +63,7 @@ class Modal {
     this.#allowKeyboard = allowKeyboard;
     this.#image = image;
     this.#cardData = cardData;
-    this.#slowRoll = slowRoll;
+    this.#slowRoll = Modal.slowRollDisabled ? false : slowRoll;
     this.#rollSpeed = rollSpeed ? rollSpeed : 30;
     this.#voices = voices ? voices : AUDIO_VOICES;
     this.#size = size;

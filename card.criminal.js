@@ -217,12 +217,12 @@ CardSpike = new AssetData("spike", {
 // EVENTS
 
 CardBackflip = new EventData("backflip", {
-  title: "Backflip",
+  title: "Parry",
   text: "<b>Evade.</b> If successful, download a data from this location.",
   flavour: `"I've still got it."`,
   subtypes: ["talent", "evade"],
   faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
+  image: "img/card/event/parry.png",
   cost: 2,
   preventAttacks: true,
   skills: ["mu", "link"],
@@ -244,17 +244,19 @@ CardBackflip = new EventData("backflip", {
   },
 });
 
-CardDifficultJohn = new EventData("difficult_john", {
-  title: "Difficult John",
-  text: "Gain 6{c}. Lose 3{c}.",
-  subtypes: ["trick"],
+CardZhanZhuang = new EventData("zhan_zhuang", {
+  title: "Zhan zhuang",
+  text: "Gain 2{c}. Draw 1 card.",
+  flavour:
+    "Baz clears his head and focuses. He's done this before, he can do it again.",
+  subtypes: ["talent"],
   faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
+  image: "img/card/event/zhanZhuang.png",
   cost: 0,
   skills: ["influence"],
   async onPlay() {
-    await Stats.addCredits(6);
-    await Stats.addCredits(-3);
+    await Stats.addCredits(2);
+    await Cards.draw(1);
   },
 });
 

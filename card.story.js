@@ -28,7 +28,7 @@ Act1 = new ActData("act_1", {
     } else {
       spawnLoc = Location.getCurrentLocation();
     }
-    new Enemy(EnemyRat, spawnLoc);
+    await Enemy.spawn(EnemyRat, spawnLoc);
   },
 });
 

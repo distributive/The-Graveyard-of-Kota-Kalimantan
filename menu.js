@@ -326,6 +326,14 @@ class Menu {
       options.push(
         new Option("buttons", Audio.buttonsMuted ? "Unmute UI" : "Mute UI")
       );
+      options.push(
+        new Option(
+          "slowRoll",
+          Modal.slowRollDisabled
+            ? "Enable text animation"
+            : "Disable text animation"
+        )
+      );
       if (inGame) {
         options.push(null);
         options.push(new Option("credits", "Credits"));
@@ -358,6 +366,8 @@ class Menu {
         Audio.toggleSfx();
       } else if (option == "buttons") {
         Audio.toggleButtons();
+      } else if (option == "slowRoll") {
+        Modal.toggleSlowRoll();
       } else if (option == "reset") {
         const confirm = await new Modal({
           body: `This will delete your current game progress.`,

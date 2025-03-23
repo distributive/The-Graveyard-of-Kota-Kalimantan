@@ -164,6 +164,6 @@ class Story {
 
     // Wait for the camera to move then spawn
     await wait(600);
-    const boss = new Enemy(EnemyHantu, spawnLoc);
+    await Enemy.spawn(EnemyHantu, spawnLoc);
   }
 }

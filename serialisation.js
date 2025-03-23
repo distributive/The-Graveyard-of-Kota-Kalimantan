@@ -127,5 +127,6 @@ class Serialisation {
     window.localStorage.removeItem(`netrunner-sahasrara-music-muted`);
     window.localStorage.removeItem(`netrunner-sahasrara-sfx-muted`);
     window.localStorage.removeItem(`netrunner-sahasrara-buttons-muted`);
+    window.localStorage.removeItem(`netrunner-sahasrara-slow-roll-disabled`);
   }
 }

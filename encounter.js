@@ -74,8 +74,7 @@ class Encounter {
     }).display();
     if (cardData.type == TYPE_ENEMY) {
       Modal.hide();
-      const enemy = new Enemy(cardData);
-      await enemy.setLocation(Location.getCurrentLocation());
+      await Enemy.spawn(cardData);
     } else {
       // Cursed note: onEncounter has to close the modal itself if the encounter effect does not need one
       await cardData.onEncounter();

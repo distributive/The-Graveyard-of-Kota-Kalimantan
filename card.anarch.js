@@ -262,7 +262,7 @@ CardDownloadTheSigns = new EventData("download_the_signs", {
   text: "<b>Jack in.</b> Add your {strength} to your {mu} for this test. If successful, download an additional data from this location.",
   subtypes: ["hack"],
   faction: FACTION_ANARCH,
-  image: "img/card/event/bgAnarch.png",
+  image: "img/card/event/downloadTheSigns.png",
   cost: 2,
   skills: ["mu", "strength"],
   canPlay(source, data) {

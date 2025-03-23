@@ -58,7 +58,7 @@ class Game {
         xs.push(CardShiv);
         xs.push(CardSpike);
         xs.push(CardBackflip);
-        xs.push(CardDifficultJohn);
+        xs.push(CardZhanZhuang);
         xs.push(CardJackOfAll);
         xs.push(CardEmpDevice);
         xs.push(CardInsideJob);

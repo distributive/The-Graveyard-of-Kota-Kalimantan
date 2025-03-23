@@ -5,12 +5,14 @@ class Enemy {
   static #nextId = 0;
   static #idToInstance = {};
 
-  static async spawn(cardData, location) {
-    if (!location) {
-      location = Location.getCurrentLocation();
-    }
-    new Enemy(cardData, location);
+  static async spawn(cardData, location, data) {
+    const enemy = new Enemy(cardData, !data, data);
     await Broadcast.signal("onEnemySpawns", { enemy: this });
+    await enemy.setLocation(
+      location ? location : Location.getCurrentLocation(),
+      !data
+    );
+    return enemy;
   }
 
   static getInstance(id) {
@@ -329,12 +331,7 @@ class Enemy {
 
     // Create new enemies
     json.enemies.forEach((data) => {
-      const enemy = new Enemy(
-        CardData.getCard(data.id),
-        Location.getInstance(data.location),
-        false,
-        data
-      );
+      this.spawn(CardData.getCard(data.id), false, data);
     });
   }
 
@@ -354,7 +351,8 @@ class Enemy {
   #clues;
   #doom;
 
-  constructor(cardData, location, doAnimate = true, data) {
+  // This does not set the location of the enemy, as that is async
+  constructor(cardData, doAnimate = true, data) {
     this.#id = data && data.id ? data.id : Enemy.#nextId++;
     Enemy.#idToInstance[this.#id] = this;
 
@@ -411,11 +409,6 @@ class Enemy {
         this.exhausted = true;
       }
     }
-
-    this.setLocation(
-      location ? location : Location.getCurrentLocation(),
-      !data
-    );
   }
 
   get cardData() {
