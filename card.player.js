@@ -1,10 +1,11 @@
 const CardTheCatalyst = new IdentityData("the_catalyst", {
   title: "The Catalyst",
   text: "Start the game with a random deck of cards containing no duplicates.",
-  flavour: `It's me! The Catalyst! From Gateway!"`,
+  flavour: `"It's me! The Catalyst! From Gateway!"`,
   subtypes: ["natural"],
   faction: FACTION_NEUTRAL,
   image: "img/card/identity/theCatalyst.png",
+  illustrator: "Illustrator: Benjamin Giletti",
   influence: 4,
   mu: 4,
   strength: 4,
@@ -19,23 +20,30 @@ const CardTopan = new IdentityData("topan", {
   subtypes: ["natural"],
   faction: FACTION_ANARCH,
   image: "img/card/identity/topan.png",
+  illustrator: "Illustrator: Zefanya Langkan Maega",
   influence: 4,
   mu: 3,
   strength: 4,
   link: 3,
   health: 8,
   canUse(source) {
-    return (
-      !Tutorial.active && // Inactive during the tutorial
-      !source.tapped &&
-      Cards.grip.some(
-        (card) =>
-          card.cardData.type == TYPE_ASSET &&
-          Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits &&
-          (!card.cardData.unique ||
-            Cards.installedCards.every((c) => c.cardData != card.cardData))
-      )
+    const tutorial = !Tutorial.active; // Inactive during the tutorial
+    const untapped = !source.tapped;
+    const validTargets = Cards.grip.some(
+      (card) =>
+        card.cardData.type == TYPE_ASSET &&
+        Math.max(0, card.cardData.calculateCost(card) - 2) <= Stats.credits &&
+        (!card.cardData.unique ||
+          Cards.installedCards.every((c) => c.cardData != card.cardData))
     );
+    return {
+      success: tutorial && untapped && validTargets,
+      reason: !untapped
+        ? "This card has been exhausted."
+        : !validTargets
+        ? "There is no valid target in your hand."
+        : null,
+    };
   },
   async onUse(source) {
     source.tapped = true;
@@ -80,10 +88,11 @@ const CardTopan = new IdentityData("topan", {
 const CardBaz = new IdentityData("baz", {
   title: "Baz: Crime Boss",
   text: "The first time each turn an enemy engages you, you may install a card.",
-  flavour: '"Don\'t get in my way."',
+  flavour: `"Don't get in my way."`,
   subtypes: ["cyborg"],
   faction: FACTION_CRIMINAL,
   image: "img/card/identity/baz.png",
+  illustrator: "Illustrator: efanya Langkan Maega",
   influence: 4,
   mu: 2,
   strength: 2,

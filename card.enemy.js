@@ -243,6 +243,7 @@ const EnemyHantu = new EnemyData("hantu", {
   subtypes: ["ice", "elite"],
   faction: FACTION_NET,
   image: "img/card/enemy/hantu.png",
+  illustrator: "Illustrator: Júlio Rocha",
   strength: 5,
   health: 12,
   link: 4,

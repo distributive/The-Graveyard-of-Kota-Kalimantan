@@ -184,7 +184,7 @@ class Game {
   }
   static async endTurn() {
     this.#turnEvents = {};
-    UiMode.setMode(UIMODE_CORP_TURN);
+    await UiMode.setMode(UIMODE_CORP_TURN);
 
     await Stats.setClicks(0);
     await Stats.addCredits(1);
@@ -278,6 +278,10 @@ class Game {
     }
     if (Stats.credits < cardData.calculateCost(gripCard)) {
       return { success: false, reason: "credits" };
+    }
+    const canPlay = cardData.canPlay(gripCard);
+    if (!canPlay.success) {
+      return { success: false, reason: canPlay.reason };
     }
     if (!gripCard.playable) {
       return { success: false, reason: "unplayable" };

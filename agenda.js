@@ -27,14 +27,15 @@ class Agenda {
     if (value != this.#doom && doAnimate) {
       animate(jDoom, 500);
     }
-    if (this.#doom < value) {
+    const doomIncreasing = this.#doom < value;
+    this.#doom = value;
+    if (doomIncreasing) {
       await Broadcast.signal("onDoomPlaced", {
         doom: value,
         card: this,
         cardData: this.cardData,
       });
     }
-    this.#doom = value;
     return this;
   }
   static async addDoom(value, doAnimate = true) {

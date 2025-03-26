@@ -53,7 +53,11 @@ CardPennyearner = new AssetData("pennyearner", {
     source.addPower(1);
   },
   canUse(source) {
-    return source.power > 0;
+    const success = source.power > 0;
+    return {
+      success: success,
+      reason: success ? null : "Pennyearner has no hosted credits to take.",
+    };
   },
   async onUse(source, data) {
     Stats.addClicks(-1);
@@ -67,7 +71,7 @@ CardPennyearner = new AssetData("pennyearner", {
 
 CardAkauntan = new AssetData("akauntan", {
   title: "Akauntan",
-  text: "The first time each turn you evade an enemy, do 1 damage to it and gain 2{c}.",
+  text: "The first time each turn you evade an enemy, do 1 damage to it and gain 1{c}.",
   subtypes: ["icebreaker"],
   unique: false,
   faction: FACTION_CRIMINAL,
@@ -81,7 +85,7 @@ CardAkauntan = new AssetData("akauntan", {
     }
     if (!Game.getTurnEvent("evaded")) {
       data.enemy.addDamage(1);
-      await Stats.addCredits(2);
+      await Stats.addCredits(1);
     }
   },
 });
@@ -115,7 +119,7 @@ CardForgedDocuments = new AssetData("forged_documents", {
 
 CardCrowbar = new AssetData("crowbar", {
   title: "Crowbar",
-  text: "Uses 2 power counters.\n{click}, power counter: <b>Jack in.</b> During this skill test, add your {link} to your {mu}. If successful, download 1 additional data.",
+  text: "Uses 2 power counters.\n{click}, power counter: <b>Jack in.</b> During this skill test, add your {link} to your {mu}. If successful, download 1 additional data.<br>Limit 2 installed weapons.",
   subtypes: ["item", "weapon"],
   unique: false,
   faction: FACTION_CRIMINAL,
@@ -127,9 +131,34 @@ CardCrowbar = new AssetData("crowbar", {
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
+    const installedWeapons = Cards.installedCards.filter((card) =>
+      card.cardData.subtypes.includes("weapon")
+    );
+    if (installedWeapons.length > 2) {
+      await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
+        validTargets: installedWeapons,
+        minCards: installedWeapons.length - 2,
+        maxCards: installedWeapons.length - 2,
+        reason: "You have exceeded the limit on installed weapons",
+        effect: "to trash",
+        canCancel: false,
+      });
+      for (const card of UiMode.data.selectedCards) {
+        await Cards.trashInstalledCard(card);
+      }
+    }
   },
   canUse(source) {
-    return source.power > 0 && Location.getCurrentLocation().clues > 0;
+    const power = source.power > 0;
+    const clues = Location.getCurrentLocation().clues > 0;
+    return {
+      success: power && clues,
+      reason: !power
+        ? "Crowbar has no more hosted power counters to spend."
+        : !clues
+        ? "There is no data at your current location."
+        : null,
+    };
   },
   async onUse(source, data) {
     await Stats.addClicks(-1);
@@ -147,7 +176,7 @@ CardCrowbar = new AssetData("crowbar", {
 
 CardShiv = new AssetData("shiv", {
   title: "Shiv",
-  text: "Uses 2 power counters.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.",
+  text: "Uses 2 power counters.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.<br>Limit 2 installed weapons.",
   subtypes: ["item", "weapon", "attack"],
   unique: false,
   faction: FACTION_CRIMINAL,
@@ -160,9 +189,34 @@ CardShiv = new AssetData("shiv", {
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
+    const installedWeapons = Cards.installedCards.filter((card) =>
+      card.cardData.subtypes.includes("weapon")
+    );
+    if (installedWeapons.length > 2) {
+      await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
+        validTargets: installedWeapons,
+        minCards: installedWeapons.length - 2,
+        maxCards: installedWeapons.length - 2,
+        reason: "You have exceeded the limit on installed weapons",
+        effect: "to trash",
+        canCancel: false,
+      });
+      for (const card of UiMode.data.selectedCards) {
+        await Cards.trashInstalledCard(card);
+      }
+    }
   },
   canUse(source) {
-    return source.power > 0 && Enemy.getEnemiesAtCurrentLocation().length > 0;
+    const power = source.power > 0;
+    const enemies = Enemy.getEnemiesAtCurrentLocation().length > 0;
+    return {
+      success: power && enemies,
+      reason: !power
+        ? "Shiv has no more hosted power counters to spend."
+        : !enemies
+        ? "There are no enemies at this location."
+        : null,
+    };
   },
   async onUse(source, data) {
     await Stats.addClicks(-1);
@@ -178,7 +232,7 @@ CardShiv = new AssetData("shiv", {
 
 CardSpike = new AssetData("spike", {
   title: "Spike",
-  text: "Uses 2 power counters.\n{click}, power counter: Move twice. Enemies at those locations do not engage you.",
+  text: "Uses 2 power counters.\n{click}, power counter: Move twice. Enemies at those locations do not engage you.<br>Limit 2 installed weapons.",
   subtypes: ["item", "weapon", "stealth"],
   unique: false,
   faction: FACTION_CRIMINAL,
@@ -186,12 +240,35 @@ CardSpike = new AssetData("spike", {
   cost: 3,
   health: 2,
   skills: ["influence", "mu"],
+  smallText: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
+    const installedWeapons = Cards.installedCards.filter((card) =>
+      card.cardData.subtypes.includes("weapon")
+    );
+    if (installedWeapons.length > 2) {
+      await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
+        validTargets: installedWeapons,
+        minCards: installedWeapons.length - 2,
+        maxCards: installedWeapons.length - 2,
+        reason: "You have exceeded the limit on installed weapons",
+        effect: "to trash",
+        canCancel: false,
+      });
+      for (const card of UiMode.data.selectedCards) {
+        await Cards.trashInstalledCard(card);
+      }
+    }
   },
   canUse(source) {
-    return source.power > 0;
+    const power = source.power > 0;
+    return {
+      success: power,
+      reason: power
+        ? null
+        : "Spike has no more hosted power counters to spend.",
+    };
   },
   async onUse(source, data) {
     await Stats.addClicks(-1);
@@ -227,10 +304,16 @@ CardBackflip = new EventData("backflip", {
   preventAttacks: true,
   skills: ["mu", "link"],
   canPlay(source) {
-    return (
-      Location.getCurrentLocation().clues > 0 &&
-      Enemy.getEngagedEnemies().length > 0
-    );
+    const clues = Location.getCurrentLocation().clues > 0;
+    const engaged = Enemy.getEngagedEnemies().length > 0;
+    return {
+      success: clues && engaged,
+      reason: !engaged
+        ? "You are not engaged with an enemy."
+        : !clues
+        ? "There is no data at your current location."
+        : null,
+    };
   },
   async onPlay(source, data) {
     const { results } = await Enemy.actionEvade({
@@ -293,7 +376,11 @@ CardEmpDevice = new EventData("emp_device", {
   skills: ["strength"],
   preventAttacks: true,
   canPlay(source) {
-    return Enemy.getEngagedEnemies().length > 0;
+    const success = Enemy.getEngagedEnemies().length > 0;
+    return {
+      success: success,
+      reason: success ? null : "There are no enemies at your current location.",
+    };
   },
   async onPlay(source, data) {
     const locations = Location.getCurrentLocation().neighbours;
@@ -309,15 +396,22 @@ CardEmpDevice = new EventData("emp_device", {
 
 CardInsideJob = new EventData("inside_job", {
   title: "Inside Job",
-  text: "<b>Jack in.</b> If successful, discover a clue at an adjacent location.",
+  text: "<b>Jack in.</b> If successful, instead download 1 data at an adjacent location.",
   subtypes: ["tactic"],
   faction: FACTION_CRIMINAL,
   image: "img/card/event/bgCriminal.png",
+  illustrator: "Illustrator: PiCat",
   cost: 2,
   skills: ["mu"],
   canPlay(source) {
     const locations = Location.getCurrentLocation().neighbours;
-    return locations.some((location) => location.clues > 0);
+    const success = locations.some((location) => location.clues > 0);
+    return {
+      success: success,
+      reason: success
+        ? null
+        : "There are no data at any neighbouring locations.",
+    };
   },
   async onPlay(source, data) {
     const locations = Location.getCurrentLocation().neighbours.filter(
@@ -346,7 +440,11 @@ CardPush = new EventData("push", {
   skills: ["strength"],
   preventAttacks: true,
   canPlay(source) {
-    return Enemy.getEnemiesAtCurrentLocation().length > 0;
+    const success = Enemy.getEnemiesAtCurrentLocation().length > 0;
+    return {
+      success: success,
+      reason: success ? null : "There are no enemies at your current location.",
+    };
   },
   async onPlay(source, data) {
     let creditsSpent = 0;
@@ -386,6 +484,7 @@ CardTreadLightly = new EventData("tread_lightly", {
   subtypes: ["talent", "stealth"],
   faction: FACTION_CRIMINAL,
   image: "img/card/event/bgCriminal.png",
+  illustrator: "Illustrator: Lish",
   cost: 1,
   skills: ["link"],
   async onPlay() {

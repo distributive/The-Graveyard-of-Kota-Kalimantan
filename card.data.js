@@ -171,16 +171,21 @@ class IdentityData extends NonTreacheryData {
   }
 
   // Determines if the identity can be used
-  canUse(source, data) { return this.onUse != null; }
+  canUse(source, data) {
+    return {
+      success: this.onUse != null,
+      reason: null,
+    };
+  }
   // onUse(source, data) {} // Leave this unset for canUse
 
   populate(jObj) {
-    jObj.addClass("identity");
-    const jCardText = $(`
-      <div class="card-text-health">${this.health}</div>
-    `);
-    jObj.append(jCardText);
-    jObj.find(".card-text-text").append(this.jText);
+    // jObj.addClass("identity");
+    // const jCardText = $(`
+    //   <div class="card-text-health">${this.health}</div>
+    // `);
+    // jObj.append(jCardText);
+    // jObj.find(".card-text-text").append(this.jText);
   }
 }
 
@@ -193,7 +198,7 @@ class PlayableCardData extends NonTreacheryData {
   // Adds any non-printed play/install costs
   calculateCost(source, data) { return this.cost; }
   // Lists any non-cost requirements to play/install
-  canPlay(source, data) { return true; }
+  canPlay(source, data) { return { success: true }; }
 
   async onPlay(source, data) {CardData.log("onPlay", data)}
   async onDiscard(source, data) {CardData.log("onDiscard", data)}
@@ -216,7 +221,12 @@ class AssetData extends PlayableCardData {
   }
 
   // Determines if the asset can be used while installed
-  canUse(source, data) { return this.onUse != null; }
+  canUse(source, data) {
+    return {
+      success: this.onUse != null,
+      reason: null,
+    };
+  }
   // async onUse(source, data) {} // Leave this unset for canUse
   // async onTapped() {}
   // async onUntapped() {}

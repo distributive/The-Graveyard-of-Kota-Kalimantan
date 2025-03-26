@@ -306,23 +306,27 @@ class UiMode {
 
   // UIMODE_SELECT_INSTALLED_CARD
   // data {
+  //  validTargets,
   //  minCards,
   //  maxCards,
+  //  reason,
+  //  effect,
   //  canCancel,
   // [Assigned by enterSelectInstalledCard]
   //  success,
   // }
   static async enterSelectInstalledCard() {
-    // Highlight damageable cards
-    RigCard.highlightSelectableCards();
-
+    // Highlight cards
+    RigCard.highlightCards(this.data.validTargets);
     // Create alert
+    const effect = this.data.effect ? ` ${this.data.effect}` : "";
     const message =
-      this.data.minCards != this.data.maxCards
-        ? `Select between ${this.data.minCards} and ${this.data.maxCards} installed cards, inclusive.`
+      (this.data.reason ? `${this.data.reason}: ` : "") +
+      (this.data.minCards != this.data.maxCards
+        ? `Select between ${this.data.minCards} and ${this.data.maxCards} installed cards, inclusive${effect}.`
         : `Select ${this.data.maxCards} installed ${
             this.data.maxCards == 1 ? "card" : "cards"
-          }.`;
+          }${effect}.`);
     const options = [new Option("accept", "Accept")];
     if (this.data.canCancel) {
       options.push(new Option("cancel", "Cancel", "warning"));

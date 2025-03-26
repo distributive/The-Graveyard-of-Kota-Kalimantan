@@ -1,14 +1,3 @@
-// Example room for the tutorial
-const LocationRoom = new LocationData("room", {
-  title: "Room",
-  text: "",
-  subtypes: ["place"],
-  faction: FACTION_MEAT,
-  image: "img/card/location/bg.png",
-  shroud: 3,
-  clues: 2,
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 // TUTORIAL
 
@@ -18,6 +7,7 @@ const LocationApartment = new LocationData("apartment", {
   subtypes: ["building"],
   faction: FACTION_MEAT,
   image: "img/card/location/apartment.png",
+  illustrator: "Photo by Khachik Simonian, Unsplash (modified)",
   shroud: 0,
   clues: 0,
 });
@@ -28,6 +18,7 @@ const LocationHideout = new LocationData("hideout", {
   subtypes: ["building"],
   faction: FACTION_MEAT,
   image: "img/card/location/hideout.png",
+  illustrator: "Photo by Mark Eder, Unsplash (modified)",
   shroud: 0,
   clues: 0,
 });
@@ -38,6 +29,7 @@ const LocationPenthouse = new LocationData("penthouse", {
   subtypes: ["building"],
   faction: FACTION_MEAT,
   image: "img/card/location/penthouse.png",
+  illustrator: "Photo by Mostafa Safadel, Unsplash (modified)",
   shroud: 0,
   clues: 0,
 });
@@ -49,6 +41,7 @@ const LocationWarehouse = new LocationData("warehouse", {
   subtypes: ["building"],
   faction: FACTION_MEAT,
   image: "img/card/location/warehouse.png",
+  illustrator: "Photo by Zach Heiberg, Unsplash (modified)",
   shroud: 0,
   clues: 0,
   enterSfx: AUDIO_MOVE_OUTSIDE,
@@ -92,7 +85,7 @@ const LocationUnknownMeat = new LocationData("unknown_meat", {
       cardData = LocationCorridor;
     }
     source.setCard(cardData);
-    source.addClues(cardData.clues);
+    await source.addClues(cardData.clues);
   },
 });
 
@@ -104,6 +97,7 @@ const LocationCorridor = new LocationData("corridor", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/corridor.png",
+  illustrator: "Photo by Matthew Feeney, Unsplash (modified)",
   shroud: 2,
   clues: 0,
 });
@@ -115,6 +109,7 @@ const LocationTerminal = new LocationData("terminal", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/terminal.png",
+  illustrator: "Photo by Tina Rataj-Berard, Unsplash (modified)",
   shroud: 3,
   clues: 1,
 });
@@ -125,6 +120,7 @@ const LocationOffice = new LocationData("office", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/office.png",
+  illustrator: "Photo by Jon Butterworth, Unsplash (modified)",
   shroud: 4,
   clues: 1,
 });
@@ -136,6 +132,7 @@ const LocationStairs = new LocationData("stairs", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/stairs.png",
+  illustrator: "Photo by Greg Panagiotoglou, Unsplash (modified)",
   shroud: 2,
   clues: 0,
 });
@@ -146,6 +143,7 @@ const LocationStoreroom = new LocationData("storeroom", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/storeroom.png",
+  illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
   shroud: 2,
   clues: 3,
 });
@@ -156,6 +154,7 @@ const LocationJunction = new LocationData("junction", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/junction.png",
+  illustrator: "Photo by Mick De Paola, Unsplash (modified)",
   shroud: 2,
   clues: 1,
 });
@@ -169,6 +168,7 @@ const LocationBroadcastInfluence = new LocationData("broadcast_influence", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastRed.png",
+  illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
   shroud: 4,
   clues: 1,
   statOverride: "influence",
@@ -187,6 +187,7 @@ const LocationBroadcastMu = new LocationData("broadcast_mu", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastPurple.png",
+  illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
   shroud: 4,
   clues: 1,
   async onGainClues(source, data) {
@@ -204,6 +205,7 @@ const LocationBroadcastStrength = new LocationData("broadcast_strength", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastGreen.png",
+  illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
   shroud: 4,
   clues: 1,
   statOverride: "strength",
@@ -222,6 +224,7 @@ const LocationBroadcastLink = new LocationData("broadcast_link", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastYellow.png",
+  illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
   shroud: 4,
   clues: 1,
   statOverride: "link",
@@ -240,6 +243,7 @@ const LocationBroadcastActive = new LocationData("broadcast_active", {
   subtypes: ["room"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastActive.png",
+  illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
   shroud: 4,
   clues: 0,
 });

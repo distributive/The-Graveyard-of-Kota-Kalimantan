@@ -38,7 +38,16 @@ CardNol = new AssetData("nol", {
   health: 0,
   skills: ["mu"],
   canUse(source, data) {
-    return !source.tapped && Cards.grip.length > 0;
+    const untapped = !source.tapped;
+    const cardsInHand = Cards.grip.length > 0;
+    return {
+      success: untapped && cardsInHand,
+      reason: !untapped
+        ? "This asset has been exhausted."
+        : !cardsInHand
+        ? "You do not have any cards in hand."
+        : null,
+    };
   },
   async onUse(source, data) {
     await source.setTapped(true);
@@ -150,14 +159,13 @@ CardTormentNexus = new AssetData("torment_nexus", {
   title: "Torment Nexus",
   text: "When you install this, do 1 damage to it. When your turn ends, heal 1 damage from it.\nWhen this is trashed, download 1 data from your current location.",
   flavour: `"You can't deny it <b>is</b> convenient."`,
-  subtypes: ["omen"],
+  subtypes: ["unique", "omen"],
   unique: true,
   faction: FACTION_ANARCH,
   image: "img/card/asset/tormentNexus.png",
   cost: 4,
   health: 2,
   skills: ["influence"],
-  // smallText: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.addDamage(1);
@@ -177,15 +185,28 @@ CardTormentNexus = new AssetData("torment_nexus", {
 
 CardFast = new AssetData("fast", {
   title: "Fast",
-  text: "Once per turn → {click}, 2{c}: Move. Gain {click}.",
-  flavour: "Fast.",
-  subtypes: ["fast"],
+  text: "Once per turn → 2{c}, {click}: Move. Gain {click}.",
+  flavour: "Red cards go faster.",
+  subtypes: ["unique", "trait"],
   unique: true,
   faction: FACTION_ANARCH,
-  image: "img/card/asset/bgAnarch.png",
+  image: "img/card/asset/fast.png",
   cost: 2,
+  smallText: true,
   canUse(source, data) {
-    return !source.tapped && Stats.clicks >= 1 && Stats.credits >= 2;
+    const untapped = !source.tapped;
+    const clicks = Stats.clicks >= 1;
+    const credits = Stats.credits >= 2;
+    return {
+      success: untapped && clicks && credits,
+      reason: !untapped
+        ? "This asset has been exhausted."
+        : !clicks
+        ? "You do not have any remaining clicks."
+        : !credits
+        ? "You do not have enough credits to use this ability."
+        : null,
+    };
   },
   async onUse(source, data) {
     await source.setTapped(true);
@@ -197,6 +218,7 @@ CardFast = new AssetData("fast", {
     Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
     });
+    await Stats.addClicks(1);
   },
   async onTurnEnd(source, data) {
     source.setTapped(false);
@@ -209,6 +231,7 @@ CardFast = new AssetData("fast", {
 CardBackAway = new EventData("back_away", {
   title: "Back Away",
   text: "This costs 2{c} less for each enemy engaged with you.\nEvade all enemies and move to an adjacent location.",
+  flavour: ``,
   subtypes: ["tactic", "evade"],
   faction: FACTION_ANARCH,
   image: "img/card/event/backAway.png",
@@ -237,6 +260,7 @@ CardKickItDown = new EventData("kick_it_down", {
   subtypes: ["tactic"],
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
+  illustrator: "Illustrator: Lish",
   cost: 2,
   skills: ["strength"],
   onPlay: async (card) => {
@@ -266,7 +290,11 @@ CardDownloadTheSigns = new EventData("download_the_signs", {
   cost: 2,
   skills: ["mu", "strength"],
   canPlay(source, data) {
-    return Location.getCurrentLocation().clues > 0;
+    const success = Location.getCurrentLocation().clues > 0;
+    return {
+      success: success,
+      reason: success ? null : "There is no data at your current location.",
+    };
   },
   async onPlay(source, data) {
     const statOverride = Location.getCurrentLocation().cardData.statOverride;
@@ -282,18 +310,24 @@ CardDownloadTheSigns = new EventData("download_the_signs", {
 
 CardGritAndDetermination = new EventData("grit_and_determination", {
   title: "Grit & Determination",
-  text: "If you have already downloaded data this turn, download another data from your location.",
+  text: "If you have already downloaded data this turn, download another data from your current location.",
   flavour: `"Nobody will hold me back."`,
   subtypes: ["tactic"],
   faction: FACTION_ANARCH,
-  image: "img/card/event/bgAnarch.png",
+  image: "img/card/event/gritAndDetermination.png",
   cost: 3,
   skills: ["influence", "mu"],
   canPlay(source, data) {
-    return (
-      Game.getTurnEvent("investigateSuccess") &&
-      Location.getCurrentLocation().clues > 0
-    );
+    const activated = Game.getTurnEvent("investigateSuccess"); // NOCOMMIT
+    const validLocation = Location.getCurrentLocation().clues > 0;
+    return {
+      success: activated && validLocation,
+      reason: !activated
+        ? "You have not downloaded data this turn."
+        : !validLocation
+        ? "There is no data at your current location."
+        : null,
+    };
   },
   async onPlay(source, data) {
     await Location.getCurrentLocation().addClues(-1);
@@ -307,6 +341,7 @@ CardLastDitch = new EventData("last_ditch", {
   subtypes: ["tactic", "attack"],
   faction: FACTION_ANARCH,
   image: "img/card/event/bgAnarch.png",
+  illustrator: "Illustrator: PiCat",
   cost: 0,
   skills: ["strength"],
   preventAttacks: true,
@@ -314,7 +349,11 @@ CardLastDitch = new EventData("last_ditch", {
     return this.cost + Cards.grip.length * 2 - 2;
   },
   canPlay(source) {
-    return Enemy.getEnemiesAtCurrentLocation().length > 0;
+    const success = Enemy.getEnemiesAtCurrentLocation().length > 0;
+    return {
+      success: success,
+      reason: success ? null : "There no enemies at your current location.",
+    };
   },
   // This recreates the fight process from core principles to ensure it combos as intended
   async onPlay(source, data) {
@@ -367,7 +406,15 @@ CardProjectile = new EventData("projectile", {
   preventAttacks: true,
   canPlay(source, data) {
     const [canEngage, canFight, canEvade] = Enemy.canEngageFightEvade();
-    return canFight && Cards.installedCards.length > 0;
+    const validInstallable = Cards.installedCards.length > 0;
+    return {
+      success: canFight && validInstallable,
+      reason: !canFight
+        ? "There is no enemy at your current location."
+        : !validInstallable
+        ? "You do not have any installed cards."
+        : null,
+    };
   },
   async onPlay(source, data) {
     if (Cards.installedCards.length == 0) {
@@ -401,7 +448,11 @@ CardRepurpose = new EventData("repurpose", {
   image: "img/card/event/repurpose.png",
   cost: 0,
   canPlay(source, data) {
-    return Cards.installedCards.length > 0;
+    const success = Cards.installedCards.length > 0;
+    return {
+      success: success,
+      reason: success ? null : "You do not have any installed cards.",
+    };
   },
   async onPlay(source, data) {
     if (Cards.installedCards.length == 0) {

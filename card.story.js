@@ -88,16 +88,14 @@ Act3 = new ActData("act_3", {
   faction: FACTION_MEAT,
   // Triggered by story.js
   async advance() {
-    Audio.fadeOutMusic(5000);
+    Audio.fadeOutMusic(2500);
     // Delay for a second to let the Chaos modal close
     UiMode.setMode(UIMODE_WAITING);
     await wait(1000);
     await Tutorial.run("exitAct3", false);
     await Tutorial.run("enterNetspace");
     Act.setCard(Act4);
-    Agenda.setDoom(0);
-    Agenda.setCard(Agenda3);
-    await Story.enterNetspace();
+    await Story.enterNetspace(); // Resetting doom + changing the agenda is performed here
     await Game.nextAction();
   },
 });
@@ -156,7 +154,7 @@ Agenda2 = new AgendaData("agenda_2", {
     }
   },
   async advance() {
-    Audio.fadeOutMusic(5000);
+    Audio.fadeOutMusic(2500);
     if (Act.cardData == Act3) {
       await Tutorial.run("exitAgenda2", false);
     } else {
@@ -166,9 +164,7 @@ Agenda2 = new AgendaData("agenda_2", {
     if (Act.cardData.act < 4) {
       Act.setCard(Act4);
     }
-    Agenda.setDoom(0);
-    Agenda.setCard(Agenda3);
-    await Story.enterNetspace();
+    await Story.enterNetspace(); // Resetting doom + changing the agenda is performed here
   },
 });
 

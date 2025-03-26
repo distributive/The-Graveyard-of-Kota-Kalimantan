@@ -390,7 +390,7 @@ class GripCard {
             gripCard.cardData.type == TYPE_ASSET)) &&
         Tutorial.mode != TUTORIAL_MODE_WAITING &&
         Stats.credits >= gripCard.cost &&
-        gripCard.cardData.canPlay(gripCard) &&
+        gripCard.cardData.canPlay(gripCard).success &&
         !(
           gripCard.cardData.unique &&
           RigCard.isCardDataInstalled(gripCard.cardData)
@@ -446,6 +446,7 @@ class GripCard {
         } else {
           jObj.removeClass("in-play");
           animate(instance.#jObj, 300);
+          Audio.playEffect(AUDIO_UNPLAYABLE);
           if (reason == "clicks") {
             Alert.send(
               "You do not have enough clicks to play this card.",
@@ -468,6 +469,8 @@ class GripCard {
               "You do not meet the additional requirements to play this card.",
               ALERT_WARNING
             );
+          } else if (reason) {
+            Alert.send(reason, ALERT_WARNING);
           }
         }
       } else if (UiMode.uiMode == UIMODE_SELECT_GRIP_CARD) {
@@ -618,7 +621,7 @@ class RigCard {
     Cards.installedCards.forEach((card) => {
       card.selectable =
         card.cardData.canUse &&
-        card.cardData.canUse(card) &&
+        card.cardData.canUse(card).success &&
         !card.tapped &&
         (Tutorial.mode == TUTORIAL_MODE_NONE ||
           Tutorial.mode == TUTORIAL_MODE_USE_ASSET);
@@ -635,10 +638,16 @@ class RigCard {
       card.selectable = card.health > 0;
     });
   }
-  static highlightSelectableCards(fFilter) {
-    Cards.installedCards.forEach((card) => {
-      card.selectable = !fFilter || fFilter(card);
-    });
+  static highlightCards(targets) {
+    if (targets) {
+      targets.forEach((card) => {
+        card.selectable = true;
+      });
+    } else {
+      Cards.installedCards.forEach((card) => {
+        card.selectable = true;
+      });
+    }
   }
   static unhighlightAllCards() {
     Cards.installedCards.forEach((card) => {
@@ -710,26 +719,31 @@ class RigCard {
 
     this.#jObj.click(async () => {
       if (UiMode.uiMode == UIMODE_SELECT_ACTION) {
-        if (instance.cardData.canUse(instance)) {
+        const canUse = instance.cardData.canUse(instance);
+        if (canUse.success) {
           await Game.actionUseCard(instance);
+        } else if (canUse.reason) {
+          Alert.send(canUse.reason, ALERT_WARNING);
         }
       } else if (UiMode.uiMode == UIMODE_SELECT_INSTALLED_CARD) {
-        if (RigCard.selectedCards.has(instance)) {
-          instance.deselect();
-          Audio.playEffect(AUDIO_FLICK_0);
-        } else if (UiMode.data.maxCards == 1) {
-          RigCard.deselectAll();
-          instance.select();
-          Audio.playEffect(AUDIO_FLICK_2);
-        } else if (RigCard.selectedCards.size < UiMode.data.maxCards) {
-          instance.select();
-          Audio.playEffect(AUDIO_FLICK_2);
-        } else {
-          const message =
-            UiMode.data.minCards != UiMode.data.maxCards
-              ? `You must select between ${UiMode.data.minCards} and ${UiMode.data.maxCards} cards, inclusive.`
-              : `You must select ${UiMode.data.maxCards} cards.`;
-          Alert.send(message, ALERT_WARNING, true, false);
+        if (this.selectable) {
+          if (RigCard.selectedCards.has(instance)) {
+            instance.deselect();
+            Audio.playEffect(AUDIO_FLICK_0);
+          } else if (UiMode.data.maxCards == 1) {
+            RigCard.deselectAll();
+            instance.select();
+            Audio.playEffect(AUDIO_FLICK_2);
+          } else if (RigCard.selectedCards.size < UiMode.data.maxCards) {
+            instance.select();
+            Audio.playEffect(AUDIO_FLICK_2);
+          } else {
+            const message =
+              UiMode.data.minCards != UiMode.data.maxCards
+                ? `You must select between ${UiMode.data.minCards} and ${UiMode.data.maxCards} cards, inclusive.`
+                : `You must select ${UiMode.data.maxCards} cards.`;
+            Alert.send(message, ALERT_WARNING);
+          }
         }
       } else if (UiMode.uiMode == UIMODE_ASSIGN_DAMAGE) {
         if (
@@ -990,9 +1004,13 @@ $(document).ready(function () {
         <div class="quote">${cardData.formattedText}</div>
         ${
           cardData.flavour
-            ? `<hr><div class="fst-italic mt-2">${cardData.flavour}</div>`
+            ? `<hr><div class="fst-italic my-2">${cardData.flavour}</div>`
             : ""
         }
+        <hr>
+        <div class="font-size-14 mt-2">${
+          cardData.illustrator ? cardData.illustrator : "Illustrator: Ams"
+        }</div>
       </div>`;
 
     const options = [new Option("close", "Close", "close")];
@@ -1007,6 +1025,9 @@ $(document).ready(function () {
     Modal.hide();
   };
 
+  let mousedCard;
+  let x = -1000;
+  let y = -1000;
   $("body")
     .on(
       "mouseenter",
@@ -1034,6 +1055,33 @@ $(document).ready(function () {
           return;
         }
         displayCardModal($(this).parent().data("card-id"));
+      }
+    )
+    .on(
+      "mousedown",
+      ".card-image-container:not(#card-modal-image)",
+      function (e) {
+        if (e.which == 2) {
+          mousedCard = e.target;
+          x = e.pageX;
+          y = e.pageY;
+        }
+      }
+    )
+    .on(
+      "mouseup",
+      ".card-image-container:not(#card-modal-image)",
+      function (e) {
+        if (e.which == 2) {
+          if (
+            e.target == mousedCard &&
+            (!e.target.classList.contains("location-image") ||
+              Math.abs(e.pageX - x) + Math.abs(e.pageY - y) < 50)
+          ) {
+            displayCardModal($(this).parent().data("card-id"));
+          }
+          mousedCard = null;
+        }
       }
     );
 

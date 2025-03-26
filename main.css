@@ -1499,6 +1499,10 @@ button:not(.action-button, .alert-option) .inline-icon,
   font-size: 0.7em;
 }
 
+.asset .card-text-text.long br {
+  margin-bottom: 0.5em;
+}
+
 .buffed {
   color: #c6ffc6 !important;
 }

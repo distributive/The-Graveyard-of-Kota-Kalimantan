@@ -8,6 +8,7 @@ const AUDIO_DRAW = "./audio/draw.mp3";
 const AUDIO_SHUFFLE = "./audio/shuffle.mp3";
 const AUDIO_PLAY = "./audio/play.mp3";
 const AUDIO_TRASH = "./audio/trash.mp3";
+const AUDIO_UNPLAYABLE = "./audio/cardUnplayable.mp3";
 
 const AUDIO_FLICK_0 = "./audio/flick0.mp3";
 const AUDIO_FLICK_1 = "./audio/flick1.mp3";

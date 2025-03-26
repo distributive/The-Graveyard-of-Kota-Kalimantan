@@ -100,7 +100,7 @@ class Story {
     Location.setZoomIndex(0);
     this.setNetspace(true);
 
-    Agenda.setDoom(0);
+    await Agenda.setDoom(0);
     Agenda.setCard(Agenda3);
 
     // Update all locations

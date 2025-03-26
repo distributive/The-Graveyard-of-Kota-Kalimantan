@@ -11,6 +11,7 @@ const CardSoda = new EventData("soda", {
   subtypes: ["refreshing"],
   faction: FACTION_SHAPER,
   image: "img/card/event/bgShaper.png",
+  illustrator: "Illustrator: Lish",
   cost: 0,
   skills: ["mu"],
   onPlay: async (card) => {

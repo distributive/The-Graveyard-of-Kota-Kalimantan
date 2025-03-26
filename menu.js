@@ -131,7 +131,7 @@ class Menu {
       $(".catalyst-select").append(
         $(`
           <div id="catalyst-image" class="card-image-container character-selection-image">
-            <img class="card-image w-100" src="img/card/identity/theCatalyst.png" />
+            <img class="card-image w-100" src="img/card/identity/theCatalystFull.png" />
           </div>
         `)
       );
@@ -450,6 +450,7 @@ class Menu {
         </ul>
         <div class="mt-2 font-size-20">Art assets</div>
         <ul>
+          <li>Additional art by (TODO: check how the artists want to be credited).</li>
           <li>Card art used with NSG's permission by Benjamin Giletti, Júlio Rocha, and Zefanya Langkan Maega</li>
           <li>Royalty free images taken from unsplash.com</li>
           <li>Royalty free sound effects taken from freesound.org</li>

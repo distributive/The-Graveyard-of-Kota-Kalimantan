@@ -80,7 +80,7 @@ class Identity {
   static markUsable() {
     const cardData = this.cardData;
     const instance = this;
-    if (this.cardData.canUse(this)) {
+    if (this.cardData.canUse(this).success) {
       $("#runner-id")
         .addClass("selectable")
         .off("click")
@@ -90,10 +90,13 @@ class Identity {
             return;
           }
           await Enemy.attackOfOpportunity();
-          if (instance.cardData.canUse(this)) {
+          if (instance.cardData.canUse(this).success) {
             await cardData.onUse(instance);
           } else {
-            Alert.send("Topan: You no longer have a valid target.", ALERT_WARNING);
+            Alert.send(
+              "Topan: You no longer have a valid target.",
+              ALERT_WARNING
+            );
           }
           await Game.nextAction();
         });
