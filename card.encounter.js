@@ -147,9 +147,8 @@ const TreacherySomethingInTheDark = new TreacheryData("something_in_the_dark", {
 
 const TreacheryRapidDecay = new EventData("rapid_decay", {
   title: "Rapid Decay",
-  text: "When you encounter or discard this, shuffle 2 into your deck.\n\nRemove this from the game.",
+  text: "When you encounter or discard this, shuffle 2 into your deck.",
   subtypes: ["blight"],
-  smallText: true,
   faction: FACTION_NEUTRAL,
   image: "img/card/event/rapidDecay.png",
   cost: 5,

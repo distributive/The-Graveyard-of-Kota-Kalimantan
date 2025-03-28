@@ -11,6 +11,11 @@ const ENDING_GOOD = ending_i++;
 class Ending {
   static show(ending, resetProgress = true) {
     Audio.fadeOutMusic(1000);
+    $("#ending-window").removeClass("show");
+    $("#ending-text-box").removeClass("show");
+    $("#ending-text-box").empty();
+
+    // Story
     let text = "";
     switch (ending) {
       case ENDING_SKIP_GAME:
@@ -37,6 +42,26 @@ class Ending {
       `<div class="ending-image-container"><img class="ending-image" src="img/card/back/anarch.png" /></div>`
     );
     $("#ending-text-box").html(text);
+
+    // Back button
+    const button = $(`
+      <div class="position-relative w-100">
+        <div id="ending-options" class="modal-options w-100">
+          <button class="modal-option">Return to menu</button>
+        </div>
+      </div>
+    `);
+    button.find("#ending-options").fadeOut(1);
+    $("#ending-text-box").append(button);
+    button.on("click", function () {
+      $("#ending-window").removeClass("show");
+      $("#ending-text-box").removeClass("show");
+      $("#ending-text-box").empty();
+      Audio.playEffect(AUDIO_CLICK);
+      Menu.showMainMenu();
+    });
+
+    // Card reveal
     setTimeout(function () {
       $("#ending-window").addClass("show");
     }, 1);
@@ -46,25 +71,35 @@ class Ending {
     let debounce = false;
     setTimeout(function () {
       $(".ending-image").addClass("face-down");
-      $(".ending-image-container").on("click", async function () {
-        if (debounce) {
-          return;
-        }
-        debounce = true;
-        $(this)
-          .find(".ending-image")
-          .addClass("flipping")
-          .removeClass("face-down");
-        await wait(1500);
-        $(this)
-          .find(".ending-image")
-          .removeClass("flipping")
-          .attr("src", "img/game/scoop.png");
-        // Wipe save once they interact with the scoop
-        if (resetProgress) {
-          Serialisation.deleteSave();
-        }
-      });
+      $(".ending-image-container")
+        .on("mouseenter", function () {
+          if (!debounce) {
+            Audio.playEffect(AUDIO_FLICK_0);
+          }
+        })
+        .on("click", async function () {
+          if (debounce) {
+            return;
+          }
+          debounce = true;
+          Audio.playEffect(AUDIO_FLICK_5);
+          $(this)
+            .find(".ending-image")
+            .addClass("flipping")
+            .removeClass("face-down");
+          await wait(1500);
+          $(this)
+            .find(".ending-image")
+            .removeClass("flipping")
+            .attr("src", "img/game/scoop.png");
+          // Wipe save once they interact with the scoop
+          if (resetProgress) {
+            Serialisation.deleteSave();
+          }
+          // Show menu button
+          await wait(3000);
+          button.find("#ending-options").fadeIn(3000);
+        });
     }, 5000);
   }
 }

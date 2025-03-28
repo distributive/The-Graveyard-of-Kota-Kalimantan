@@ -1092,4 +1092,82 @@ $(document).ready(function () {
     e.preventDefault();
     $("#card-focused").toggleClass("hidden");
   });
+
+  // View stack
+  $("#stack").click(async function () {
+    const cards = $(`<div class="row card-list"></div>`);
+    for (const cardData of Cards.stack
+      .slice()
+      .sort((a, b) =>
+        a.title.replace(/[^a-zA-Z0-9]/, "") >
+        b.title.replace(/[^a-zA-Z0-9]/, "")
+          ? 1
+          : -1
+      )) {
+      const jCard = $(`
+        <div class="col-3 position-relative">
+          <div class="card-image-container card-list-card">
+              <img class="grip-card-image card-image w-100" src="${cardData.image}" />
+          </div>
+        </div>`);
+      Cards.populateData(
+        jCard.find(".card-image-container"),
+        cardData,
+        "15.5px"
+      );
+      cards.append(jCard);
+    }
+    const body =
+      Cards.stack.length == 0
+        ? "Your deck is empty. The next time you attempt to draw, you will shuffle your discard pile into it."
+        : cards;
+    const modal = new Modal({
+      header: `Your deck (${Cards.stack.length} ${
+        Cards.stack.length == 1 ? "card" : "cards"
+      })`,
+      body: body,
+      options: [new Option("close", "Close", "close")],
+      allowKeyboard: false,
+      size: Cards.stack.length == 0 ? "md" : "xl",
+    });
+    await modal.display();
+    Modal.hide();
+  });
+
+  // View heap
+  $("#heap").click(async function () {
+    const cards = $(`<div class="row"></div>`);
+    for (const cardData of Cards.heap
+      .slice()
+      .sort(
+        (a, b) =>
+          a.title.replace(/[^a-zA-Z0-9]/, "") >
+          b.title.replace(/[^a-zA-Z0-9]/, "")
+      )) {
+      const jCard = $(`
+        <div class="col-3 position-relative">
+          <div class="card-image-container card-list-card">
+              <img class="grip-card-image card-image w-100" src="${cardData.image}" />
+          </div>
+        </div>`);
+      Cards.populateData(
+        jCard.find(".card-image-container"),
+        cardData,
+        "15.5px"
+      );
+      cards.append(jCard);
+    }
+    const body = Cards.heap.length == 0 ? "Your discard pile is empty." : cards;
+    const modal = new Modal({
+      header: `Your discard pile (${Cards.heap.length} ${
+        Cards.heap.length == 1 ? "card" : "cards"
+      })`,
+      body: body,
+      options: [new Option("close", "Close", "close")],
+      allowKeyboard: false,
+      size: Cards.heap.length == 0 ? "md" : "xl",
+    });
+    await modal.display();
+    Modal.hide();
+  });
 });

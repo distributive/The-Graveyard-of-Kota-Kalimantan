@@ -30,7 +30,9 @@ class Game {
     const xs = [];
     if (identity.faction == FACTION_ANARCH) {
       for (let i = 0; i < 2; i++) {
-        xs.push(CardUnsureGamble);
+        if (!Tutorial.active) {
+          xs.push(CardUnsureGamble);
+        }
         xs.push(CardIllHaveWorse);
         xs.push(CardNol);
         xs.push(CardSifar);
@@ -47,9 +49,14 @@ class Game {
       }
       xs.push(CardProjectile);
       xs.push(CardSoda);
+      if (Tutorial.active) {
+        xs.push(CardUnsureGamble);
+      }
     } else if (identity.faction == FACTION_CRIMINAL) {
       for (let i = 0; i < 2; i++) {
-        xs.push(CardUnsureGamble);
+        if (!Tutorial.active) {
+          xs.push(CardUnsureGamble);
+        }
         xs.push(CardDocklandsPass);
         xs.push(CardPennyearner);
         xs.push(CardAkauntan);
@@ -66,6 +73,9 @@ class Game {
       }
       xs.push(CardPush);
       xs.push(CardSoda);
+      if (Tutorial.active) {
+        xs.push(CardUnsureGamble);
+      }
     } else {
       const cardPool = CardData.getAllCards().filter(
         (cardData) =>
@@ -85,7 +95,6 @@ class Game {
       await Cards.draw(5);
     } else {
       // Place Unsure Gamble and Warehouse Key on top of the deck for the tutorial
-      // This means the deck run an extra copy, but the maths works out nice for the tutorial
       Cards.addToStack([CardWarehouseKey, CardUnsureGamble]);
     }
 

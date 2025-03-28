@@ -39,6 +39,7 @@ class Modal {
   #cardData; // Mutually exclusive with image
   #slowRoll; // bool => true makes the text in #body appear word by word (assumes #body is a container of <p>s)
   #rollSpeed; // number => how many ms between words if slowRoll is true
+  #optionsDelay; // number => if not null, wait this long before enabling options (only if slowRoll not set)
   #voices; // [AUDIO] => array of audio clips to randomly play for each word if slowRoll is true
   #size; // string => [xl, lg, sm] (default is medium) - Preference is xl for meta game modals, lg for image modals, and md for game mechanics
 
@@ -53,6 +54,7 @@ class Modal {
       cardData,
       slowRoll,
       rollSpeed,
+      optionsDelay,
       voices,
       size,
     } = data;
@@ -65,6 +67,7 @@ class Modal {
     this.#cardData = cardData;
     this.#slowRoll = Modal.slowRollDisabled ? false : slowRoll;
     this.#rollSpeed = rollSpeed ? rollSpeed : 30;
+    this.#optionsDelay = optionsDelay;
     this.#voices = voices ? voices : AUDIO_VOICES;
     this.#size = size;
   }
@@ -211,6 +214,19 @@ class Modal {
             }
           }
         }
+        jOptions.forEach(([option, jOption]) => {
+          jOption.attr("disabled", false);
+        });
+      })();
+    }
+    // Delayed options
+    else if (this.#optionsDelay) {
+      jOptions.forEach(([option, jOption]) => {
+        jOption.attr("disabled", true);
+      });
+      const optionsDelay = this.#optionsDelay;
+      (async function () {
+        await wait(optionsDelay);
         jOptions.forEach(([option, jOption]) => {
           jOption.attr("disabled", false);
         });

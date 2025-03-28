@@ -410,7 +410,7 @@ CardInsideJob = new EventData("inside_job", {
       success: success,
       reason: success
         ? null
-        : "There are no data at any neighbouring locations.",
+        : "There is no data at any neighbouring locations.",
     };
   },
   async onPlay(source, data) {

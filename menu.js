@@ -15,7 +15,8 @@ class Menu {
   // Main menu
   static async showMainMenu() {
     this.showMainBG();
-    Audio.transitionMusic(AUDIO_TRACK_MAIN, 2000, 0, 0);
+    // Audio.transitionMusic(AUDIO_TRACK_MAIN, 2000, 0, 0);
+    Audio.fadeOutMusic(2000);
 
     const modal = new Modal({
       body: `
@@ -76,7 +77,7 @@ class Menu {
             Modal.hide();
             await wait(500);
             this.hideMainBG();
-            Audio.transitionMusic(AUDIO_TRACK_LEVEL_1, 3000, 1000, 3000);
+            Audio.fadeInMusic(AUDIO_TRACK_LEVEL_1, 3000);
             return;
           } else {
             await failModal.display();
@@ -288,7 +289,7 @@ class Menu {
     await Game.initGameState(identity, tutorialActive);
     await wait(500);
     this.hideMainBG();
-    Audio.transitionMusic(AUDIO_TRACK_LEVEL_1, 3000, 1000, 3000);
+    Audio.fadeInMusic(AUDIO_TRACK_LEVEL_1, 3000);
   }
 
   static showMainBG() {
@@ -336,8 +337,8 @@ class Menu {
       );
       if (inGame) {
         options.push(null);
-        options.push(new Option("credits", "Credits"));
         options.push(new Option("about", "About"));
+        options.push(new Option("credits", "Credits"));
       } else {
         options.push(null);
         options.push(new Option("reset", "Reset save data"));
@@ -405,12 +406,12 @@ class Menu {
   static async showAbout() {
     const body = `
       <div>
-        <div>This game was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
+        <div>This online card game was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
         <div>Although it was made with the help of members of NSG, it is not an official NSG product nor is it endorsed as such.</div>
         <div class="mt-2 font-size-20">Content warnings</div>
         <ul>
           <li>Mild horror themes</li>
-          <li>Hand-drawn depictions of rats and bugs</li>
+          <li>Hand-drawn depictions of rats and bugs (including a spider)</li>
         </ul>
         <div>
           There are no jumpscares, flashing lights, or sudden noises.
@@ -434,50 +435,68 @@ class Menu {
     const body = `
       <div>
         <div>A game by Ams.</div>
-        <div class="mt-2 font-size-20">Writing</div>
-        <ul>
-          <li>chord gang</li>
-          <li>Ams</li>
-        </ul>
-        <div class="mt-2 font-size-20">Music</div>
-        <ul>
-          <li>Tripp Mirror</li>
-        </ul>
-        <div class="mt-2 font-size-20">Special thanks</div>
-        <ul>
-          <li>NSG Narrative contacts: Patrick Sklar and Ginevra Martin</li>
-          <li>NSG Art contact: Conrad "Banknote" Kluck</li>
-        </ul>
-        <div class="mt-2 font-size-20">Art assets</div>
-        <ul>
-          <li>Additional art by (TODO: check how the artists want to be credited).</li>
-          <li>Card art used with NSG's permission by Benjamin Giletti, Júlio Rocha, and Zefanya Langkan Maega</li>
-          <li>Royalty free images taken from unsplash.com</li>
-          <li>Royalty free sound effects taken from freesound.org</li>
-        </ul>
-        <div class="mt-2 font-size-20">Playtesters</div>
-        <div class="container">
-          <div class="row px-4">
-            <ul class="col-3">
-              <li>Mandoline</li>
-              <li>-</li>
-              <li>-</li>
-            </ul>
-            <ul class="col-3">
-              <li>Hello</li>
-              <li>-</li>
-              <li>-</li>
-            </ul>
-            <ul class="col-3">
-              <li>-</li>
-              <li>-</li>
-              <li>-</li>
-            </ul>
-            <ul class="col-3">
-              <li>-</li>
-              <li>-</li>
-              <li>-</li>
-            </ul>
+        
+        <div class="container mt-2">
+          <div class="row">
+            <div class="col-4 px-2">
+              <div class="mt-2 font-size-20">Writing</div>
+              <ul>
+                <li>chord gang</li>
+                <li>Ams</li>
+              </ul>
+            </div>
+            <div class="col-4 px-2">
+              <div class="mt-2 font-size-20">Music</div>
+              <ul>
+                <li>Tripp Mirror</li>
+              </ul>
+            </div>
+            <div class="col-4 px-2">
+              <div class="mt-2 font-size-20">Additional art</div>
+              <ul>
+                <li>Lish</li>
+                <li>PiCat</li>
+                <li>Mallory "l0velace"</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div style="transform: translateY(-1em)">
+          <div class="font-size-20">Special thanks</div>
+          <ul>
+            <li>NSG Narrative contacts: Patrick Sklar and Ginevra Martin</li>
+            <li>NSG Visual contact: Conrad "Banknote" Kluck</li>
+          </ul>
+          <div class="mt-2 font-size-20">Art assets</div>
+          <ul>
+            <li>Card art used with NSG's permission by Benjamin Giletti, Júlio Rocha, and Zefanya Langkan Maega</li>
+            <li>Royalty free images taken from unsplash.com</li>
+            <li>Royalty free sound effects taken from freesound.org</li>
+          </ul>
+          <div class="mt-2 font-size-20">Playtesters</div>
+          <div class="container">
+            <div class="row px-4">
+              <ul class="col-3">
+                <li>Mandoline</li>
+                <li>-</li>
+                <li>-</li>
+              </ul>
+              <ul class="col-3">
+                <li>Hello</li>
+                <li>-</li>
+                <li>-</li>
+              </ul>
+              <ul class="col-3">
+                <li>-</li>
+                <li>-</li>
+                <li>-</li>
+              </ul>
+              <ul class="col-3">
+                <li>-</li>
+                <li>-</li>
+                <li>-</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

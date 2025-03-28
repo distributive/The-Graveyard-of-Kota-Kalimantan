@@ -118,7 +118,8 @@ body.netspace:before {
   border-radius: 0 !important;
 }
 #modal-body-container,
-#modal-options {
+#modal-options,
+#ending-options {
   font-family: "Delius", sans-serif;
 }
 #modal-body-container .inline-icon {
@@ -138,6 +139,10 @@ body.netspace:before {
 }
 #card-focused.hidden {
   transform: translateX(96%);
+}
+
+#ending-options {
+  position: absolute;
 }
 
 /* Buttons */
@@ -473,6 +478,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 #heap {
   --size: 10px;
   position: relative;
+  cursor: pointer;
 }
 #stack-body,
 #heap-top-card {
@@ -1518,12 +1524,17 @@ button:not(.action-button, .alert-option) .inline-icon,
   margin-right: 1em;
   margin-bottom: 1em;
 }
-#modal .card-image-container:not(.character-selection-image) {
+#modal .card-image-container:not(.character-selection-image, .card-list-card) {
   width: 320px;
   max-height: 80%;
   max-width: 50%;
   margin-right: 1em;
   margin-bottom: 1em;
+}
+.card-image-container.card-list-card {
+  margin-bottom: 1em;
+  left: 0;
+  right: 0;
 }
 
 #modal .quote {
@@ -1929,6 +1940,16 @@ button:not(.action-button, .alert-option) .inline-icon,
 
 #modal {
   z-index: 2000000;
+}
+#modal .card-list {
+  max-height: 70vh;
+  overflow-y: scroll;
+}
+
+/* Scrollbar */
+* {
+  scrollbar-color: #615292 black;
+  scrollbar-width: thin;
 }
 
 /* Endings */

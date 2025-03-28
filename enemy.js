@@ -213,7 +213,7 @@ class Enemy {
     // Get selection
     await UiMode.setMode(UIMODE_SELECT_ENEMY, {
       validTargets: Enemy.getEngagedEnemies(),
-      canCancel: true,
+      canCancel: canCancel,
       reason: "evade",
     });
     const enemy = UiMode.data.selectedEnemy;
@@ -331,7 +331,8 @@ class Enemy {
 
     // Create new enemies
     json.enemies.forEach((data) => {
-      this.spawn(CardData.getCard(data.id), false, data);
+      const location = Location.getInstance(data.location);
+      this.spawn(CardData.getCard(data.id), location, data);
     });
   }
 

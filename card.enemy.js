@@ -109,7 +109,7 @@ const EnemyArcher = new EnemyData("archer", {
   },
   async onPlayerEvades(source, data) {
     if (data.enemy == source) {
-      if (data.results.success) {
+      if (!data.results || data.results.success) {
         await source.setDamage(1000);
       } else {
         await source.attack();

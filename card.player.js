@@ -92,7 +92,7 @@ const CardBaz = new IdentityData("baz", {
   subtypes: ["cyborg"],
   faction: FACTION_CRIMINAL,
   image: "img/card/identity/baz.png",
-  illustrator: "Illustrator: efanya Langkan Maega",
+  illustrator: "Illustrator: Zefanya Langkan Maega",
   influence: 4,
   mu: 2,
   strength: 2,

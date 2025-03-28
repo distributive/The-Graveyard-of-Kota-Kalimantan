@@ -5,6 +5,7 @@ Act1 = new ActData("act_1", {
   textRequirement: "end your turn with 1 data",
   text: "When your turn ends, spend 1 data to advance the act, if able.",
   image: "img/card/act/act1.png",
+  illustrator: `Illustrator: Mallory "l0velace"`,
   faction: FACTION_MEAT,
   async onTurnEnd() {
     if (Stats.clues >= this.requirement) {
@@ -39,6 +40,7 @@ Act2 = new ActData("act_2", {
   textRequirement: "end your turn with 3 data",
   text: "When you reveal this act, summon a rat.\n\nWhen your turn ends, spend 3 data to advance the act, if able.",
   image: "img/card/act/act2.png",
+  illustrator: `Illustrator: Mallory "l0velace"`,
   faction: FACTION_MEAT,
   async onTurnEnd() {
     if (Stats.clues >= this.requirement) {
@@ -85,6 +87,7 @@ Act3 = new ActData("act_3", {
   textRequirement: "",
   text: "When you activate three broadcast terminals, advance the act.",
   image: "img/card/act/act3.png",
+  illustrator: `Illustrator: Mallory "l0velace"`,
   faction: FACTION_MEAT,
   // Triggered by story.js
   async advance() {
@@ -145,6 +148,7 @@ Agenda2 = new AgendaData("agenda_2", {
   agenda: 1,
   text: "When this hosts 12 or more doom, lose all data and advance the agenda.",
   image: "img/card/agenda/agenda2.png",
+  illustrator: `Illustrator: Mallory "l0velace"`,
   faction: FACTION_MEAT,
   async onDoomPlaced(data) {
     // For now we assume only the agenda can host doom

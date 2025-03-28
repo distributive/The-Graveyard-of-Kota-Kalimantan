@@ -1,6 +1,5 @@
-const AUDIO_TRACK_MAIN = "./audio/track0.mp3";
-const AUDIO_TRACK_LEVEL_1 = "./audio/track1.mp3";
-const AUDIO_TRACK_LEVEL_2 = "./audio/track2.mp3";
+const AUDIO_TRACK_LEVEL_1 = "./audio/track1.wav";
+const AUDIO_TRACK_LEVEL_2 = "./audio/track2.wav";
 
 const AUDIO_CREDIT = "./audio/credit.mp3";
 
@@ -111,6 +110,9 @@ class Audio {
 
   // delay is in ms
   static async fadeOutMusic(delay) {
+    if (!this.#audioMusic) {
+      return;
+    }
     if (delay > 0) {
       const steps = delay / 50;
       for (let i = 0; i < steps; i++) {
@@ -169,7 +171,9 @@ class Audio {
   // SETTINGS
   static toggleMusic() {
     Serialisation.saveSetting("music-muted", !this.musicMuted);
-    this.#audioMusic.muted = this.musicMuted;
+    if (this.#audioMusic) {
+      this.#audioMusic.muted = this.musicMuted;
+    }
   }
   static toggleSfx() {
     Serialisation.saveSetting("sfx-muted", !this.sfxMuted);
@@ -202,31 +206,33 @@ $(document).ready(function () {
     }
     debounce = true;
     if (Menu.isInMainMenu) {
-      Audio.playMusic(AUDIO_TRACK_MAIN);
+      // Audio.playMusic(AUDIO_TRACK_MAIN);
     } else if (!Story.isInNetspace) {
       Audio.fadeInMusic(AUDIO_TRACK_LEVEL_1, 3000);
     } else {
       Audio.fadeInMusic(AUDIO_TRACK_LEVEL_2, 3000);
     }
-  });
-  $("body").on("click", "button:not(.modal-option)", function () {
-    if (!Audio.buttonsMuted) {
-      Audio.playEffect(AUDIO_CLICK, true);
-    }
-  });
-  $("body").on("click", "input[type='checkbox']", function () {
-    if (!Audio.buttonsMuted) {
-      Audio.playEffect(AUDIO_CLICK, true);
-    }
-  });
-  $("body").on("mouseenter", "button:not(.character-button)", function () {
-    if (!Audio.buttonsMuted) {
-      Audio.playEffect(AUDIO_FLICK_0, true);
-    }
-  });
-  $("body").on("mouseenter", ".selectable", function () {
-    if (!Audio.buttonsMuted) {
-      Audio.playEffect(AUDIO_FLICK_0, true);
-    }
+
+    // Set up the audio listeners once the player has interacted with the page
+    $("body").on("click", "button:not(.modal-option)", function () {
+      if (!Audio.buttonsMuted) {
+        Audio.playEffect(AUDIO_CLICK, true);
+      }
+    });
+    $("body").on("click", "input[type='checkbox']", function () {
+      if (!Audio.buttonsMuted) {
+        Audio.playEffect(AUDIO_CLICK, true);
+      }
+    });
+    $("body").on("mouseenter", "button:not(.character-button)", function () {
+      if (!Audio.buttonsMuted) {
+        Audio.playEffect(AUDIO_FLICK_0, true);
+      }
+    });
+    $("body").on("mouseenter", ".selectable", function () {
+      if (!Audio.buttonsMuted) {
+        Audio.playEffect(AUDIO_FLICK_0, true);
+      }
+    });
   });
 });

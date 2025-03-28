@@ -36,7 +36,7 @@ $(document).ready(async function () {
       // Warn user of content warnings
       await new Modal({
         header: "Content warnings",
-        body: "This game comes with a few content warnings, which can be viewed at any time in the About section.",
+        body: "This game comes with a few content warnings which can be viewed before or during the game in the About section.",
         options: [new Option("", "Continue")],
         allowKeyboard: false,
         size: "lg",
