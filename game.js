@@ -253,7 +253,9 @@ class Game {
 
     if (enemiesCanEngage) {
       for (const enemy of Enemy.getEnemiesAtCurrentLocation()) {
-        await enemy.engage();
+        if (!enemy.exhausted) {
+          await enemy.engage();
+        }
       }
     }
     await Enemy.moveEngagedEnemies();

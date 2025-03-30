@@ -1,5 +1,5 @@
-const AUDIO_TRACK_LEVEL_1 = "./audio/track1.wav";
-const AUDIO_TRACK_LEVEL_2 = "./audio/track2.wav";
+const AUDIO_TRACK_LEVEL_1 = "./audio/track1.mp3";
+const AUDIO_TRACK_LEVEL_2 = "./audio/track2.mp3";
 
 const AUDIO_CREDIT = "./audio/credit.mp3";
 
@@ -73,11 +73,16 @@ const AUDIO_VOICE_SAD_0 = "./audio/voiceSad0.mp3";
 const AUDIO_VOICE_SAD_1 = "./audio/voiceSad1.mp3";
 const AUDIO_VOICES_SAD = [AUDIO_VOICE_SAD_0, AUDIO_VOICE_SAD_1];
 
+const AUDIO_FLOWER_DEATH = "./audio/flowerDeath.mp3";
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class Audio {
   // MUSIC
   static #audioMusic;
+
+  static #volumeStep; // Change in volume each interval
+  static #volumeIntervalID; // Interval runs every 50ms
 
   static playMusic(track, loop = true) {
     // Cancel previous track
@@ -108,30 +113,54 @@ class Audio {
     }
   }
 
+  // Should never be called if there is a running routine already (it does not check)
+  // Currently assumes it will only be set to target 0 or 1
+  static startVolumeRoutine() {
+    this.#volumeIntervalID = setInterval(
+      function (audioMusic, volumeStep) {
+        const newVolume = audioMusic.volume + volumeStep;
+        if (newVolume < 0) {
+          audioMusic.volume = 0;
+          Audio.stopVolumeRoutine();
+          Audio.stopMusic(); // We're assuming this is wanted
+        } else if (newVolume > 1) {
+          audioMusic.volume = 1;
+          Audio.stopVolumeRoutine();
+        } else {
+          audioMusic.volume = newVolume;
+        }
+      },
+      50,
+      this.#audioMusic,
+      this.#volumeStep
+    );
+  }
+  static stopVolumeRoutine() {
+    if (this.#volumeIntervalID) {
+      clearInterval(this.#volumeIntervalID);
+    }
+  }
+
   // delay is in ms
   static async fadeOutMusic(delay) {
     if (!this.#audioMusic) {
       return;
     }
+    this.stopVolumeRoutine();
+
     if (delay > 0) {
-      const steps = delay / 50;
-      for (let i = 0; i < steps; i++) {
-        this.#audioMusic.volume = 1 - i / steps;
-        await wait(50);
-      }
+      this.#volumeStep = -50 / delay;
+      this.startVolumeRoutine();
     }
-    this.stopMusic();
   }
   static async fadeInMusic(track, delay, loop = true) {
     this.playMusic(track, loop);
     if (delay > 0) {
+      this.stopVolumeRoutine();
       this.#audioMusic.volume = 0;
-      const steps = delay / 50;
-      for (let i = 0; i < steps; i++) {
-        this.#audioMusic.volume = i / steps;
-        await wait(50);
-      }
-      this.#audioMusic.volume = 1;
+
+      this.#volumeStep = 50 / delay;
+      this.startVolumeRoutine();
     }
   }
 

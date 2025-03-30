@@ -218,19 +218,23 @@ class Modal {
           jOption.attr("disabled", false);
         });
       })();
-    }
-    // Delayed options
-    else if (this.#optionsDelay) {
-      jOptions.forEach(([option, jOption]) => {
-        jOption.attr("disabled", true);
-      });
-      const optionsDelay = this.#optionsDelay;
-      (async function () {
-        await wait(optionsDelay);
+    } else {
+      if (this.#voices && this.#voices.length && this.#image) {
+        Audio.playEffect(randomElement(this.#voices));
+      }
+      // Delayed options
+      if (this.#optionsDelay) {
         jOptions.forEach(([option, jOption]) => {
-          jOption.attr("disabled", false);
+          jOption.attr("disabled", true);
         });
-      })();
+        const optionsDelay = this.#optionsDelay;
+        (async function () {
+          await wait(optionsDelay);
+          jOptions.forEach(([option, jOption]) => {
+            jOption.attr("disabled", false);
+          });
+        })();
+      }
     }
 
     if (this.#options) {

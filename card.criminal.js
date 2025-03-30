@@ -276,10 +276,15 @@ CardSpike = new AssetData("spike", {
     await UiMode.setMode(UIMODE_SELECT_LOCATION, {
       message: "Pick a location to move to. (1/2)",
     });
+    const cardData = UiMode.data.selectedLocation.cardData;
     await Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
       enemiesCanEngage: false,
     });
+    // If netspace, wait a second to allow any new locations to spawn
+    if (cardData == LocationUnknownNet) {
+      await wait(1000);
+    }
     await UiMode.setMode(UIMODE_SELECT_LOCATION, {
       message: "Pick a location to move to. (2/2)",
     });
@@ -491,10 +496,15 @@ CardTreadLightly = new EventData("tread_lightly", {
     await UiMode.setMode(UIMODE_SELECT_LOCATION, {
       message: "Pick a location to move to. (1/2)",
     });
+    const cardData = UiMode.data.selectedLocation.cardData;
     await Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
       enemiesCanEngage: false,
     });
+    // If netspace, wait a second to allow any new locations to spawn
+    if (cardData == LocationUnknownNet) {
+      await wait(1000);
+    }
     await UiMode.setMode(UIMODE_SELECT_LOCATION, {
       message: "Pick a location to move to. (2/2)",
     });

@@ -123,7 +123,7 @@ class Chaos {
       <p>You may commit ${Stats.getSymbol(
         stat
       )} cards to increase your base ${Stats.getName(stat)}.</p>
-      <p>Your chaos pool contains:
+      <p>The chaos pool contains:
       <br>
         <span class="ms-3">
           ${this.stringifyTokens()}

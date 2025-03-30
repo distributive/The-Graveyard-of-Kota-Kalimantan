@@ -321,11 +321,13 @@ class Cards {
   // Serialisation
 
   static serialise() {
-    const stack = this.stack.map((card) => card.id);
-    const heap = this.heap.map((card) => card.id);
-    const grip = this.grip.map((card) => {
-      return card.cardData.id;
-    });
+    const stack = this.stack.filter((card) => card).map((card) => card.id);
+    const heap = this.heap.filter((card) => card).map((card) => card.id);
+    const grip = this.grip
+      .filter((card) => card)
+      .map((card) => {
+        return card.cardData.id;
+      });
     const rig = this.installedCards.map((card) => {
       return {
         id: card.cardData.id,
@@ -590,6 +592,7 @@ class RigCard {
 
   static deselectAll() {
     Cards.installedCards.forEach((card) => card.deselect());
+    this.selectedCards.clear();
   }
 
   static #totalPerceivedDamage = 0;
@@ -923,7 +926,7 @@ class RigCard {
   }
 
   deselect() {
-    RigCard.selectedCards.delete(this);
+    RigCard.selectedCards.delete(this); // This isn't working for some reason
     this.#jObj.removeClass("selected-card");
   }
 

@@ -265,9 +265,13 @@ const LocationUnknownNet = new LocationData("unknown_net", {
 
     // Reveal the location
     let cardData;
+    // Once the boss is revealed, everything is a dead end
+    if (Story.isBossSummoned) {
+      cardData = LocationVoid;
+    }
     // After 7 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
     // If it is the last two clicks before the agenda would advance, remove the random chance
-    if (
+    else if (
       !Story.isSourceRevealed &&
       (Story.randomNetLocations.length == 0 ||
         (Story.netLocationsRevealed > 7 &&
@@ -360,7 +364,7 @@ const LocationSource = new LocationData("source", {
 
 const LocationVoid = new LocationData("void", {
   title: "Void",
-  text: "There is nothing more to find.",
+  text: "There is nothing else.",
   flavour: "Even infinity has walls.",
   subtypes: ["netspace"],
   faction: FACTION_NET,

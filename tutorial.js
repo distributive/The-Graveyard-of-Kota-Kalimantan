@@ -466,7 +466,7 @@ class Tutorial {
       modals: [
         {
           header: "Downloading data",
-          body: "There we go!<br><br>You can view your chaos bag at any time with the button next to your stats.",
+          body: "There we go!<br><br>You can view the chaos bag at any time with the button next to your stats.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
@@ -945,7 +945,7 @@ class Tutorial {
           allowKeyboard: false,
           image: "img/character/sahasraraDecay.gif",
           optionsDelay: 8000,
-          voices: [AUDIO_VOICE_SAD_0],
+          voices: [AUDIO_FLOWER_DEATH],
           size: "lg",
         },
       ],

@@ -363,6 +363,7 @@ class UiMode {
   }
   static async exitSelectInstalledCard() {
     RigCard.deselectAll();
+    console.log(RigCard.selectedCards);
   }
 
   // UIMODE_ASSIGN_DAMAGE
@@ -451,22 +452,25 @@ class UiMode {
         }
       }
       // Send an alert for other actions
-      if (!["engage", "fight", "evade"].includes(data.reason)) {
-        const options = [];
-        if (data.canCancel) {
-          options.push(new Option("cancel", "Cancel", "warning"));
-        }
-        alert = Alert.send(
-          data.reason ? data.reason : "Pick 1 enemy.",
-          ALERT_PRIMARY,
-          false,
-          true,
-          options
-        );
-        const optionId = await alert.waitForOption();
-        if (optionId == "cancel") {
-          resolve();
-        }
+      const options = [];
+      const message =
+        data.reason == "engage"
+          ? "Select an enemy to engage."
+          : data.reason == "fight"
+          ? "Select an enemy to fight."
+          : data.reason == "evade"
+          ? "Select an enemy to evade."
+          : data.reason;
+      if (
+        data.canCancel &&
+        !["engage", "fight", "evade"].includes(data.reason)
+      ) {
+        options.push(new Option("cancel", "Cancel", "warning"));
+      }
+      alert = Alert.send(message, ALERT_PRIMARY, false, true, options);
+      const optionId = await alert.waitForOption();
+      if (optionId == "cancel") {
+        resolve();
       }
     });
 

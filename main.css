@@ -476,6 +476,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 /* Runner cards */
 #stack,
 #heap {
+  --box-colour: white;
   --size: 10px;
   position: relative;
   cursor: pointer;
@@ -500,15 +501,19 @@ button:not(.action-button, .alert-option) .inline-icon,
     calc(-5 * var(--size) / 6) calc(5 * var(--size) / 6) 0 #222222,
     calc(-11 * var(--size) / 12) calc(11 * var(--size) / 12) 0 #282828,
     calc(-6 * var(--size) / 6) calc(6 * var(--size) / 6) 0 #202020,
-    0 0 10px white,
-    calc(-1 * var(--size) / 6) calc(1 * var(--size) / 6) 5px white,
-    calc(-2 * var(--size) / 6) calc(2 * var(--size) / 6) 5px white,
-    calc(-3 * var(--size) / 6) calc(3 * var(--size) / 6) 5px white,
-    calc(-4 * var(--size) / 6) calc(4 * var(--size) / 6) 5px white,
-    calc(-5 * var(--size) / 6) calc(5 * var(--size) / 6) 5px white,
-    calc(-6 * var(--size) / 6) calc(6 * var(--size) / 6) 5px white,
+    0 0 10px var(--box-colour),
+    calc(-1 * var(--size) / 6) calc(1 * var(--size) / 6) 5px var(--box-colour),
+    calc(-2 * var(--size) / 6) calc(2 * var(--size) / 6) 5px var(--box-colour),
+    calc(-3 * var(--size) / 6) calc(3 * var(--size) / 6) 5px var(--box-colour),
+    calc(-4 * var(--size) / 6) calc(4 * var(--size) / 6) 5px var(--box-colour),
+    calc(-5 * var(--size) / 6) calc(5 * var(--size) / 6) 5px var(--box-colour),
+    calc(-6 * var(--size) / 6) calc(6 * var(--size) / 6) 5px var(--box-colour),
     calc(-1 * var(--size)) calc(var(--size)) 10px black;
   transition: all 0.2s;
+}
+#stack:hover,
+#heap:hover {
+  --box-colour: #8ebe60;
 }
 #stack.empty #stack-top-card,
 #stack.empty #stack-body,
@@ -1521,6 +1526,8 @@ button:not(.action-button, .alert-option) .inline-icon,
 #modal-image {
   max-height: 500px;
   max-width: 50%;
+  min-width: 200px;
+  height: 500px;
   margin-right: 1em;
   margin-bottom: 1em;
 }

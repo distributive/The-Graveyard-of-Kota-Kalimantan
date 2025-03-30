@@ -228,6 +228,7 @@ Agenda4 = new AgendaData("agenda_4", {
   // Note: the Hantu effect is implemented on Hantu
   text: "When this hosts 12 or more doom, escape the simulation.\n\nAt the end of each turn, spend 1 data to do 1 damage to Hantu.",
   image: "img/card/agenda/agenda4.png",
+  illustrator: "Photo by Andrew Amistad, Unsplash (modified)",
   faction: FACTION_NET,
   async onDoomPlaced(data) {
     // For now we assume only the agenda can host doom
