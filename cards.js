@@ -16,16 +16,15 @@ class Cards {
       return;
     }
     this.focusedCardId = focusedCardId;
-    $("#card-focused-image")
+    const focusedImage = $("#card-focused-image")
       .attr("src", jCardImage.find(".card-image").attr("src"))
       .removeClass("unfocused")
       .addClass("focused");
     Cards.populateData($("#card-focused-image").parent(), cardData, "1.73vh");
-    // Surveyor is the only card with variable stats, so we're hardcoding support for that
+    // Only a few cards have variable stats, so we're hardcoding support for them
     if (cardData == EnemySurveyor) {
       const enemyId = jCardImage.parent().data("enemy-id");
       const enemy = Enemy.getInstance(enemyId);
-      const focusedImage = $("#card-focused-image");
       if (enemy && focusedImage) {
         focusedImage
           .parent()
@@ -38,6 +37,25 @@ class Cards {
           .html(enemy.link)
           .addClass("buffed");
       }
+    } else if (cardData == CardAllOut) {
+      focusedImage
+        .parent()
+        .find(".card-text-cost")
+        .html(CardAllOut.calculateCost())
+        .addClass(CardAllOut.calculateCost() > CardAllOut.cost ? "nerfed" : "");
+      if (CardAllOut.calculateCost() > 9) {
+        focusedImage.parent().find(".card-text-cost").addClass("small");
+      } else {
+        focusedImage.parent().find(".card-text-cost").removeClass("small");
+      }
+    } else if (cardData == CardBackAway) {
+      focusedImage
+        .parent()
+        .find(".card-text-cost")
+        .html(CardBackAway.calculateCost())
+        .addClass(
+          CardBackAway.calculateCost() < CardBackAway.cost ? "buffed" : ""
+        );
     }
   }
   static unfocusCard() {
@@ -436,6 +454,7 @@ class GripCard {
       cardData,
       "12.1px"
     );
+    this.updateStats();
     this.#jObj.data("card-id", cardData.id);
     const jObj = this.#jObj;
     this.#jObj.click(async function () {
@@ -447,6 +466,9 @@ class GripCard {
           await Game.nextAction();
         } else {
           jObj.removeClass("in-play");
+          if (reason == "cancelled") {
+            return;
+          }
           animate(instance.#jObj, 300);
           Audio.playEffect(AUDIO_UNPLAYABLE);
           if (reason == "clicks") {
@@ -582,6 +604,28 @@ class GripCard {
       jObj.remove();
     }
   }
+
+  updateStats() {
+    const jCost = this.#jObj.find(".card-text-cost");
+    jCost.html(this.cost);
+
+    if (this.cost < this.cardData.cost) {
+      jCost.addClass("buffed");
+    } else {
+      jCost.removeClass("buffed");
+    }
+    if (this.cost > this.cardData.cost) {
+      jCost.addClass("nerfed");
+    } else {
+      jCost.removeClass("nerfed");
+    }
+
+    if (this.cost > 9) {
+      jCost.addClass("small");
+    } else {
+      jCost.removeClass("small");
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -683,10 +727,10 @@ class RigCard {
   #jDoom;
   #jPower;
 
-  #damage;
+  #damage = 0;
   #perceivedDamage = 0; // For showing potential damage while assigning damage
-  #doom;
-  #power;
+  #doom = 0;
+  #power = 0;
 
   constructor(cardData, data) {
     const instance = this;
@@ -834,6 +878,7 @@ class RigCard {
       this.setPerceivedDamage(0);
       return; // Assets with no health cannot be damaged
     }
+    value = value ? value : 0;
     if (value < 0) {
       value = 0;
     }
@@ -850,6 +895,7 @@ class RigCard {
   }
   setPerceivedDamage(value, doAnimate = false) {
     const jDamage = this.#jDamage;
+    value = value ? value : 0;
     if (value == 0) {
       this.#jDamage.hide();
     } else {

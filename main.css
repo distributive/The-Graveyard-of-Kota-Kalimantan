@@ -13,6 +13,8 @@ body,
   font-style: normal;
 
   overflow: hidden;
+
+  zoom: scale(1);
 }
 
 hr {
@@ -1279,11 +1281,14 @@ button:not(.action-button, .alert-option) .inline-icon,
 
 .event .card-text-cost {
   top: 0%;
-  left: 5.2%;
-  width: 0.6em;
+  left: 2%;
+  width: 1.2em;
   color: white;
   text-align: center;
   font-size: 2em;
+}
+.event .card-text-cost.small {
+  scale: 0.8;
 }
 .event .card-text-title {
   top: 0.45%;
@@ -1531,13 +1536,6 @@ button:not(.action-button, .alert-option) .inline-icon,
   margin-right: 1em;
   margin-bottom: 1em;
 }
-#modal .card-image-container:not(.character-selection-image, .card-list-card) {
-  width: 320px;
-  max-height: 80%;
-  max-width: 50%;
-  margin-right: 1em;
-  margin-bottom: 1em;
-}
 .card-image-container.card-list-card {
   margin-bottom: 1em;
   left: 0;
@@ -1630,6 +1628,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 }
 .alert {
   width: fit-content;
+  min-width: 400px;
   margin: 10px auto 0 auto;
   border-width: 2px;
   border-radius: 0;
@@ -1887,8 +1886,9 @@ button:not(.action-button, .alert-option) .inline-icon,
 
 .turn-banner {
   position: fixed;
-  top: 50%;
+  top: 40%;
   left: 50%;
+  width: 40%;
   transform: translate(-50%, -50%) scale(0);
   transition: all 200ms ease;
   z-index: 100000;

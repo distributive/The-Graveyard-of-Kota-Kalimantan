@@ -43,7 +43,7 @@ class Game {
         xs.push(CardKickItDown);
         xs.push(CardDownloadTheSigns);
         xs.push(CardGritAndDetermination);
-        xs.push(CardLastDitch);
+        xs.push(CardAllOut);
         xs.push(CardRepurpose);
         xs.push(CardFast);
       }
@@ -65,13 +65,13 @@ class Game {
         xs.push(CardShiv);
         xs.push(CardSpike);
         xs.push(CardBackflip);
-        xs.push(CardZhanZhuang);
         xs.push(CardJackOfAll);
         xs.push(CardEmpDevice);
         xs.push(CardInsideJob);
         xs.push(CardTreadLightly);
+        xs.push(CardPush);
       }
-      xs.push(CardPush);
+      xs.push(CardZhanZhuang);
       xs.push(CardSoda);
       if (Tutorial.active) {
         xs.push(CardUnsureGamble);
@@ -193,18 +193,20 @@ class Game {
   }
   static async endTurn() {
     this.#turnEvents = {};
-    await UiMode.setMode(UIMODE_CORP_TURN);
 
     await Stats.setClicks(0);
     await Stats.addCredits(1);
     await Cards.draw(1);
+
+    await UiMode.setMode(UIMODE_CORP_TURN);
     await Broadcast.signal("onTurnEnd");
 
-    await wait(500); // TODO: time all these properly
+    await wait(500);
 
-    animateTurnBanner("corp");
-
-    await wait(1000);
+    if (Enemy.instances.length > 0) {
+      animateTurnBanner("enemy");
+      await wait(1000);
+    }
 
     if (Agenda.cardData && Agenda.cardData != Agenda1) {
       await Agenda.addDoom(1);
@@ -217,7 +219,8 @@ class Game {
     await RigCard.readyAll();
     await Enemy.readyAll();
 
-    await wait(500);
+    animateTurnBanner("encounter");
+    await wait(1000);
     await Encounter.draw();
 
     this.startTurn();
@@ -234,7 +237,11 @@ class Game {
   }
 
   static async actionMoveTo(location, data) {
-    const { costsClick, enemiesCanEngage = true } = data;
+    const {
+      costsClick,
+      enemiesCanEngage = true,
+      returnToSelectAction = true,
+    } = data;
 
     if (costsClick) {
       await Stats.addClicks(-1);
@@ -267,7 +274,9 @@ class Game {
 
     Game.logTurnEvent("moved");
 
-    await Game.nextAction();
+    if (returnToSelectAction) {
+      await Game.nextAction();
+    }
   }
 
   static async actionPlayCard(gripCard) {

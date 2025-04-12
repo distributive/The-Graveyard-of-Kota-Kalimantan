@@ -199,7 +199,8 @@ class Tutorial {
     if (
       this.#triggers[trigger] ||
       !this.#tutorials[trigger] ||
-      (this.#tutorials[trigger].requireTutorialEnabled && !Tutorial.enabled)
+      (this.#tutorials[trigger].requireTutorialEnabled && !Tutorial.enabled) ||
+      (this.#tutorials[trigger].disableInNetspace && Story.isInNetspace)
     ) {
       return false;
     }
@@ -263,7 +264,7 @@ class Tutorial {
       modals: [
         {
           header: "Gaining credits",
-          body: "Before we go in, let's make sure we're prepared.<br><br>To do much you'll need credits (i.e. money) and cards (i.e. cards).<br><br>The simplest way to gain credits, is to spend a click to gain 1. Remember, you have 3 clicks to spend each turn.",
+          body: "Before we go in, let's make sure we're prepared.<br><br>To do much you'll need credits (i.e. money) and cards (i.e. cards).<br><br>The simplest way to gain credits, is to spend a click to gain one. Remember, you have 3 clicks to spend each turn.",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
@@ -280,7 +281,7 @@ class Tutorial {
       modals: [
         {
           header: "Drawing cards",
-          body: "The simplest way to draw cards, is to spend a click to draw!",
+          body: "The simplest way to draw cards, is to spend a click to draw! Wouldn't you agree?",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
@@ -302,8 +303,8 @@ class Tutorial {
       hint: "Play Unsure Gamble from your hand.",
       modals: [
         {
-          header: "Upkeep",
-          body: "Your first turn! Congratulations!<br><br>You may have noticed, but at the end of each turn, you draw a card and gain a credit automatically.<br><br>If you have more than 8 cards in hand at the end of your turn, you will have to discard back down to 8.",
+          header: "Keeping up",
+          body: "Your first turn! Congratulations!<br><br>You may have noticed, but at the end of each turn, you draw a card and gain a credit automatically.<br><br>If you have more than 8 cards in hand at the end of your turn, you will have to discard back down to 8. Uh oh.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
@@ -422,7 +423,7 @@ class Tutorial {
         },
         {
           header: "Downloading data",
-          body: "Attempting to download data initiates a skill test against your MU. If successful, you download 1 data from your current location.<br><br>Give it a go!",
+          body: "Attempting to download data initiates a skill test against your MU. To succeed, you must roll a final value that is at least the shroud value of your current location. If successful, you download 1 data from it.<br><br>Give it a go!",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           cardData: LocationTerminal,
@@ -519,7 +520,7 @@ class Tutorial {
         // Explain evasion, exhaustion, and readying (guaranteed success)
         {
           header: "Enemies",
-          body: "Unsurprisingly, this place has rats.<br><br>They're not going to be a major problem, but you should try avoid them.",
+          body: "Unsurprisingly, this place has rats.<br><br>They're not going to be a major problem, but you should try to avoid them.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           cardData: Act2,
@@ -681,6 +682,7 @@ class Tutorial {
     // Encounter explainer
     encounter: {
       requireTutorialEnabled: true,
+      disableInNetspace: true,
       cutscene: [
         {
           header: "Random encounters",
@@ -723,6 +725,7 @@ class Tutorial {
     // Committing cards
     commit: {
       requireTutorialEnabled: true,
+      disableInNetspace: true,
       cutscene: [
         {
           header: "Committing cards",
@@ -858,7 +861,7 @@ class Tutorial {
           image: "img/character/sahasraraSad.png",
           slowRoll: true,
           rollSpeed: 150,
-          voices: AUDIO_VOICES_SAD,
+          voices: AUDIO_VOICES_DYING_A,
           size: "lg",
         },
         {
@@ -869,7 +872,7 @@ class Tutorial {
           image: "img/character/sahasraraSad.png",
           slowRoll: true,
           rollSpeed: 150,
-          voices: AUDIO_VOICES_SAD,
+          voices: AUDIO_VOICES_DYING_A,
           size: "lg",
         },
         {
@@ -880,7 +883,7 @@ class Tutorial {
           image: "img/character/sahasraraDecay1.png",
           slowRoll: true,
           rollSpeed: 200,
-          voices: AUDIO_VOICES_SAD,
+          voices: AUDIO_VOICES_DYING_B,
           size: "lg",
         },
         {
@@ -891,7 +894,7 @@ class Tutorial {
           image: "img/character/sahasraraDecay1.png",
           slowRoll: true,
           rollSpeed: 750,
-          voices: AUDIO_VOICES_SAD,
+          voices: AUDIO_VOICES_DYING_B,
           size: "lg",
         },
         {
@@ -902,7 +905,7 @@ class Tutorial {
           image: "img/character/sahasraraDecay2.png",
           slowRoll: true,
           rollSpeed: 750,
-          voices: AUDIO_VOICES_SAD,
+          voices: AUDIO_VOICES_DYING_C,
           size: "lg",
         },
         {
@@ -913,7 +916,7 @@ class Tutorial {
           image: "img/character/sahasraraDecay2.png",
           slowRoll: true,
           rollSpeed: 400,
-          voices: AUDIO_VOICES_SAD,
+          voices: AUDIO_VOICES_DYING_C,
           size: "lg",
         },
         {
@@ -924,7 +927,7 @@ class Tutorial {
           image: "img/character/sahasraraDecay3.png",
           slowRoll: true,
           rollSpeed: 800,
-          voices: [AUDIO_VOICE_SAD_0],
+          voices: [AUDIO_VOICE_DEAD_0],
           size: "lg",
         },
         {
@@ -935,7 +938,7 @@ class Tutorial {
           image: "img/character/sahasraraDecay3.png",
           slowRoll: true,
           rollSpeed: 500,
-          voices: [AUDIO_VOICE_SAD_0],
+          voices: [AUDIO_VOICE_DEAD_0],
           size: "lg",
         },
         {

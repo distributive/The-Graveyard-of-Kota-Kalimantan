@@ -14,15 +14,15 @@ const NET_ENCOUNTERS = [
   TreacheryRapidDecay,
   TreacheryRapidDecay,
   EnemyArcher,
-  EnemyArchitect,
   EnemyHydra,
+  EnemySurveyor,
 ];
 
 const BOSS_ENCOUNTERS = [
   TreacherySomethingInTheDark,
   EnemyDataRaven,
   EnemyAnansi,
-  EnemySurveyor,
+  EnemyArchitect,
 ];
 
 class Encounter {

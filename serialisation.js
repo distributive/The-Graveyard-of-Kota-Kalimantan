@@ -69,11 +69,9 @@ class Serialisation {
   static async load(jsonOverwrite = null) {
     let json;
     try {
-      json = JSON.parse(
-        jsonOverwrite
-          ? jsonOverwrite
-          : window.localStorage.getItem("netrunner-sahasrara")
-      );
+      json = jsonOverwrite
+        ? jsonOverwrite
+        : JSON.parse(window.localStorage.getItem("netrunner-sahasrara"));
       await this.deserialise(json);
     } catch (e) {
       console.error(e);

@@ -561,8 +561,8 @@ class Enemy {
       } else {
         Audio.playEffect(AUDIO_TRASH);
       }
-      this.remove();
       await Broadcast.signal("onEnemyDies", { enemy: this });
+      this.remove();
       UiMode.setFlag("engaged", Enemy.getAttackingEnemies().length > 0); // The UI only cares if the enemies are ready
     }
     this.#damage = value;

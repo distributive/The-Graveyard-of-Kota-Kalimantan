@@ -81,7 +81,10 @@ const EnemyAnansi = new EnemyData("anansi", {
     }
   },
   async onPlayerEvades(source, data) {
-    if (data.results.success && data.enemy == source) {
+    if (data.enemy != source) {
+      return;
+    }
+    if (!data.results || data.results.success) {
       await Stats.addClues(-2);
     }
   },

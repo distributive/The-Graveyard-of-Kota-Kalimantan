@@ -136,6 +136,7 @@ class Stats {
         new: value,
         increase: value - oldClues,
       });
+      Game.logTurnEvent("downloaded");
     } else {
       await Broadcast.signal("onLoseClues", {
         old: oldClues,

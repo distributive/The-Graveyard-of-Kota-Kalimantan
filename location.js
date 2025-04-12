@@ -135,6 +135,7 @@ class Location {
       throw new Error("Attmpted to delete current location!");
     }
     while (location.#neighbours.length > 0) {
+      console.log(location.#neighbours[0].cardData);
       location.removeNeighbour(location.#neighbours[0]);
     }
     while (location.#enemies.length > 0) {
@@ -404,9 +405,10 @@ class Location {
   }
 
   setCurrentLocation(firstTime = false) {
-    if (Location.#currentLocation == this) {
-      return this;
-    }
+    // Commenting this out because we need to reset the current location as the current location when spawning the boss because ????
+    // if (Location.#currentLocation == this) {
+    //   return this;
+    // }
     if (Location.#currentLocation) {
       Location.#currentLocation.#jObj.removeClass("current-location");
     }

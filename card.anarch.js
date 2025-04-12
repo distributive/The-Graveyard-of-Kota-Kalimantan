@@ -3,7 +3,7 @@
 
 CardIllHaveWorse = new AssetData("ill_have_worse", {
   title: "I'll Have Worse!",
-  text: "The first time each turn you fail a test, you may do 1 damage to an enemy at your location.",
+  text: "Whenever you fail a test, you may do 1 damage to an enemy at your location.",
   flavour: `"You don't get the satisfaction of being the worst thing to ever happen to me."`,
   subtypes: ["unique", "trait"],
   unique: true,
@@ -163,9 +163,9 @@ CardTormentNexus = new AssetData("torment_nexus", {
   unique: true,
   faction: FACTION_ANARCH,
   image: "img/card/asset/tormentNexus.png",
-  cost: 4,
+  cost: 3,
   health: 2,
-  skills: ["influence"],
+  skills: ["influence", "link"],
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.addDamage(1);
@@ -259,7 +259,7 @@ CardKickItDown = new EventData("kick_it_down", {
   text: "Move to an adjacent location then do 3 damage, randomly split among enemies at that location.",
   subtypes: ["tactic"],
   faction: FACTION_ANARCH,
-  image: "img/card/event/bgAnarch.png",
+  image: "img/card/event/kickItDown.png",
   illustrator: "Illustrator: Lish",
   cost: 2,
   skills: ["strength"],
@@ -318,7 +318,7 @@ CardGritAndDetermination = new EventData("grit_and_determination", {
   cost: 3,
   skills: ["influence", "mu"],
   canPlay(source, data) {
-    const activated = Game.getTurnEvent("investigateSuccess"); // NOCOMMIT
+    const activated = Game.getTurnEvent("downloaded");
     const validLocation = Location.getCurrentLocation().clues > 0;
     return {
       success: activated && validLocation,
@@ -335,8 +335,8 @@ CardGritAndDetermination = new EventData("grit_and_determination", {
   },
 });
 
-CardLastDitch = new EventData("last_ditch", {
-  title: "Last Ditch",
+CardAllOut = new EventData("all_out", {
+  title: "All Out",
   text: "This costs 2{c} more for each other card in your hand.\n<b>Fight.</b> You gain +1 {strength} for this fight. If successful, instead attack each engaged enemy.",
   subtypes: ["tactic", "attack"],
   faction: FACTION_ANARCH,
@@ -346,7 +346,7 @@ CardLastDitch = new EventData("last_ditch", {
   skills: ["strength"],
   preventAttacks: true,
   calculateCost(source) {
-    return this.cost + Cards.grip.length * 2 - 2;
+    return this.cost + (Cards.grip.length - 1) * 2;
   },
   canPlay(source) {
     const success = Enemy.getEnemiesAtCurrentLocation().length > 0;
@@ -400,9 +400,8 @@ CardProjectile = new EventData("projectile", {
   subtypes: ["tactic", "attack"],
   faction: FACTION_ANARCH,
   image: "img/card/event/projectile.png",
-  cost: 1,
-  skills: ["strength", "mu"],
-  smallText: true,
+  cost: 0,
+  skills: ["strength", "mu", "link"],
   preventAttacks: true,
   canPlay(source, data) {
     const [canEngage, canFight, canEvade] = Enemy.canEngageFightEvade();

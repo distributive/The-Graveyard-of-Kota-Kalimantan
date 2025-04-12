@@ -25,6 +25,21 @@ $(document).ready(async function () {
           size: "lg",
         }).display();
       }
+      // Warn users of the ideal browser
+      const isFirefox = typeof InstallTrigger !== "undefined";
+      const isEdge = !!window.StyleMedia;
+      const isChrome =
+        !!window.chrome &&
+        (!!window.chrome.webstore || !!window.chrome.runtime);
+      if (!isFirefox && !isEdge && !isChrome) {
+        await new Modal({
+          header: "Browser",
+          body: "This game was optimised for play in Chrome, Firefox, or Edge. It is recommended you play with one of these browsers if able.",
+          options: [new Option("", "Continue")],
+          allowKeyboard: false,
+          size: "lg",
+        }).display();
+      }
       // Local storage disclaimer
       await new Modal({
         header: "Notice",

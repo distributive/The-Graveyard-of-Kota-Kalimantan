@@ -276,7 +276,7 @@ class EventData extends PlayableCardData {
           .join("")
       : "";
     const jCardText = $(`
-      <div class="card-text-cost">${this.cost}</div>
+      <div class="card-text-cost${this.cost > 9 ? " small" : ""}">${this.cost}</div>
       <div class="card-text-title">${this.formattedTitle}</div>
       <div class="card-text-subtypes">${this.displaySubtypes}</div>
       <div class="card-text-text"></div>

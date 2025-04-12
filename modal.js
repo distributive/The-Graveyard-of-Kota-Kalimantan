@@ -113,13 +113,19 @@ class Modal {
         .append(imageContainer)
         .append(bodyContainer);
     } else if (this.#cardData) {
-      const imageContainer = $(
-        `<div id="card-modal-image" class="card-image-container h-100 float-start">
-          <img class="card-image w-100 h-100" src="${this.#cardData.image}" />
-        </div>`
+      const imageContainer = $(`
+        <div class="col-5">
+          <div id="card-modal-image" class="card-image-container h-100">
+            <img class="card-image w-100 h-100" src="${this.#cardData.image}" />
+          </div>
+        </div>`);
+      bodyContainer.addClass("col-7");
+      Cards.populateData(
+        imageContainer.find("#card-modal-image"),
+        this.#cardData,
+        "18.5px"
       );
-      Cards.populateData(imageContainer, this.#cardData, "19.5px");
-      this.#body = $(`<div></div>`)
+      this.#body = $(`<div class="row"></div>`)
         .append(imageContainer)
         .append(bodyContainer);
       imageContainer.parent().data("card-id", this.#cardData.id);
@@ -207,7 +213,7 @@ class Modal {
             Audio.playEffect(randomElement(voices));
             for (let i = 1; i < paragraph.length; i++) {
               await wait(rollSpeed);
-              if (rollSpeed >= 50 || i % 2 == 0) {
+              if (rollSpeed >= 100 || i % 5 == 0) {
                 Audio.playEffect(randomElement(voices));
               }
               p.append(" " + paragraph[i]);

@@ -5,7 +5,7 @@ CardDocklandsPass = new AssetData("docklands_pass", {
   title: "Elevator Depot Pass",
   text: "The first time each turn you successfully jack in at a location with data, download another data from the same location, or an adjacent location.",
   flavour: `"It fell off the back of a hopper."`,
-  subtypes: ["item", "unique"],
+  subtypes: ["unique", "item"],
   unique: true,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/docklandsPass.png",
@@ -119,34 +119,34 @@ CardForgedDocuments = new AssetData("forged_documents", {
 
 CardCrowbar = new AssetData("crowbar", {
   title: "Crowbar",
-  text: "Uses 2 power counters.\n{click}, power counter: <b>Jack in.</b> During this skill test, add your {link} to your {mu}. If successful, download 1 additional data.<br>Limit 2 installed weapons.",
-  subtypes: ["item", "weapon"],
-  unique: false,
+  text: "Uses 2 power counters.\n{click}, power counter: <b>Jack in.</b> During this skill test, add your {link} to your {mu}. If successful, download 1 additional data.",
+  subtypes: ["unique", "weapon"],
+  unique: true,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/crowbar.png",
   cost: 3,
   health: 1,
   skills: ["influence", "link"],
-  smallText: true,
+  // smallText: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
-    const installedWeapons = Cards.installedCards.filter((card) =>
-      card.cardData.subtypes.includes("weapon")
-    );
-    if (installedWeapons.length > 2) {
-      await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
-        validTargets: installedWeapons,
-        minCards: installedWeapons.length - 2,
-        maxCards: installedWeapons.length - 2,
-        reason: "You have exceeded the limit on installed weapons",
-        effect: "to trash",
-        canCancel: false,
-      });
-      for (const card of UiMode.data.selectedCards) {
-        await Cards.trashInstalledCard(card);
-      }
-    }
+    // const installedWeapons = Cards.installedCards.filter((card) =>
+    //   card.cardData.subtypes.includes("weapon")
+    // );
+    // if (installedWeapons.length > 2) {
+    //   await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
+    //     validTargets: installedWeapons,
+    //     minCards: installedWeapons.length - 2,
+    //     maxCards: installedWeapons.length - 2,
+    //     reason: "You have exceeded the limit on installed weapons",
+    //     effect: "to trash",
+    //     canCancel: false,
+    //   });
+    //   for (const card of UiMode.data.selectedCards) {
+    //     await Cards.trashInstalledCard(card);
+    //   }
+    // }
   },
   canUse(source) {
     const power = source.power > 0;
@@ -176,35 +176,35 @@ CardCrowbar = new AssetData("crowbar", {
 
 CardShiv = new AssetData("shiv", {
   title: "Shiv",
-  text: "Uses 2 power counters.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.<br>Limit 2 installed weapons.",
-  subtypes: ["item", "weapon", "attack"],
-  unique: false,
+  text: "Uses 2 power counters.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.",
+  subtypes: ["unique", "weapon", "attack"],
+  unique: true,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/shiv.png",
   cost: 3,
   health: 2,
   skills: ["influence", "strength"],
-  smallText: true,
+  // smallText: true,
   preventAttacks: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
-    const installedWeapons = Cards.installedCards.filter((card) =>
-      card.cardData.subtypes.includes("weapon")
-    );
-    if (installedWeapons.length > 2) {
-      await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
-        validTargets: installedWeapons,
-        minCards: installedWeapons.length - 2,
-        maxCards: installedWeapons.length - 2,
-        reason: "You have exceeded the limit on installed weapons",
-        effect: "to trash",
-        canCancel: false,
-      });
-      for (const card of UiMode.data.selectedCards) {
-        await Cards.trashInstalledCard(card);
-      }
-    }
+    // const installedWeapons = Cards.installedCards.filter((card) =>
+    //   card.cardData.subtypes.includes("weapon")
+    // );
+    // if (installedWeapons.length > 2) {
+    //   await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
+    //     validTargets: installedWeapons,
+    //     minCards: installedWeapons.length - 2,
+    //     maxCards: installedWeapons.length - 2,
+    //     reason: "You have exceeded the limit on installed weapons",
+    //     effect: "to trash",
+    //     canCancel: false,
+    //   });
+    //   for (const card of UiMode.data.selectedCards) {
+    //     await Cards.trashInstalledCard(card);
+    //   }
+    // }
   },
   canUse(source) {
     const power = source.power > 0;
@@ -232,34 +232,34 @@ CardShiv = new AssetData("shiv", {
 
 CardSpike = new AssetData("spike", {
   title: "Spike",
-  text: "Uses 2 power counters.\n{click}, power counter: Move twice. Enemies at those locations do not engage you.<br>Limit 2 installed weapons.",
-  subtypes: ["item", "weapon", "stealth"],
-  unique: false,
+  text: "Uses 2 power counters.\n{click}, power counter: Move twice. Enemies at those locations do not engage you.",
+  subtypes: ["unique", "weapon", "stealth"],
+  unique: true,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/spike.png",
   cost: 3,
   health: 2,
   skills: ["influence", "mu"],
-  smallText: true,
+  // smallText: true,
   async onCardInstalled(source, data) {
     if (source != data.card) return;
     source.setPower(2);
-    const installedWeapons = Cards.installedCards.filter((card) =>
-      card.cardData.subtypes.includes("weapon")
-    );
-    if (installedWeapons.length > 2) {
-      await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
-        validTargets: installedWeapons,
-        minCards: installedWeapons.length - 2,
-        maxCards: installedWeapons.length - 2,
-        reason: "You have exceeded the limit on installed weapons",
-        effect: "to trash",
-        canCancel: false,
-      });
-      for (const card of UiMode.data.selectedCards) {
-        await Cards.trashInstalledCard(card);
-      }
-    }
+    // const installedWeapons = Cards.installedCards.filter((card) =>
+    //   card.cardData.subtypes.includes("weapon")
+    // );
+    // if (installedWeapons.length > 2) {
+    //   await UiMode.setMode(UIMODE_SELECT_INSTALLED_CARD, {
+    //     validTargets: installedWeapons,
+    //     minCards: installedWeapons.length - 2,
+    //     maxCards: installedWeapons.length - 2,
+    //     reason: "You have exceeded the limit on installed weapons",
+    //     effect: "to trash",
+    //     canCancel: false,
+    //   });
+    //   for (const card of UiMode.data.selectedCards) {
+    //     await Cards.trashInstalledCard(card);
+    //   }
+    // }
   },
   canUse(source) {
     const power = source.power > 0;
@@ -280,6 +280,7 @@ CardSpike = new AssetData("spike", {
     await Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
       enemiesCanEngage: false,
+      returnToSelectAction: false,
     });
     // If netspace, wait a second to allow any new locations to spawn
     if (cardData == LocationUnknownNet) {
@@ -307,7 +308,7 @@ CardBackflip = new EventData("backflip", {
   image: "img/card/event/parry.png",
   cost: 2,
   preventAttacks: true,
-  skills: ["mu", "link"],
+  skills: ["mu", "strength"],
   canPlay(source) {
     const clues = Location.getCurrentLocation().clues > 0;
     const engaged = Enemy.getEngagedEnemies().length > 0;
@@ -341,7 +342,7 @@ CardZhanZhuang = new EventData("zhan_zhuang", {
   faction: FACTION_CRIMINAL,
   image: "img/card/event/zhanZhuang.png",
   cost: 0,
-  skills: ["influence"],
+  skills: ["influence", "strength"],
   async onPlay() {
     await Stats.addCredits(2);
     await Cards.draw(1);
@@ -381,7 +382,7 @@ CardEmpDevice = new EventData("emp_device", {
   skills: ["strength"],
   preventAttacks: true,
   canPlay(source) {
-    const success = Enemy.getEngagedEnemies().length > 0;
+    const success = Enemy.getEnemiesAtCurrentLocation().length > 0;
     return {
       success: success,
       reason: success ? null : "There are no enemies at your current location.",
@@ -393,21 +394,22 @@ CardEmpDevice = new EventData("emp_device", {
       await enemy.evade();
     }
     for (const enemy of Enemy.getEnemiesAtCurrentLocation()) {
-      await enemy.addDamage(1);
       await enemy.moveTo(randomElement(locations));
+      await enemy.addDamage(1);
     }
+    Audio.playEffect(AUDIO_EMP);
   },
 });
 
 CardInsideJob = new EventData("inside_job", {
-  title: "Inside Job",
+  title: "Interface",
   text: "<b>Jack in.</b> If successful, instead download 1 data at an adjacent location.",
   subtypes: ["tactic"],
   faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
+  image: "img/card/event/insideJob.png",
   illustrator: "Illustrator: PiCat",
-  cost: 2,
-  skills: ["mu"],
+  cost: 1,
+  skills: ["mu", "link"],
   canPlay(source) {
     const locations = Location.getCurrentLocation().neighbours;
     const success = locations.some((location) => location.clues > 0);
@@ -488,7 +490,7 @@ CardTreadLightly = new EventData("tread_lightly", {
   text: "Move twice. Enemies at those locations do not engage you.",
   subtypes: ["talent", "stealth"],
   faction: FACTION_CRIMINAL,
-  image: "img/card/event/bgCriminal.png",
+  image: "img/card/event/treadLightly.png",
   illustrator: "Illustrator: Lish",
   cost: 1,
   skills: ["link"],
@@ -500,6 +502,7 @@ CardTreadLightly = new EventData("tread_lightly", {
     await Game.actionMoveTo(UiMode.data.selectedLocation, {
       costsClick: false,
       enemiesCanEngage: false,
+      returnToSelectAction: false,
     });
     // If netspace, wait a second to allow any new locations to spawn
     if (cardData == LocationUnknownNet) {

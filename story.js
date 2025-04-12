@@ -145,7 +145,7 @@ class Story {
       ? locations[0]
       : Location.getCurrentLocation();
 
-    // Remove all unknown locations (may remove this)
+    // Remove all unknown locations
     for (const location of Location.instances.filter(
       (location) =>
         location.cardData == LocationUnknownNet &&
@@ -154,6 +154,7 @@ class Story {
       Location.remove(location);
     }
     Location.recalculatePlayerDistance();
+    Location.getCurrentLocation().setCurrentLocation();
 
     // Update encounters
     Encounter.addPool(BOSS_ENCOUNTERS);

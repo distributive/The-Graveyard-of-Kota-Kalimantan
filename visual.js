@@ -12,9 +12,13 @@ function animate(jObj, timeout = 100) {
   }, timeout);
 }
 
-function animateTurnBanner(side) {
-  let isCorp = side == "corp";
-  let obj = isCorp ? $("#corp-turn-banner") : $("#runner-turn-banner");
+function animateTurnBanner(phase) {
+  let obj =
+    phase == "enemy"
+      ? $("#enemy-turn-banner")
+      : phase == "encounter"
+      ? $("#encounter-turn-banner")
+      : $("#runner-turn-banner");
   obj.show();
   setTimeout(function () {
     obj.addClass("animate-in");

@@ -73,7 +73,25 @@ const AUDIO_VOICE_SAD_0 = "./audio/voiceSad0.mp3";
 const AUDIO_VOICE_SAD_1 = "./audio/voiceSad1.mp3";
 const AUDIO_VOICES_SAD = [AUDIO_VOICE_SAD_0, AUDIO_VOICE_SAD_1];
 
+const AUDIO_VOICE_DYING_A_0 = "./audio/voiceDyingA0.mp3";
+const AUDIO_VOICE_DYING_A_1 = "./audio/voiceDyingA1.mp3";
+const AUDIO_VOICES_DYING_A = [AUDIO_VOICE_DYING_A_0, AUDIO_VOICE_DYING_A_1];
+
+const AUDIO_VOICE_DYING_B_0 = "./audio/voiceDyingB0.mp3";
+const AUDIO_VOICE_DYING_B_1 = "./audio/voiceDyingB1.mp3";
+const AUDIO_VOICES_DYING_B = [AUDIO_VOICE_DYING_B_0, AUDIO_VOICE_DYING_B_1];
+
+const AUDIO_VOICE_DYING_C_0 = "./audio/voiceDyingC0.mp3";
+const AUDIO_VOICE_DYING_C_1 = "./audio/voiceDyingC1.mp3";
+const AUDIO_VOICES_DYING_C = [AUDIO_VOICE_DYING_C_0, AUDIO_VOICE_DYING_C_1];
+
+const AUDIO_VOICE_DEAD_0 = "./audio/voiceDead0.mp3";
+const AUDIO_VOICE_DEAD_1 = "./audio/voiceDead1.mp3";
+const AUDIO_VOICES_DEAD = [AUDIO_VOICE_DEAD_0, AUDIO_VOICE_DEAD_1];
+
 const AUDIO_FLOWER_DEATH = "./audio/flowerDeath.mp3";
+
+const AUDIO_EMP = "./audio/emp.mp3";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -91,7 +109,8 @@ class Audio {
     // Play new track
     this.#audioMusic = document.createElement("audio");
     this.#audioMusic.setAttribute("src", track);
-    this.#audioMusic.muted = this.musicMuted;
+    this.#audioMusic.volume = this.musicVolume;
+    this.#audioMusic.muted = this.#audioMusic.volume == 0;
     this.#audioMusic.addEventListener("canplay", function () {
       this.play();
     });
@@ -179,13 +198,15 @@ class Audio {
   }
 
   // SFX
-  static playEffect(effect, force = false) {
-    if (this.sfxMuted && !force) {
+  static playEffect(effect) {
+    const volume = this.sfxVolume;
+    if (volume == 0) {
       return;
     }
     const audio = document.createElement("audio");
     audio.setAttribute("src", effect);
     audio.addEventListener("canplay", function () {
+      this.volume = volume;
       this.play();
     });
     audio.addEventListener(
@@ -199,30 +220,50 @@ class Audio {
 
   // SETTINGS
   static toggleMusic() {
-    Serialisation.saveSetting("music-muted", !this.musicMuted);
+    const volume =
+      (this.musicVolumeIndex + 1) % Object.keys(this.#volumeIndices).length;
+    Serialisation.saveSetting("music-volume", volume);
     if (this.#audioMusic) {
-      this.#audioMusic.muted = this.musicMuted;
+      this.#audioMusic.volume = this.#volumeIndices[volume];
+      this.#audioMusic.muted = this.#volumeIndices[volume] == 0;
     }
   }
   static toggleSfx() {
-    Serialisation.saveSetting("sfx-muted", !this.sfxMuted);
+    const volume =
+      (this.sfxVolumeIndex + 1) % Object.keys(this.#volumeIndices).length;
+    Serialisation.saveSetting("sfx-volume", volume);
   }
   static toggleButtons() {
     Serialisation.saveSetting("buttons-muted", !this.buttonsMuted);
   }
 
-  static get musicMuted() {
-    const muted = Serialisation.loadSetting("music-muted");
-    return muted ? muted == "true" : false;
+  static get musicVolume() {
+    return this.#volumeIndices[this.musicVolumeIndex];
   }
-  static get sfxMuted() {
-    const muted = Serialisation.loadSetting("sfx-muted");
-    return muted ? muted == "true" : false;
+  static get musicVolumeIndex() {
+    const raw = Serialisation.loadSetting("music-volume");
+    return isNaN(raw) ? 2 : parseInt(raw); // Default to 50%
+  }
+  static get sfxVolume() {
+    return this.#volumeIndices[this.sfxVolumeIndex];
+  }
+  static get sfxVolumeIndex() {
+    const raw = Serialisation.loadSetting("sfx-volume");
+    return isNaN(raw) ? 0 : parseInt(raw); // Default to 100%
   }
   static get buttonsMuted() {
     const muted = Serialisation.loadSetting("buttons-muted");
     return muted ? muted == "true" : false;
   }
+
+  // Volumes are saved as an index rather than a percentage
+  static #volumeIndices = {
+    0: 1,
+    1: 0.75,
+    2: 0.5,
+    3: 0.25,
+    4: 0,
+  };
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -245,22 +286,22 @@ $(document).ready(function () {
     // Set up the audio listeners once the player has interacted with the page
     $("body").on("click", "button:not(.modal-option)", function () {
       if (!Audio.buttonsMuted) {
-        Audio.playEffect(AUDIO_CLICK, true);
+        Audio.playEffect(AUDIO_CLICK);
       }
     });
     $("body").on("click", "input[type='checkbox']", function () {
       if (!Audio.buttonsMuted) {
-        Audio.playEffect(AUDIO_CLICK, true);
+        Audio.playEffect(AUDIO_CLICK);
       }
     });
     $("body").on("mouseenter", "button:not(.character-button)", function () {
       if (!Audio.buttonsMuted) {
-        Audio.playEffect(AUDIO_FLICK_0, true);
+        Audio.playEffect(AUDIO_FLICK_0);
       }
     });
     $("body").on("mouseenter", ".selectable", function () {
       if (!Audio.buttonsMuted) {
-        Audio.playEffect(AUDIO_FLICK_0, true);
+        Audio.playEffect(AUDIO_FLICK_0);
       }
     });
   });

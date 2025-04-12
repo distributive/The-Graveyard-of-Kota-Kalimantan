@@ -263,13 +263,19 @@ const LocationUnknownNet = new LocationData("unknown_net", {
   async onPlayerMoves(source, data) {
     if (data.toLocation != source) return;
 
+    const entrances = Location.instances.filter(
+      (location) => location.cardData == LocationEntrance
+    );
+    const entrance = entrances.length > 0 ? entrances[0] : null;
+
     // Reveal the location
     let cardData;
     // Once the boss is revealed, everything is a dead end
-    if (Story.isBossSummoned) {
+    // Also, everything that is too far from the entrance
+    if (Story.isBossSummoned || (entrance && entrance.playerDistance > 5)) {
       cardData = LocationVoid;
     }
-    // After 7 reveals, have a chance to reveal the source (it's guaranteed when there are none left to reveal)
+    // After 7 reveals, have a chance to reveal the source
     // If it is the last two clicks before the agenda would advance, remove the random chance
     else if (
       !Story.isSourceRevealed &&

@@ -232,8 +232,12 @@ class Chaos {
           ? "You rolled the elder sign, and automatically win!"
           : token == "skull"
           ? success
-            ? `You rolled a skull! Your base MU (${base}) was unaffected and you succeeded!`
-            : `You rolled a skull! Your base MU (${base}) is unaffected and you failed! You suffer 1 damage.`
+            ? `You rolled a skull! Your base ${Stats.getName(
+                stat
+              )} (${base}) was unaffected and you succeeded!`
+            : `You rolled a skull! Your base ${Stats.getName(
+                stat
+              )} (${base}) is unaffected and you failed! You suffer 1 damage.`
           : token == "fail"
           ? "You rolled the auto-fail token. You automatically failed this test with a final value of 0."
           : token < 0

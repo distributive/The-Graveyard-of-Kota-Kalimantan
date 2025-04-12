@@ -148,6 +148,12 @@ class UiMode {
         await this.enterEndTurn();
         break;
     }
+
+    // Update stats on cards in hand
+    // This is a bit of a hacky solution to make sure these are constantly up to date
+    for (const card of Cards.grip) {
+      card.updateStats();
+    }
   }
 
   static setFlag(flag, value) {
@@ -265,7 +271,7 @@ class UiMode {
       : `Select ${this.data.maxCards} ${
           this.data.maxCards == 1 ? "card" : "cards"
         } from your hand.`;
-    const options = [new Option("accept", "Accept")];
+    const options = [new Option("accept", "Confirm selection")];
     if (this.data.canCancel) {
       options.push(new Option("cancel", "Cancel", "warning"));
     }
@@ -327,7 +333,7 @@ class UiMode {
         : `Select ${this.data.maxCards} installed ${
             this.data.maxCards == 1 ? "card" : "cards"
           }${effect}.`);
-    const options = [new Option("accept", "Accept")];
+    const options = [new Option("accept", "Confirm selection")];
     if (this.data.canCancel) {
       options.push(new Option("cancel", "Cancel", "warning"));
     }
@@ -381,7 +387,7 @@ class UiMode {
     const source = this.data.source ? `${this.data.source}: ` : "";
     const message = `${source}Choose up to ${this.data.damage} damage to split among installed cards. Any excess will be dealt to your identity.`;
     const options = [
-      new Option("accept", "Accept"),
+      new Option("accept", "Confirm selection"),
       new Option("reset", "Reset", "warning"),
     ];
     const alert = Alert.send(message, ALERT_PRIMARY, false, true, options);

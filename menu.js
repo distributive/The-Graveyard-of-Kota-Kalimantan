@@ -1,5 +1,5 @@
 class Menu {
-  static #inMainMenu = false;
+  static #inMainMenu = true;
 
   static get isInMainMenu() {
     return this.#inMainMenu;
@@ -319,20 +319,19 @@ class Menu {
       }
       options.push(null);
       options.push(
-        new Option("music", Audio.musicMuted ? "Unmute music" : "Mute music")
+        new Option("music", `Music volume (${Audio.musicVolume * 100}%)`)
       );
+      options.push(new Option("sfx", `SFX volume (${Audio.sfxVolume * 100}%)`));
       options.push(
-        new Option("sfx", Audio.sfxMuted ? "Unmute SFX" : "Mute SFX")
-      );
-      options.push(
-        new Option("buttons", Audio.buttonsMuted ? "Unmute UI" : "Mute UI")
+        new Option(
+          "buttons",
+          `UI SFX (${Audio.buttonsMuted ? "Muted" : "Unmuted"})`
+        )
       );
       options.push(
         new Option(
           "slowRoll",
-          Modal.slowRollDisabled
-            ? "Enable text animation"
-            : "Disable text animation"
+          `Text animation (${Modal.slowRollDisabled ? "Disabled" : "Enabled"})`
         )
       );
       if (inGame) {
@@ -406,7 +405,7 @@ class Menu {
   static async showAbout() {
     const body = `
       <div>
-        <div>This online card game was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
+        <div>This online card game is based on the mechanics of Arkham Horror LCG and was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
         <div>Although it was made with the help of members of NSG, it is not an official NSG product nor is it endorsed as such.</div>
         <div class="mt-2 font-size-20">Content warnings</div>
         <ul>
@@ -487,12 +486,12 @@ class Menu {
                 <li>-</li>
               </ul>
               <ul class="col-3">
-                <li>-</li>
+                <li>Mezzie</li>
                 <li>-</li>
                 <li>-</li>
               </ul>
               <ul class="col-3">
-                <li>-</li>
+                <li>DeeR</li>
                 <li>-</li>
                 <li>-</li>
               </ul>
