@@ -188,7 +188,9 @@ class Game {
   static async startTurn() {
     await Stats.setClicks(3);
     await UiMode.setMode(UIMODE_SELECT_ACTION);
-    animateTurnBanner("runner");
+    if (!Tutorial.active) {
+      animateTurnBanner("runner");
+    }
     await Broadcast.signal("onTurnStart");
   }
   static async endTurn() {
@@ -203,7 +205,7 @@ class Game {
 
     await wait(500);
 
-    if (Enemy.instances.length > 0) {
+    if (Enemy.instances.length > 0 && !Tutorial.active) {
       animateTurnBanner("enemy");
       await wait(1000);
     }
@@ -219,7 +221,9 @@ class Game {
     await RigCard.readyAll();
     await Enemy.readyAll();
 
-    animateTurnBanner("encounter");
+    if (!Tutorial.active) {
+      animateTurnBanner("encounter");
+    }
     await wait(1000);
     await Encounter.draw();
 

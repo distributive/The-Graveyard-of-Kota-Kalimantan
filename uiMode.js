@@ -369,7 +369,6 @@ class UiMode {
   }
   static async exitSelectInstalledCard() {
     RigCard.deselectAll();
-    console.log(RigCard.selectedCards);
   }
 
   // UIMODE_ASSIGN_DAMAGE

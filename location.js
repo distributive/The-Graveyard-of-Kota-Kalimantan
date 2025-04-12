@@ -135,7 +135,6 @@ class Location {
       throw new Error("Attmpted to delete current location!");
     }
     while (location.#neighbours.length > 0) {
-      console.log(location.#neighbours[0].cardData);
       location.removeNeighbour(location.#neighbours[0]);
     }
     while (location.#enemies.length > 0) {

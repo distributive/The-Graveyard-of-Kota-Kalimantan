@@ -242,14 +242,14 @@ class Audio {
   }
   static get musicVolumeIndex() {
     const raw = Serialisation.loadSetting("music-volume");
-    return isNaN(raw) ? 2 : parseInt(raw); // Default to 50%
+    return isNaN(raw) || raw == null ? 2 : parseInt(raw); // Default to 50%
   }
   static get sfxVolume() {
     return this.#volumeIndices[this.sfxVolumeIndex];
   }
   static get sfxVolumeIndex() {
     const raw = Serialisation.loadSetting("sfx-volume");
-    return isNaN(raw) ? 0 : parseInt(raw); // Default to 100%
+    return isNaN(raw) || raw == null ? 0 : parseInt(raw); // Default to 100%
   }
   static get buttonsMuted() {
     const muted = Serialisation.loadSetting("buttons-muted");

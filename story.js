@@ -21,7 +21,6 @@ class Story {
     this.isInNetspace = false;
     this.randomNetLocations = [
       LocationCloister,
-      LocationCloister,
       LocationNebula,
       LocationNebula,
       LocationDataWell,

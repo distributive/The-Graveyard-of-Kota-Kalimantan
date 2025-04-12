@@ -28,9 +28,7 @@ $(document).ready(async function () {
       // Warn users of the ideal browser
       const isFirefox = typeof InstallTrigger !== "undefined";
       const isEdge = !!window.StyleMedia;
-      const isChrome =
-        !!window.chrome &&
-        (!!window.chrome.webstore || !!window.chrome.runtime);
+      const isChrome = /chrome/.test(navigator.userAgent.toLowerCase());
       if (!isFirefox && !isEdge && !isChrome) {
         await new Modal({
           header: "Browser",

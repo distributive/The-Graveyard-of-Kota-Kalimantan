@@ -334,7 +334,7 @@ CardBackflip = new EventData("backflip", {
 });
 
 CardZhanZhuang = new EventData("zhan_zhuang", {
-  title: "Zhan zhuang",
+  title: "Zhan Zhuang",
   text: "Gain 2{c}. Draw 1 card.",
   flavour:
     "Baz clears his head and focuses. He's done this before, he can do it again.",

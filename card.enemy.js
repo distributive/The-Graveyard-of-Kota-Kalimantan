@@ -172,7 +172,7 @@ const EnemySurveyor = new EnemyData("surveyor", {
   faction: FACTION_NET,
   image: "img/card/enemy/surveyor.png",
   strength: 0,
-  health: 5,
+  health: 4,
   link: 0,
   calculateStrength(source) {
     return Enemy.getEngagedEnemies(source.location).length * 2;

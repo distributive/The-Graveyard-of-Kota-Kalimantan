@@ -298,6 +298,8 @@ class Chaos {
           ? `<img class="inline-token" src="img/game/tokenFail.png" />`
           : token == "skull"
           ? `<img class="inline-token" src="img/game/tokenSkull.png" />`
+          : token >= 0
+          ? `+${token}`
           : token
       )
       .join(", ");
