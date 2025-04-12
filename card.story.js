@@ -155,6 +155,36 @@ Agenda2 = new AgendaData("agenda_2", {
     if (data.doom >= this.requirement) {
       await Stats.setClues(0);
       await Agenda.advance();
+    } else if (data.doom == this.requirement - 1) {
+      await new Modal({
+        header: "One turn remains",
+        body: "The agenda is one doom away from advancing...",
+        options: [new Option("", "Okay")],
+        cardData: this,
+        allowKeyboard: false,
+        size: "lg",
+      }).display();
+      Modal.hide();
+    } else if (data.doom == this.requirement - 2) {
+      await new Modal({
+        header: "Two turns remain",
+        body: "The agenda is two doom away from advancing...",
+        options: [new Option("", "Okay")],
+        cardData: this,
+        allowKeyboard: false,
+        size: "lg",
+      }).display();
+      Modal.hide();
+    } else if (data.doom == this.requirement - 3) {
+      await new Modal({
+        header: "Three turns remain",
+        body: "The agenda is three doom away from advancing...",
+        options: [new Option("", "Okay")],
+        cardData: this,
+        allowKeyboard: false,
+        size: "lg",
+      }).display();
+      Modal.hide();
     }
   },
   async advance() {
