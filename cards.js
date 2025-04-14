@@ -54,7 +54,7 @@ class Cards {
         .find(".card-text-cost")
         .html(CardBackAway.calculateCost())
         .addClass(
-          CardBackAway.calculateCost() < CardBackAway.cost ? "buffed" : ""
+          CardBackAway.calculateCost() > CardBackAway.cost ? "nerfed" : ""
         );
     }
   }
@@ -452,7 +452,7 @@ class GripCard {
     Cards.populateData(
       this.#jObj.find(".card-image-container"),
       cardData,
-      "12.1px"
+      "1.235vh"
     );
     this.updateStats();
     this.#jObj.data("card-id", cardData.id);
@@ -514,6 +514,10 @@ class GripCard {
             Alert.send(message, ALERT_WARNING, true, false);
           }
         }
+      } else if (UiMode.uiMode == UIMODE_END_TURN) {
+        Alert.send("You have no clicks left. End your turn.", ALERT_WARNING);
+        animate(instance.#jObj, 300);
+        Audio.playEffect(AUDIO_UNPLAYABLE);
       }
     });
     this.#jObj.on("mouseenter", function () {

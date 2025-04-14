@@ -250,7 +250,7 @@ $(document).ready(function () {
         Special tokens:
       </p>
       <ul>
-        <li><img class="inline-token" src="img/game/tokenElder.png" /> - Autowin: If you roll this token, automatically succeed the test.</li>
+        <li><img class="inline-token" src="img/game/tokenElder.png" /> - Elder sign: If you roll this token, automatically succeed the test.</li>
         <li><img class="inline-token" src="img/game/tokenFail.png" /> - Autofail: If you roll this token, automatically fail the test.</li>
         <li><img class="inline-token" src="img/game/tokenSkull.png" /> - Skull: +0. If you fail the test, suffer 1 damage.</li>
       </ul>

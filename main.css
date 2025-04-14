@@ -569,11 +569,11 @@ button:not(.action-button, .alert-option) .inline-icon,
 .grip-card {
   --index: 1;
   --hand-size: 1;
-  --card-width: 180px;
-  --grip-width: calc(min(var(--hand-size) * var(--card-width), 800px));
+  --card-width: 50%;
+  --grip-width: calc(min(var(--hand-size) * var(--card-width), 50vw));
   position: absolute;
   left: 50%;
-  height: 280px;
+  height: 100%;
   transform: translateX(
     calc(
       var(--index) * var(--grip-width) / var(--hand-size) - var(--grip-width) /
@@ -584,11 +584,11 @@ button:not(.action-button, .alert-option) .inline-icon,
   transition: transform 0.25s, rotate 0.2s;
 }
 .grip-card .card-image-container {
-  transform: translate(0, 70px);
+  transform: translate(0, 25%);
   transition: transform 0.25s, box-shadow 0.2s;
 }
 .uimode-select-action .grip-card:not(.playable) .card-image-container {
-  transform: translate(0, 71px);
+  transform: translate(0, calc(25% + 2px));
 }
 .grip-card:not(.selected-card):hover {
   rotate: 0deg;
@@ -599,13 +599,13 @@ button:not(.action-button, .alert-option) .inline-icon,
   transform: translate(0, -26px) scale(1.2);
 }
 .grip-card:not(.selected-card, .playable):hover .card-image-container {
-  transform: translate(0, 6px);
+  transform: translate(0, 2%);
 }
 
 #ui-mode.uimode-end-turn
   .grip-card:not(.selected-card, .playable):hover
   .card-image-container {
-  transform: translate(0, 40px);
+  transform: translate(0, 14%);
 }
 
 .grip-card.in-play {
@@ -613,14 +613,14 @@ button:not(.action-button, .alert-option) .inline-icon,
   z-index: 10000;
 }
 .grip-card.in-play .card-image-container {
-  transform: translate(0, -50px) rotate(0) scale(1.2) !important;
+  transform: translate(0, -18%) rotate(0) scale(1.2) !important;
 }
 
 .grip-card.selected-card {
   rotate: 0deg;
   z-index: 90;
   transform: translate(
-    calc(-50% + 45px * (var(--index) - (var(--hand-size) - 1) / 2)),
+    calc(-50% + 16% * (var(--index) - (var(--hand-size) - 1) / 2)),
     -80%
   );
 }

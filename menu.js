@@ -405,7 +405,7 @@ class Menu {
   static async showAbout() {
     const body = `
       <div>
-        <div>This online card game is based on the mechanics of Arkham Horror LCG and was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
+        <div>This single-player card game is based on the mechanics of Arkham Horror LCG and was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
         <div>Although it was made with the help of members of NSG, it is not an official NSG product nor is it endorsed as such.</div>
         <div class="mt-2 font-size-20">Content warnings</div>
         <ul>
@@ -441,6 +441,7 @@ class Menu {
               <div class="mt-2 font-size-20">Writing</div>
               <ul>
                 <li>chord gang</li>
+                <li>rielle</li>
                 <li>Ams</li>
               </ul>
             </div>
@@ -460,7 +461,7 @@ class Menu {
             </div>
           </div>
         </div>
-        <div style="transform: translateY(-1em)">
+        <div>
           <div class="font-size-20">Special thanks</div>
           <ul>
             <li>NSG Narrative contacts: Patrick Sklar and Ginevra Martin</li>
@@ -477,7 +478,7 @@ class Menu {
             <div class="row px-4">
               <ul class="col-3">
                 <li>Mandoline</li>
-                <li>-</li>
+                <li>LLBlumire</li>
                 <li>-</li>
               </ul>
               <ul class="col-3">

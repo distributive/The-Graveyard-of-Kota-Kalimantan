@@ -169,6 +169,8 @@ class Game {
       Tutorial.setMode(null);
     }
 
+    this.#turnEvents = {};
+
     Encounter.setPool(MEAT_ENCOUNTERS);
 
     Broadcast.enable();

@@ -30,6 +30,7 @@ CardIllHaveWorse = new AssetData("ill_have_worse", {
 CardNol = new AssetData("nol", {
   title: "N0L",
   text: "Once per turn → {click}, discard a card: Draw 2 cards.",
+  flavour: "Your cards belong in the bin.",
   subtypes: ["unique"],
   unique: true,
   faction: FACTION_ANARCH,
@@ -69,6 +70,7 @@ CardNol = new AssetData("nol", {
 CardSifar = new AssetData("sifar", {
   title: "Sifar",
   text: "You get +3{strength} during your turn until you complete a {strength} test.\nWhenever you reveal a symbol during a {strength} test, suffer 1 damage.",
+  flavour: `"Fashionable, affordable, big enough to carry everything I need."`,
   subtypes: ["unique", "item"],
   unique: true,
   faction: FACTION_ANARCH,
@@ -123,7 +125,7 @@ CardIceCarver = new AssetData("ice_carver", {
   unique: false,
   faction: FACTION_ANARCH,
   image: "img/card/asset/iceCarver.png",
-  cost: 1,
+  cost: 2,
   health: 1,
   skills: ["strength"],
   async onCardInstalled(source, data) {
@@ -138,7 +140,7 @@ CardIceCarver = new AssetData("ice_carver", {
 
 CardMeniru = new AssetData("meniru", {
   title: "Meniru",
-  text: "Whenever you fight, if you succeed the test by 3 or more, do 1 additional damage to that enemy.",
+  text: "Whenever you fight, if you succeed the test by 3 or more, do 1 additional damage to all targets.",
   subtypes: ["icebreaker"],
   unique: false,
   faction: FACTION_ANARCH,
@@ -149,7 +151,7 @@ CardMeniru = new AssetData("meniru", {
   onPlayerAttacks(source, data) {
     const { enemy, results, damage } = data;
     const { success, token, value, target } = results;
-    if (success && value >= target + 3) {
+    if (success && (value >= target + 3 || token == "elder")) {
       enemy.addDamage(1);
     }
   },
@@ -230,16 +232,23 @@ CardFast = new AssetData("fast", {
 
 CardBackAway = new EventData("back_away", {
   title: "Back Away",
-  text: "This costs 2{c} less for each enemy engaged with you.\nEvade all enemies and move to an adjacent location.",
-  flavour: ``,
+  text: "This costs 2{c} more for each enemy engaged with you.\nEvade all enemies and move to an adjacent location.",
+  flavour: `"As you were."`,
   subtypes: ["tactic", "evade"],
   faction: FACTION_ANARCH,
   image: "img/card/event/backAway.png",
-  cost: 8,
+  cost: 0,
   skills: ["link"],
   preventAttacks: true,
   calculateCost(source, data) {
-    return this.cost - Enemy.getEngagedEnemies().length * 2;
+    return this.cost + Enemy.getEngagedEnemies().length * 2;
+  },
+  canPlay(source, data) {
+    const success = Enemy.getEngagedEnemies().length > 0;
+    return {
+      success: success,
+      reason: success ? null : "You are not engaged with an enemy.",
+    };
   },
   onPlay: async (card) => {
     for (const enemy of Enemy.getEngagedEnemies()) {
@@ -337,10 +346,11 @@ CardGritAndDetermination = new EventData("grit_and_determination", {
 
 CardAllOut = new EventData("all_out", {
   title: "All Out",
-  text: "This costs 2{c} more for each other card in your hand.\n<b>Fight.</b> You gain +1 {strength} for this fight. If successful, instead attack each engaged enemy.",
+  text: "This costs 2{c} more for each other card in your hand.\n<b>Fight.</b> You gain +3 {strength} for this fight. If successful, instead attack each engaged enemy.",
+  flavour: `"Don't get in my way."`,
   subtypes: ["tactic", "attack"],
   faction: FACTION_ANARCH,
-  image: "img/card/event/bgAnarch.png",
+  image: "img/card/event/allOut.png",
   illustrator: "Illustrator: PiCat",
   cost: 0,
   skills: ["strength"],
@@ -352,7 +362,7 @@ CardAllOut = new EventData("all_out", {
     const success = Enemy.getEnemiesAtCurrentLocation().length > 0;
     return {
       success: success,
-      reason: success ? null : "There no enemies at your current location.",
+      reason: success ? null : "There are no enemies at your current location.",
     };
   },
   // This recreates the fight process from core principles to ensure it combos as intended
@@ -372,7 +382,7 @@ CardAllOut = new EventData("all_out", {
     // Run modal
     const results = await Chaos.runModal({
       stat: "strength",
-      base: Stats.getBase("strength") + 1,
+      base: Stats.getBase("strength") + 3,
       target: enemy.strength,
       title: "Fight!",
       description: `<p>If successful, you will do 1 damage to each engaged enemy (${
