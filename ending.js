@@ -161,7 +161,19 @@ const ENDING_BAD_ACT_THREE_TEXT = `
 ///////////////////////////////////////////////////////////////////////////////
 
 const ENDING_NEUTRAL_TEXT = `
-UNWRITTEN
+<p>You run, and hide, and run, and hide, and run, and hide. You know how to jack out, you’ve done it a million times. You executed the command on instinct the moment she arrived. And yet you’re still here, in her domain, where time moves at whatever pace she chooses. And she’s here too, careening towards you faster than your avatar could dream of, teeth bared, hair parting, eyes burning with insatiable hunger.</p>
+<p>You drop to your knees. You always figured you’d die on your feet.</p>
+<br>
+<p>And then you’re back. In your physical body, in your apartment, in Kota Kalimantan, at the foot of the last great space elevator. As you wiggle your fingers and toes, reacclimatising to meatspace, a smell that you can’t place fills your nose. Your vision slides back into focus. A wilted purple flower sits across your chest.</p>
+<br>
+<p>You see her every night in your dreams. Those eyes, those terrible eyes she conceals under all that matted hair, stay with you through each waking moment. It’s almost enough to make you want to go back. After all, you got out once. What’s one more visit?</p>
+<p>No. You’ve toiled, sacrificed, rode your luck and committed an unspeakable act or two to build this life for yourself. You’re not going to throw it all away for some ghost in your computer. And yet, those eyes…</p>
+<p>Your solution is an elegant one. Using some of your ill-gotten gains you reach out to a whole host of specialists in your network. Netchitects, codeweavers, circuit breakers and the like. You’re careful to give each of them just a piece of the full picture, lest they catch on to what you’re doing and try to take her for themselves.</p>
+<br>
+<p>One month later you receive a ping from your renderboy. It’s done. An almost perfect replica of the real thing, primed to tear through corpo defenses like she tore through your mind.</p>
+<p>Almost perfect. They couldn’t get the eyes right. How could they, unless they had seen what you’ve seen?</p>
+<br>
+<p>Over time your fixation recedes, buried under the waves of upheaval and opportunity that each fresh day in Kota Kalimantan brings. But you know, deep down, that a day will come when you will meet her again.</p>
 <br>
 <br>
 {image}

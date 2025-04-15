@@ -211,30 +211,86 @@ class Menu {
     }
 
     // Lore cutscene
-    new Modal({
-      body: `UNWRITTEN`,
+    await new Modal({
+      body: INTRO_1,
       options: [new Option("", "Continue")],
       allowKeyboard: false,
       size: "md",
     }).display();
+    const branch = await new Modal({
+      body: INTRO_2,
+      options: [
+        new Option("a", `"Let’s get to work"`),
+        new Option("b", `"…job?"`),
+        new Option("c", `"I'm Baz"`),
+      ],
+      image: "img/character/sahasrara.png",
+      allowKeyboard: false,
+      slowRoll: true,
+      size: "lg",
+    }).display();
 
-    // Skip cutscene (giving the player the opportunity to skip straight to the end)
+    // Choice for skipping
     let choice = "skip";
-    const skipCutscenes = [
-      new Modal({
-        body: `UNWRITTEN`,
+
+    // Irrelevant branching
+    if (branch == "a") {
+      choice = await new Modal({
+        body: INTRO_3_ACCEPT,
         options: [
-          new Option("", "Continue"),
-          new Option("skip", "I just want to see the scoop"),
+          new Option("", `"Alright, let’s go"`),
+          new Option("skip", `"I just want to see the scoop"`),
         ],
         image: "img/character/sahasraraHappy.png",
         allowKeyboard: false,
         slowRoll: true,
         size: "lg",
-      }),
+      }).display();
+    } else if (branch == "b") {
+      choice = await new Modal({
+        body: INTRO_3_CONFUSION,
+        options: [
+          new Option("", `"Alright, let’s go"`),
+          new Option("skip", `"I just want to see the scoop"`),
+        ],
+        image: "img/character/sahasraraPensive.png",
+        allowKeyboard: false,
+        slowRoll: true,
+        size: "lg",
+      }).display();
+    } else {
+      await new Modal({
+        body: identity == CardBaz ? `That's right!` : `Babe, no.`,
+        options: [new Option("", `Continue`)],
+        image:
+          identity == CardBaz
+            ? "img/character/sahasraraHappy.png"
+            : "img/character/sahasraraPensive.png",
+        allowKeyboard: false,
+        slowRoll: true,
+        size: "lg",
+      }).display();
+      choice = await new Modal({
+        body: INTRO_3_BAZ,
+        options: [
+          new Option("", `"Alright, let’s go"`),
+          new Option("skip", `"I just want to see the scoop"`),
+        ],
+        image: "img/character/sahasrara.png",
+        allowKeyboard: false,
+        slowRoll: true,
+        size: "lg",
+      }).display();
+    }
+
+    // Skip cutscene (giving the player the opportunity to skip straight to the end)
+    const skipCutscenes = [
       new Modal({
         body: `Oh, uh. You do?`,
-        options: [new Option("skip", "Yes"), new Option("", "Just kidding!")],
+        options: [
+          new Option("skip", `"Yes"`),
+          new Option("", `"Just kidding!"`),
+        ],
         image: "img/character/sahasraraPensive.png",
         allowKeyboard: false,
         slowRoll: true,
@@ -244,8 +300,8 @@ class Menu {
       new Modal({
         body: `We uh, spent a lot of time working on this.<br><br>Are you sure you don't want to try it?`,
         options: [
-          new Option("", "Oh okay"),
-          new Option("skip", "Scoop please"),
+          new Option("", `"Oh okay"`),
+          new Option("skip", `"Scoop please"`),
         ],
         image: "img/character/sahasrara.png",
         allowKeyboard: false,
@@ -256,8 +312,8 @@ class Menu {
       new Modal({
         body: `ok`,
         options: [
-          new Option("skip", "Scoop"),
-          new Option("", "I'll try your game"),
+          new Option("skip", `"Scoop"`),
+          new Option("", `"I'll try your game"`),
         ],
         image: "img/character/sahasraraSad.png",
         allowKeyboard: false,
@@ -266,18 +322,20 @@ class Menu {
         size: "lg",
       }),
     ];
-    for (let i = 0; i < skipCutscenes.length && choice == "skip"; i++) {
-      choice = await skipCutscenes[i].display();
-    }
     if (choice == "skip") {
-      Ending.show(ENDING_SKIP_GAME);
-      Modal.hide();
-      return;
+      for (let i = 0; i < skipCutscenes.length && choice == "skip"; i++) {
+        choice = await skipCutscenes[i].display();
+      }
+      if (choice == "skip") {
+        Ending.show(ENDING_SKIP_GAME);
+        Modal.hide();
+        return;
+      }
     }
 
     // Intro cutscene
     await new Modal({
-      body: `Splendid!<br><br>UNWRITTEN`,
+      body: `<p>Splendid!</p><p>Our benefactor left us the key with the address.</p>`,
       options: [new Option("", "Begin")],
       image: "img/character/sahasraraHappy.png",
       allowKeyboard: false,
@@ -410,7 +468,8 @@ class Menu {
         <div class="mt-2 font-size-20">Content warnings</div>
         <ul>
           <li>Mild horror themes</li>
-          <li>Hand-drawn depictions of rats and bugs (including a spider)</li>
+          <li>Unreality</li>
+          <li>Hand-drawn depictions of rats, snakes, and bugs (including a spider)</li>
         </ul>
         <div>
           There are no jumpscares, flashing lights, or sudden noises.
@@ -441,7 +500,6 @@ class Menu {
               <div class="mt-2 font-size-20">Writing</div>
               <ul>
                 <li>chord gang</li>
-                <li>rielle</li>
                 <li>Ams</li>
               </ul>
             </div>
@@ -456,7 +514,6 @@ class Menu {
               <ul>
                 <li>Lish</li>
                 <li>PiCat</li>
-                <li>Mallory "l0velace"</li>
               </ul>
             </div>
           </div>
@@ -472,6 +529,7 @@ class Menu {
             <li>Card art used with NSG's permission by Benjamin Giletti, Júlio Rocha, and Zefanya Langkan Maega</li>
             <li>Royalty free images taken from unsplash.com</li>
             <li>Royalty free sound effects taken from freesound.org</li>
+            <li><em>To view a card's illustrator, double click or mousewheel click it</em></li>
           </ul>
           <div class="mt-2 font-size-20">Playtesters</div>
           <div class="container">
@@ -479,21 +537,17 @@ class Menu {
               <ul class="col-3">
                 <li>Mandoline</li>
                 <li>LLBlumire</li>
-                <li>-</li>
               </ul>
               <ul class="col-3">
                 <li>Hello</li>
-                <li>-</li>
-                <li>-</li>
+                <li>rielle</li>
               </ul>
               <ul class="col-3">
                 <li>Mezzie</li>
                 <li>-</li>
-                <li>-</li>
               </ul>
               <ul class="col-3">
                 <li>DeeR</li>
-                <li>-</li>
                 <li>-</li>
               </ul>
             </div>
@@ -522,3 +576,38 @@ $(document).ready(function () {
     Menu.showOptionsMenu(true);
   });
 });
+
+///////////////////////////////////////////////////////////////////////////////
+
+const INTRO_1 = `
+<p>Her claws racing down your back.</p>
+<br>
+<p>Her fetid breath upon your neck.</p>
+<br>
+<p>Her dreadful teeth, sinking deep into your-</p>
+`;
+
+const INTRO_2 = `
+<p>Hey, hey wake up! It’s time!</p>
+<p>It gets lonely, y’know, being stuck in a PAD with no-one else to talk to. Plus, the window of opportunity for this job is real narrow. I was worried you were gonna sleep right through it!</p>
+`;
+
+const INTRO_3_ACCEPT = `
+<p>Great!</p>
+<p>As you know, last week we were pinged by someone calling themselves Sh1rl3yH4cks0n. They asked us to loot some server farm on the outskirts of town. Only they didn’t call it a server farm. They called it a net graveyard. Went on and on about net entities too dangerous to be kept under corp control but too precious to be purged.</p>
+<p>They’re offering to pay a particularly scrumptious bounty for one particular entity. Apparently we’ll know her by her white dress, long dark hair and … haunting beauty.</p>
+<p>What a weirdo! Sounds like someone’s got a crush. It's me. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
+`;
+
+const INTRO_3_CONFUSION = `
+<p>Wow, must have been a heavy sleep. Let me jog your memory.</p>
+<p>Last week we were pinged by someone calling themselves Sh1rl3yH4cks0n. They asked us to loot some server farm on the outskirts of town. Only they didn’t call it a server farm. They called it a net graveyard. Went on and on about net entities too dangerous to be kept under corp control but too precious to be purged.</p>
+<p>They’re offering to pay a particularly scrumptious bounty for one particular entity. Apparently we’ll know her by her white dress, long dark hair and … haunting beauty.</p>
+<p>What a weirdo! Sounds like someone’s got a crush. It's me. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
+`;
+
+const INTRO_3_BAZ = `
+<p>Last week we were pinged by someone calling themselves Sh1rl3yH4cks0n. They asked us to loot some server farm on the outskirts of town. Only they didn’t call it a server farm. They called it a net graveyard. Went on and on about net entities too dangerous to be kept under corp control but too precious to be purged.</p>
+<p>They’re offering to pay a particularly scrumptious bounty for one particular entity. Apparently we’ll know her by her white dress, long dark hair and … haunting beauty.</p>
+<p>What a weirdo! Sounds like someone’s got a crush. It's me. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
+`;

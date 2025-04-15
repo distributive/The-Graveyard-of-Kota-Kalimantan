@@ -570,7 +570,7 @@ button:not(.action-button, .alert-option) .inline-icon,
   --index: 1;
   --hand-size: 1;
   --card-width: 50%;
-  --grip-width: calc(min(var(--hand-size) * var(--card-width), 50vw));
+  --grip-width: calc(min((var(--hand-size)) * (var(--card-width) + 20%), 50vw));
   position: absolute;
   left: 50%;
   height: 100%;
@@ -1166,6 +1166,7 @@ button:not(.action-button, .alert-option) .inline-icon,
 .clues,
 .doom,
 .power {
+  --counter-colour: white;
   height: 36px;
   width: 36px;
   aspect-ratio: 1 !important;
@@ -1175,28 +1176,26 @@ button:not(.action-button, .alert-option) .inline-icon,
   border: 3px solid;
   border-radius: 100%;
   box-shadow: 0 0 10px 5px #00000050 inset;
+  border-color: var(--counter-colour);
+  background-color: var(--counter-colour);
   z-index: 20;
   pointer-events: none;
 }
 .damage {
+  --counter-colour: #b27544;
   color: white;
-  border-color: #b27544;
-  background-color: #b27544;
 }
 .clues {
+  --counter-colour: #354977;
   color: white;
-  border-color: #354977;
-  background-color: #354977;
 }
 .doom {
+  --counter-colour: #5f0505;
   color: white;
-  border-color: #5f0505;
-  background-color: #5f0505;
 }
 .power {
+  --counter-colour: #4e357a;
   color: white;
-  border-color: #4e357a;
-  background-color: #4e357a;
 }
 
 /* Card text */

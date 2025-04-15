@@ -11,6 +11,7 @@ const MEAT_ENCOUNTERS = [
 
 const NET_ENCOUNTERS = [
   TreacherySomethingInTheDark,
+  TreacherySomethingInTheDark,
   TreacheryRapidDecay,
   TreacheryRapidDecay,
   EnemyArcher,
@@ -18,12 +19,7 @@ const NET_ENCOUNTERS = [
   EnemySurveyor,
 ];
 
-const BOSS_ENCOUNTERS = [
-  TreacherySomethingInTheDark,
-  EnemyDataRaven,
-  EnemyAnansi,
-  EnemyArchitect,
-];
+const BOSS_ENCOUNTERS = [EnemyDataRaven, EnemyAnansi, EnemyArchitect];
 
 class Encounter {
   static #encounterCards = [];

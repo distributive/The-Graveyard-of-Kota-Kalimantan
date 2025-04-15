@@ -1189,7 +1189,7 @@ $(document).ready(function () {
 
   // View heap
   $("#heap").click(async function () {
-    const cards = $(`<div class="row"></div>`);
+    const cards = $(`<div class="row card-list"></div>`);
     for (const cardData of Cards.heap
       .slice()
       .sort(

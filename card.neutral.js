@@ -5,7 +5,7 @@
 CardWarehouseKey = new AssetData("warehouse_key", {
   title: "Warehouse Key",
   text: "{click}: Unlock the warehouse. Draw 2 cards. Remove this asset from the game.",
-  flavour: `UNWRITTEN: write some backstory as to how you got this."`,
+  flavour: `A key from your mysterious client."`,
   subtypes: ["item"],
   faction: FACTION_NEUTRAL,
   image: "img/card/asset/warehouseKey.png",
