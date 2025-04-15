@@ -120,8 +120,8 @@ CardForgedDocuments = new AssetData("forged_documents", {
 CardCrowbar = new AssetData("crowbar", {
   title: "Crowbar",
   text: "Uses 2 power counters.\n{click}, power counter: <b>Jack in.</b> During this skill test, add your {link} to your {mu}. If successful, download 1 additional data.",
-  subtypes: ["unique", "weapon"],
-  unique: true,
+  subtypes: ["item", "weapon"],
+  unique: false,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/crowbar.png",
   cost: 3,
@@ -177,8 +177,8 @@ CardCrowbar = new AssetData("crowbar", {
 CardShiv = new AssetData("shiv", {
   title: "Shiv",
   text: "Uses 2 power counters.\n{click}, power counter: <b>Fight.</b> During this fight, add your {link} to your {strength}. If successful, do 1 additional damage.",
-  subtypes: ["unique", "weapon", "attack"],
-  unique: true,
+  subtypes: ["item", "weapon", "attack"],
+  unique: false,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/shiv.png",
   cost: 3,
@@ -233,8 +233,8 @@ CardShiv = new AssetData("shiv", {
 CardSpike = new AssetData("spike", {
   title: "Spike",
   text: "Uses 2 power counters.\n{click}, power counter: Move twice. Enemies at those locations do not engage you.",
-  subtypes: ["unique", "weapon", "stealth"],
-  unique: true,
+  subtypes: ["item", "weapon", "stealth"],
+  unique: false,
   faction: FACTION_CRIMINAL,
   image: "img/card/asset/spike.png",
   cost: 3,

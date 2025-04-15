@@ -464,7 +464,7 @@ class Menu {
     const body = `
       <div>
         <div>This single-player card game is based on the mechanics of Arkham Horror LCG and was made in support of the release of Null Signal Games' next set: <em>Elevation.</em></div>
-        <div>Although it was made with the help of members of NSG, it is not an official NSG product nor is it endorsed as such.</div>
+        <div class="mt-2">Although it was made with the help of members of NSG, it is not an official NSG product nor is it endorsed as such.</div>
         <div class="mt-2 font-size-20">Content warnings</div>
         <ul>
           <li>Mild horror themes</li>

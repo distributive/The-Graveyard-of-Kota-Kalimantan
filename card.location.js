@@ -270,14 +270,10 @@ const LocationUnknownNet = new LocationData("unknown_net", {
 
     // Reveal the location
     let cardData;
-    // Once the boss is revealed, everything is a dead end
-    // Also, everything that is too far from the entrance
-    if (Story.isBossSummoned || (entrance && entrance.playerDistance > 5)) {
-      cardData = LocationVoid;
-    }
+
     // After 7 reveals, have a chance to reveal the source
     // If it is the last turn before the agenda would advance, remove the random chance
-    else if (
+    if (
       !Story.isSourceRevealed &&
       (Story.randomNetLocations.length == 0 ||
         (Story.netLocationsRevealed > 7 &&
@@ -287,6 +283,14 @@ const LocationUnknownNet = new LocationData("unknown_net", {
     ) {
       cardData = LocationSource;
       Story.isSourceRevealed = true;
+    }
+    // Once the boss is revealed, everything is a dead end
+    // Also, everything that is too far from the entrance
+    else if (
+      Story.isBossSummoned ||
+      (entrance && entrance.playerDistance > 5)
+    ) {
+      cardData = LocationVoid;
     }
     // Reveal a random netspace location from the pool
     else if (Story.randomNetLocations.length > 0) {

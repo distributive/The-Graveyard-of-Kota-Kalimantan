@@ -204,9 +204,9 @@ Agenda2 = new AgendaData("agenda_2", {
 
 Agenda3 = new AgendaData("agenda_3", {
   title: "Agenda ii",
-  requirement: 6,
+  requirement: 7,
   agenda: 2,
-  text: "When this hosts 6 or more doom, succumb to the void.",
+  text: "When this hosts 7 or more doom, succumb to the void (lose).",
   image: "img/card/agenda/agenda3.png",
   faction: FACTION_NET,
   async onDoomPlaced(data) {
@@ -256,7 +256,7 @@ Agenda4 = new AgendaData("agenda_4", {
   requirement: 12,
   agenda: 3,
   // Note: the Hantu effect is implemented on Hantu
-  text: "When this hosts 12 or more doom, escape the simulation.\n\nAt the end of each turn, spend 1 data to do 1 damage to Hantu.",
+  text: "When this hosts 12 or more doom, escape the simulation (win).\n\nAt the end of each turn, spend 1 data to do 1 damage to Hantu.",
   image: "img/card/agenda/agenda4.png",
   illustrator: "Photo by Andrew Amistad, Unsplash (modified)",
   faction: FACTION_NET,

@@ -414,7 +414,7 @@ class Tutorial {
         },
         {
           header: "Downloading data",
-          body: "Each location has a shroud value (left) and an amount of data (right).<br><br>If a location has any data hosted on it, you may spend a click to 'jack in', and attempt to download it.<br><br>This is you entering netspace to try and access hidden information.",
+          body: "Each location has a shroud value (left) and an amount of data (right).<br><br>When a location is revealed, data equal to its data value is placed on it in a lovely cerulean blue.<br><br>If a location has any data hosted on it, you may spend a click to 'jack in', and attempt to download it.<br><br>This is you entering netspace to try and access hidden information.",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           cardData: LocationTerminal,
@@ -774,7 +774,7 @@ class Tutorial {
     firstBroadcast: {
       cutscene: [
         {
-          header: "First broadcast",
+          header: "First archive",
           body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
@@ -788,7 +788,7 @@ class Tutorial {
     secondBroadcast: {
       cutscene: [
         {
-          header: "Second broadcast",
+          header: "Second archive",
           body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
@@ -802,7 +802,7 @@ class Tutorial {
     exitAct3: {
       cutscene: [
         {
-          header: "Broadcast sent",
+          header: "Archives investigated",
           body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
@@ -816,7 +816,7 @@ class Tutorial {
     exitAgenda2: {
       cutscene: [
         {
-          header: "Broadcast failed",
+          header: "Archives failed", // UNWRITTEN
           body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,

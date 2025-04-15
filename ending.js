@@ -42,6 +42,10 @@ class Ending {
       `<div class="ending-image-container"><img class="ending-image" src="img/card/back/anarch.png" /></div>`
     );
     $("#ending-text-box").html(text);
+    $("#ending-window").scrollTop(0);
+    setTimeout(function () {
+      $("#ending-window").scrollTop(0);
+    }, 500);
 
     // Back button
     const button = $(`

@@ -241,7 +241,7 @@ const EnemyDataRaven = new EnemyData("data_raven", {
 
 const EnemyHantu = new EnemyData("hantu", {
   title: "Hantu",
-  text: "Hunter.\nWhen this enemy is defeated, escape the simulation.\n{sub} Do 1 damage.\n{sub} Discard 2 random cards. Do 1 damage for each card that cannot be discarded.",
+  text: "Hunter.\nWhen this enemy is defeated, escape the simulation (win).\n{sub} Do 1 damage.\n{sub} Discard 2 random cards. Do 1 damage for each card that cannot be discarded.",
   flavour: "UNWRITTEN",
   subtypes: ["ice", "elite"],
   faction: FACTION_NET,
