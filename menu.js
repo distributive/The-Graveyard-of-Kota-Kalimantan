@@ -544,11 +544,7 @@ class Menu {
               </ul>
               <ul class="col-3">
                 <li>Mezzie</li>
-                <li>-</li>
-              </ul>
-              <ul class="col-3">
                 <li>DeeR</li>
-                <li>-</li>
               </ul>
             </div>
           </div>
@@ -597,7 +593,7 @@ const INTRO_3_ACCEPT = `
 <p>As you know, last week we were pinged by someone calling themselves Sh1rl3yH4cks0n.</p>
 <p>They asked us to loot a server farm on the outskirts of town. Only they didn’t call it a server farm. They called it a net graveyard. Went on and on about net entities too dangerous to be kept under corp control but too precious to be purged.</p>
 <p>They’re offering a particularly scrumptious bounty for one particular entity. Apparently we’ll know her by her white dress, long dark hair and … <em>haunting beauty</em>.</p>
-<p>Sounds like someone’s got a crush. It's me. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
+<p>Sounds like someone’s got a crush. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
 `;
 
 const INTRO_3_CONFUSION = `
@@ -605,12 +601,12 @@ const INTRO_3_CONFUSION = `
 <p>Last week we were pinged by someone calling themselves Sh1rl3yH4cks0n.</p>
 <p>They asked us to loot a server farm on the outskirts of town. Only they didn’t call it a server farm. They called it a net graveyard. Went on and on about net entities too dangerous to be kept under corp control but too precious to be purged.</p>
 <p>They’re offering a particularly scrumptious bounty for one particular entity. Apparently we’ll know her by her white dress, long dark hair and … <em>haunting beauty</em>.</p>
-<p>Sounds like someone’s got a crush. It's me. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
+<p>Sounds like someone’s got a crush. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
 `;
 
 const INTRO_3_BAZ = `
 <p>Last week we were pinged by someone calling themselves Sh1rl3yH4cks0n.</p>
 <p>They asked us to loot a server farm on the outskirts of town. Only they didn’t call it a server farm. They called it a net graveyard. Went on and on about net entities too dangerous to be kept under corp control but too precious to be purged.</p>
 <p>They’re offering a particularly scrumptious bounty for one particular entity. Apparently we’ll know her by her white dress, long dark hair and … <em>haunting beauty</em>.</p>
-<p>Sounds like someone’s got a crush. It's me. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
+<p>Sounds like someone’s got a crush. Anyway, the money’s good and the building is unguarded. What could go wrong?</p>
 `;
