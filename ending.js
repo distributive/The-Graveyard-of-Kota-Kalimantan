@@ -182,7 +182,21 @@ const ENDING_NEUTRAL_TEXT = `
 ///////////////////////////////////////////////////////////////////////////////
 
 const ENDING_GOOD_TEXT = `
-UNWRITTEN
+<p>You rain blow after blow down upon the hantu, undeterred by its gruesome appearance and wicked strength. You don’t care how many punches it takes. You’re getting out of here alive.</p>
+<p>You’re down. One swipe of her hand and you’ve turned from assailant to prey, head hitting the cold hard cybercrete. An awful shrill sound — a scream? a laugh?— rings through your ears, and you roll onto your side to buy the smallest amount of distance. It starts to hit you that after everything you’ve been through you’re going to meet your end here, in a netspace warehouse, at the hands of a ghost. You wonder if the other victims felt as stupid as you do right now.</p>
+<p>And then you spot it. A few feet away, glowing at your eye level, an object, tiny, flickering in and out of existence. A glitch? Out of options, you pull yourself towards the shimmer, the creature bearing down on you. As it bares its fangs you stretch out your arm and close your hand around the anomaly.
+<p>It’s sharp. That’s something.</p>
+<p>It’s on top of you now, pinning you, teeth closing in. You dig deep, and plunge the object into her neck.</p>
+<br>
+<p>You thought you’d heard the worst of her screams. How wrong you were. This wail, like a thousand dying birds falling from the sky, is almost enough to make you drop your weapon. The harder you push down the more dreadful it becomes. As the scream grows the room starts to fill with a blinding light. You close your eyes, ready for it all to end, then-</p>
+<br>
+<p>The light fades. You’re back in the warehouse, or at least what you thought was one, and you’re not alone. A humanoid figure in a white dress lies crumpled in a heap next to you, nail sticking from their neck. She rises, far slower than before, diminished somehow. She doesn’t attack. She looks to you inquisitively, as if awaiting instruction. You beckon her toward the exit.</p>
+<br>
+<p>No follow-up communication from your client ever comes. Who were they? A rival runner playing a prank? A creative sysop looking to make a name for themselves by taking out a leading light of the Kota Kalimantan underground? A cyber-cultist trying to keep their pet ghoul fed? Whatever. You brought something far more valuable than credits back with you.</p>
+<p>It doesn’t take much rejigging to turn the code you pulled from that place into something useful. The next time you go into battle against those who run the world you’ll have something from beyond the world at your side.</p>
+<br>
+<p>Over time the hantu, or what’s left of it, proves a deadly tool in your arsenal. You’ve coded a leash for it with just the right amount of slack, one which gives it enough freedom to tear through your adversaries but not enough to turn its rage back on you. This program might be capable of even more if unshackled, but for once in your life you err on the side of caution. You’ve seen the holes it’s left in the ice it comes up against. You’ve felt the heat from her eyes, a rage you imagine she would love to turn on you if given half a chance. </p>
+<p>A part of you wonders whether you’re tempting fate. Whether this net-demon has the capacity to hold a grudge, to overcome her programming and take revenge on the runner who tore her from her realm. But you need all the power you can get your hands on. The stakes are far too high for you to let a strength this potent go to waste. Plus, she had it coming. Nobody kills your favourite flower and comes out unscathed.</p>
 <br>
 <br>
 {image}
