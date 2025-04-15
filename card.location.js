@@ -161,11 +161,11 @@ const LocationJunction = new LocationData("junction", {
 
 // Broadcast stations
 const LocationBroadcastInfluence = new LocationData("broadcast_influence", {
-  title: "Broadcast Terminal",
-  text: "When you jack in at this location, test against {influence} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  title: "Locked Archive",
+  text: "When you jack in at this location, test against {influence} instead of {mu}.\nWhen you download the last data from this location, investigate this archive.",
   flavour:
     "You're sure you've seen this model before. If only you could remember where.",
-  subtypes: ["room"],
+  subtypes: ["room", "archive"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastRed.png",
   illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
@@ -181,10 +181,10 @@ const LocationBroadcastInfluence = new LocationData("broadcast_influence", {
 });
 
 const LocationBroadcastMu = new LocationData("broadcast_mu", {
-  title: "Broadcast Terminal",
-  text: "When you download the last data from this location, activate this terminal.",
+  title: "Net Archive",
+  text: "When you download the last data from this location, investigate this archive.",
   flavour: "This tech has seen better days.",
-  subtypes: ["room"],
+  subtypes: ["room", "archive"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastPurple.png",
   illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
@@ -199,10 +199,10 @@ const LocationBroadcastMu = new LocationData("broadcast_mu", {
 });
 
 const LocationBroadcastStrength = new LocationData("broadcast_strength", {
-  title: "Broadcast Terminal",
-  text: "When you jack in at this location, test against {strength} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  title: "Sealed Archive",
+  text: "When you jack in at this location, test against {strength} instead of {mu}.\nWhen you download the last data from this location, investigate this archive.",
   flavour: "It looks like it needs prying open.",
-  subtypes: ["room"],
+  subtypes: ["room", "archive"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastGreen.png",
   illustrator: "Photo by Peter Herrmann, Unsplash (modified)",
@@ -218,8 +218,8 @@ const LocationBroadcastStrength = new LocationData("broadcast_strength", {
 });
 
 const LocationBroadcastLink = new LocationData("broadcast_link", {
-  title: "Broadcast Terminal",
-  text: "When you jack in at this location, test against {link} instead of {mu}.\nWhen you download the last data from this location, activate this terminal.",
+  title: "Encrypted Archive",
+  text: "When you jack in at this location, test against {link} instead of {mu}.\nWhen you download the last data from this location, investigate this archive.",
   flavour: "It's encrypted.",
   subtypes: ["room"],
   faction: FACTION_MEAT,
@@ -237,10 +237,10 @@ const LocationBroadcastLink = new LocationData("broadcast_link", {
 });
 
 const LocationBroadcastActive = new LocationData("broadcast_active", {
-  title: "Broadcast Terminal",
+  title: "Investigated Archive",
   text: "",
-  flavour: "UNWRITTEN",
-  subtypes: ["room"],
+  flavour: "You've already investigated this archive.",
+  subtypes: ["room", "archive"],
   faction: FACTION_MEAT,
   image: "img/card/location/broadcastActive.png",
   illustrator: "Photo by Peter Herrmann, Unsplash (modified)",

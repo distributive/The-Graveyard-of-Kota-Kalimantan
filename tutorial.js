@@ -247,7 +247,7 @@ class Tutorial {
       modals: [
         {
           header: "Moving",
-          body: "Let's get to work!<br><br>The warehouse isn't far from your apartment. And moving is easy! You just click the move button, and then select the location you want to move to.",
+          body: "Let's get to work!<br><br>This place isn't far from your apartment. And moving is easy! You just click the move button, and then select the location you want to move to.",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
@@ -760,8 +760,8 @@ class Tutorial {
     exitAct2: {
       cutscene: [
         {
-          header: "Broadcast terminals found",
-          body: "UNWRITTEN",
+          header: "Archives found",
+          body: "UNWRITTEN (you discover the location of 4 archives)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -775,7 +775,7 @@ class Tutorial {
       cutscene: [
         {
           header: "First broadcast",
-          body: "UNWRITTEN",
+          body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -789,7 +789,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Second broadcast",
-          body: "UNWRITTEN",
+          body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -803,7 +803,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Broadcast sent",
-          body: "UNWRITTEN",
+          body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -817,7 +817,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Broadcast failed",
-          body: "UNWRITTEN",
+          body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraSad.png",
@@ -831,7 +831,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Uh oh...",
-          body: "UNWRITTEN",
+          body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraSad.png",
@@ -958,7 +958,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Something's coming...",
-          body: "UNWRITTEN",
+          body: "UNWRITTEN (lore dump)",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           size: "lg",

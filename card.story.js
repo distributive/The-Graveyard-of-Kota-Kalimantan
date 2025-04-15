@@ -85,7 +85,7 @@ Act3 = new ActData("act_3", {
   requirement: null,
   act: 3,
   textRequirement: "",
-  text: "When you activate three broadcast terminals, advance the act.",
+  text: "When you have investigated three archives, advance the act.",
   image: "img/card/act/act3.png",
   illustrator: `Photo by Julian Hochgesang, Unsplash (modified)`,
   faction: FACTION_MEAT,
