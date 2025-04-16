@@ -5,7 +5,7 @@ const TreacheryWhatWasThat = new TreacheryData("what_was_that", {
   title: "What Was That?",
   text: "Test 3{influence}. If unsuccessful, discard a random card.",
   subtypes: ["peril"],
-  image: "img/card/treachery/whatWasThat.png",
+  image: "img/card/treachery/whatWasThat.jpg",
   canEncounter() {
     return !!Cards.grip.length;
   },
@@ -32,7 +32,7 @@ const TreacheryClumsy = new TreacheryData("clumsy", {
   title: "Clumsy",
   text: "Test 3 {link}. If unsuccessful, move 2 of your data to your current location.",
   subtypes: ["hazard"],
-  image: "img/card/treachery/clumsy.png",
+  image: "img/card/treachery/clumsy.jpg",
   canEncounter() {
     return Stats.clues > 0;
   },
@@ -58,7 +58,7 @@ const TreacheryFallingDebris = new TreacheryData("falling_debris", {
   title: "Falling Debris",
   text: "Test 3{strength}. If unsuccessful, suffer 2 damage.",
   subtypes: ["hazard"],
-  image: "img/card/treachery/fallingDebris.png",
+  image: "img/card/treachery/fallingDebris.jpg",
   async onEncounter() {
     const results = await Chaos.runModal({
       stat: "strength",
@@ -79,7 +79,7 @@ const TreacheryFaultyHardware = new TreacheryData("faulty_hardware", {
   title: "Faulty Hardware",
   text: "Test 3 {mu}. If unsuccessful, exhaust all installed cards (they cannot be used for the rest of the turn).",
   subtypes: ["hazard"],
-  image: "img/card/treachery/faultyHardware.png",
+  image: "img/card/treachery/faultyHardware.jpg",
   canEncounter() {
     return !!Cards.installedCards.length;
   },
@@ -108,7 +108,7 @@ const TreacherySomethingInTheDark = new TreacheryData("something_in_the_dark", {
   title: "In the Dark",
   text: "Test 4{influence}. If unsuccessful, move an unengaged non-elite enemy to your location. It engages you. If you cannot, suffer 2 damage.",
   subtypes: ["terror"],
-  image: "img/card/treachery/scales.png",
+  image: "img/card/treachery/scales.jpg",
   async onEncounter() {
     const validTargets = Enemy.instances.filter(
       (enemy) => !enemy.engaged && !enemy.cardData.subtypes.includes("elite")
@@ -150,7 +150,7 @@ const TreacheryRapidDecay = new EventData("rapid_decay", {
   text: "When you encounter or discard this, shuffle 2 copies into your deck.",
   subtypes: ["blight"],
   faction: FACTION_NEUTRAL,
-  image: "img/card/event/rapidDecay.png",
+  image: "img/card/event/rapidDecay.jpg",
   cost: 5,
   uncollectable: true,
   async onEncounter() {

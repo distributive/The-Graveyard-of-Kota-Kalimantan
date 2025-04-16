@@ -26,16 +26,14 @@ class Cards {
       const enemyId = jCardImage.parent().data("enemy-id");
       const enemy = Enemy.getInstance(enemyId);
       if (enemy && focusedImage) {
-        focusedImage
-          .parent()
-          .find(".card-text-strength")
-          .html(enemy.strength)
-          .addClass("buffed");
-        focusedImage
-          .parent()
-          .find(".card-text-link")
-          .html(enemy.link)
-          .addClass("buffed");
+        focusedImage.parent().find(".card-text-strength").html(enemy.strength);
+        focusedImage.parent().find(".card-text-link").html(enemy.link);
+        if (enemy.strength > 0) {
+          focusedImage.parent().find(".card-text-strength").addClass("buffed");
+        }
+        if (enemy.link > 0) {
+          focusedImage.parent().find(".card-text-link").addClass("buffed");
+        }
       }
     } else if (cardData == CardAllOut) {
       focusedImage
@@ -1177,7 +1175,7 @@ $(document).ready(function () {
     const modal = new Modal({
       header: `Your deck (${Cards.stack.length} ${
         Cards.stack.length == 1 ? "card" : "cards"
-      })`,
+      }) - Ordered alphabetically`,
       body: body,
       options: [new Option("close", "Close", "close")],
       allowKeyboard: false,

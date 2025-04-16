@@ -32,6 +32,86 @@ TUTORIAL_MODE_TO_CLASS[TUTORIAL_MODE_USE_ASSET] = "force-use-asset";
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const ARCHIVE_1 = `
+<p>From the diaries of Barnaby “n1ckn4m3” Barnes, Urbextraordinaire</p>
+<div class="font-scifi px-3">
+  <p>Friends, countrymen, third-tier subscribers and above. You gotta check this one out. I got a tip-off from one <em>RAMSt0k3r</em> about an old-school net graveyard in <em>[inaudible]</em>, dating all the way back to the <em>[inaudible]</em>th century. If even a fraction of what I’ve heard about these places is true, you’re in for a treat.</p>
+  <p>Now I know you’re probably screaming at your PAD right now. Don’t do it, it’s a trap, nobody gets out of those things alive! Well, unless you’re a turbodiamond-tier sub I can’t hear you. But listen, it’s a <em>net</em> graveyard. If I don’t wanna get monster mashed I can just not jack in.</p>
+  <p>…brought my portable skulljack just in case though. All the juicy stuff’s gonna be hidden behind the firewalls. I’m all about the juicy.</p>
+  <p>It almost beggars belief to think this was so close to my apartment all this time. That a facility like this lay untouched for so long, right under the nose of the Urbextraordinaire! Back soon, with much more to share.</p>
+  <p>Love ya.</p>
+</div>
+`;
+
+const ARCHIVE_2 = `
+<div class="font-scifi px-3">
+  <p>This place is wild. Okay so I know that facilities like this were designed to repel intruders, right? I know their designers used a whole heap of psychological tricks to make you feel like you’re being followed. But knowing all that isn’t helping. Once I’m out we’re all gonna have a blast unpacking the design of this place. Like, all the corners are…wrong? I keep catching other shadows next to mine, just for a second, like there’s something sneaking up on me. Nice trick of light, very cool.</p>
+  <p>Oh, yeah, so my tech is refusing to behave tonight. There was a, uh, shimmer or something in the entrance area. I didn’t think much of it then but I think it’s some kind of dampening field. Tragically, this means tonight’s proceedings will be VOD-only. I’ll make it up to you, promise. It also means my automapper isn’t working. That’s right, we’re going old-school tonight! I’ll be fine without it, I’ve only been down here for…</p>
+  <p>Hm. I took a left, then I took a left, then I took a left, then I took a left, then I took a left, then I took a left, then I took a left, then I <em><b>WHAT THE FUCK IS THAT–</b></em></p>
+  <p>hahahaha. Sorry about that. Think a bird just flew past me or something? Oh my god, the vibe down here man. We all know the stories about HB’s Mad Science division, meme-demons, the hell realms under the net. This is the kind of place that makes them all feel true.</p>
+  <p>Oh, and there’s a fuckton of rats. That’s kind of a comfort at this point though? Like, London’s still London, even down here. I’m gonna keep going. More soon.</p>
+</div>
+`;
+
+const ARCHIVE_3_A = `
+<div class="font-scifi px-3">
+  <p>I think we make them real. The more scared I get the more real they get, and I don’t mean that in an it’s all in your head kind of way because a werewolf tore a gash in my actual fucking arm and now I’m bleeding my own actual blood on the actual floor.</p>
+  <p>I got away, I blocked off the room so I could record this, but there’s a trail of bloodcrumbs leading right to me. I’m cooked.</p>
+  <p>My subscribers aren’t gonna get to hear this. So this is an exclusive bit of content for the next visitor to the net graveyard. Let’s figure out how this works. Let’s get you out.</p>
+  <p>If it takes your fear then the question is: how? How does a physical space turn your psychological impulses into something that can hurt you? Sure you’re generating adrenaline or whatever but it’s not like that’s enough power to fire up the monster printer.</p>
+  <p>Unless we’re…</p>
+</div>
+`;
+
+const ARCHIVE_3_B = `
+<div class="font-scifi px-3">
+  <p><em>Oh.</em></p>
+</div>
+`;
+
+const ARCHIVE_3_C = `
+<div class="font-scifi px-3">
+  <p>Hey, you. Do me a favour. Look up.</p>
+</div>
+`;
+
+const ARCHIVE_3_D = `
+<p>You look up, and instead of a ceiling you are met with a deep black night sky.</p>
+<p>The stars.</p>
+<p>God, have you ever really seen the stars before? Not just stars but constellations, lines joining them up into a complex tapestry. The stars hold the answers. If you stare long enough you’ll know everything. Above it all hangs the moon, luminous and perfectly full. Its light emanates, getting brighter and brighter, overwhelming your senses, filling you up.</p>
+`;
+
+const ARCHIVE_3_E = `
+<div class="font-scifi px-3">
+  <p>I could be dancing with Kim at the club right now. But no, the urbextraordinaire just couldn’t wait to visit a haunted house, alone. It’s been…two hours? It’s been six months. It’s been a hundred <em>fucking</em> years <em><b>COME TAKE ME ALREADY JUST END IT COME TAKE ME–</b></em></p>
+</div>
+`;
+
+///////////////////////////////////////////////////////////////////////////////
+
+const HANTU_A = `
+<p>You scramble up a slope made of light, trying to get any amount of distance between yourself and the beasts pursuing you. From this vantage point you can truly take in the net graveyard for the first time. Its walls are manned by vicious-looking turrets. Feral dogs roam the overgrown thickets further out, howling, hungry.</p>
+<p>You spot pitfalls, translucent patches that give way to writhing masses of snakes below. One is very close to the path you took. You got lucky.</p>
+`;
+
+const HANTU_B = `
+You hear a rhythmic pounding, a thwack thwack thwack getting closer and closer. Then you spot the path being carved in the forest at the edge of the graveyard. Two giant woodsmen, wielding axes each larger than you, chop chop chopping a route straight towards you for-
+`;
+
+const HANTU_C = `
+Her.
+`;
+
+const HANTU_D = `
+You catch a glimpse of the hantu, racing through the newly created space at an unimaginable speed. Her white dress is flecked with red. Her dark hair is matted. She is hollow, a pulsating glitch of impossible shape and colour where her back should be. She breaks free of the forest, lets out a deafening wail. You know, deep in your bones, that she is on the hunt, and that the graveyard holds only one prey. You. 
+`;
+
+const HANTU_E = `
+What a story this will make once you’re out. You intend to live long enough to tell it. Will you run, or fight? 
+`;
+
+///////////////////////////////////////////////////////////////////////////////
+
 /**
 Tutorial outline
 
@@ -761,7 +841,23 @@ class Tutorial {
       cutscene: [
         {
           header: "Archives found",
-          body: "UNWRITTEN (you discover the location of 4 archives)",
+          body: `<em class="w-100 text-center"><b>ke- ke- ke- ke- ke- ke-</b></em>`,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Archives found",
+          body: "Woah! Was that a bird? This place must have been abandoned for some time.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasrara.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Archives found",
+          body: "<p>Anyway, I’ve used your data to piece together a schematic of the, uh, net graveyard. There should be four archive terminals nearby.</p><p>Maybe they’ll help us learn where to find this goth girl our client’s looking for, eh?</p>",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
@@ -775,8 +871,15 @@ class Tutorial {
       cutscene: [
         {
           header: "First archive",
-          body: "UNWRITTEN (lore dump)",
+          body: ARCHIVE_1,
           options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "First archive",
+          body: "What a wanker. Let’s move on?",
+          options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
           slowRoll: true,
@@ -789,8 +892,40 @@ class Tutorial {
       cutscene: [
         {
           header: "Second archive",
-          body: "UNWRITTEN (lore dump)",
+          body: "From the diaries of Barnaby “n1ckn4m3” Barnes, Urbextraordinaire–",
           options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Second archive",
+          body: "Oh not you again.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Second archive",
+          body: ARCHIVE_2,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Second archive",
+          body: "<p>London’s still…?</p><p>Must be an old-timey idiom from this guy’s era.</p>",
+          options: [new Option("", "Close")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Second archive",
+          body: "<p>Let’s keep moving.</p><p>I’ll…make sure I still know where the exit is.</p>",
+          options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
           slowRoll: true,
@@ -802,13 +937,62 @@ class Tutorial {
     exitAct3: {
       cutscene: [
         {
-          header: "Archives investigated",
-          body: "UNWRITTEN (lore dump)",
+          header: "Third archive",
+          body: "From the diaries of-",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Third archive",
+          body: "I’m hitting fast-forward.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",
           slowRoll: true,
           size: "lg",
+        },
+        {
+          header: "Third archive",
+          body: ARCHIVE_3_A,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Third archive",
+          body: ARCHIVE_3_B,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Third archive",
+          body: ARCHIVE_3_C,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Third archive",
+          body: ARCHIVE_3_D,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "lg",
+        },
+        {
+          header: "Third archive",
+          body: ARCHIVE_3_E,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Third archive",
+          body: "End of transmission.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "sm",
         },
       ],
     },
@@ -816,12 +1000,37 @@ class Tutorial {
     exitAgenda2: {
       cutscene: [
         {
-          header: "Archives failed", // UNWRITTEN
-          body: "UNWRITTEN (lore dump)",
+          header: "Out of time out of mind",
+          body: "I think.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
-          image: "img/character/sahasraraSad.png",
+          image: "img/character/sahasraraPensive.png",
           slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Out of time out of mind",
+          body: "I think we must have missed something. Something that might have helped us catch on to the true nature of this place.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Out of time out of mind",
+          body: "Look up.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Out of time out of mind",
+          body: ARCHIVE_3_D,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
           size: "lg",
         },
       ],
@@ -830,12 +1039,37 @@ class Tutorial {
     exitAgenda2NoBroadcast: {
       cutscene: [
         {
-          header: "Uh oh...",
-          body: "UNWRITTEN (lore dump)",
+          header: "Out of time out of mind",
+          body: "I think.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
-          image: "img/character/sahasraraSad.png",
+          image: "img/character/sahasraraPensive.png",
           slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Out of time out of mind",
+          body: "I think we must have missed something. Something that might have helped us catch on to the true nature of this place.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Out of time out of mind",
+          body: "Look up.",
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          image: "img/character/sahasraraPensive.png",
+          slowRoll: true,
+          size: "lg",
+        },
+        {
+          header: "Out of time out of mind",
+          body: ARCHIVE_3_D,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
           size: "lg",
         },
       ],
@@ -958,8 +1192,36 @@ class Tutorial {
       cutscene: [
         {
           header: "Something's coming...",
-          body: "UNWRITTEN (lore dump)",
+          body: HANTU_A,
           options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "lg",
+        },
+        {
+          header: "Something's coming...",
+          body: HANTU_B,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "lg",
+        },
+        {
+          header: "Something's coming...",
+          body: HANTU_C,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "lg",
+        },
+        {
+          header: "Something's coming...",
+          body: HANTU_D,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "lg",
+        },
+        {
+          header: "Something's coming...",
+          body: HANTU_E,
+          options: [new Option("", "Decide")],
           allowKeyboard: false,
           size: "lg",
         },

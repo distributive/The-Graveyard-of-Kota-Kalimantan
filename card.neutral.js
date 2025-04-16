@@ -8,7 +8,7 @@ CardWarehouseKey = new AssetData("warehouse_key", {
   flavour: `A key from your mysterious client."`,
   subtypes: ["item"],
   faction: FACTION_NEUTRAL,
-  image: "img/card/asset/warehouseKey.png",
+  image: "img/card/asset/warehouseKey.jpg",
   cost: 4,
   uncollectable: true,
   async onUse(source) {
@@ -79,7 +79,7 @@ CardUnsureGamble = new EventData("unsureGamble", {
   flavour: `Lady luck took the form of rolling 3 autofails in a row, giving up, and looking up the scoop instead.`,
   subtypes: ["familiar", "gambit"],
   faction: FACTION_NEUTRAL,
-  image: "img/card/event/offShoreFund.png",
+  image: "img/card/event/offShoreFund.jpg",
   cost: 0,
   skills: ["influence", "mu", "strength", "link"],
   onPlay: async (card) => {

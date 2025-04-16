@@ -10,7 +10,7 @@ const CardSoda = new EventData("soda", {
   flavour: "This product has been recalled.",
   subtypes: ["refreshing"],
   faction: FACTION_SHAPER,
-  image: "img/card/event/soda.png",
+  image: "img/card/event/soda.jpg",
   illustrator: "Illustrator: Lish",
   cost: 0,
   skills: ["mu"],
