@@ -160,7 +160,9 @@ const EnemyArchitect = new EnemyData("architect", {
   async attack() {},
   async onTurnEnd(source, data) {
     if (source.engaged) {
+      await wait(500);
       await Encounter.draw();
+      await wait(500);
     }
   },
 });
