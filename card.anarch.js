@@ -194,6 +194,7 @@ CardFast = new AssetData("fast", {
   faction: FACTION_ANARCH,
   image: "img/card/asset/fast.jpg",
   cost: 2,
+  skills: ["link"],
   smallText: true,
   canUse(source, data) {
     const untapped = !source.tapped;
@@ -232,7 +233,7 @@ CardFast = new AssetData("fast", {
 
 CardBackAway = new EventData("back_away", {
   title: "Back Away",
-  text: "This costs 2{c} more for each enemy engaged with you.\nEvade all enemies and move to an adjacent location.",
+  text: "This costs 1{c} more for each enemy engaged with you.\nEvade all enemies and move to an adjacent location.",
   flavour: `"As you were."`,
   subtypes: ["tactic", "evade"],
   faction: FACTION_ANARCH,
@@ -241,7 +242,7 @@ CardBackAway = new EventData("back_away", {
   skills: ["link"],
   preventAttacks: true,
   calculateCost(source, data) {
-    return this.cost + Enemy.getEngagedEnemies().length * 2;
+    return this.cost + Enemy.getEngagedEnemies().length;
   },
   canPlay(source, data) {
     const success = Enemy.getEngagedEnemies().length > 0;
@@ -346,7 +347,7 @@ CardGritAndDetermination = new EventData("grit_and_determination", {
 
 CardAllOut = new EventData("all_out", {
   title: "All Out",
-  text: "This costs 2{c} more for each other card in your hand.\n<b>Fight.</b> You gain +3 {strength} for this fight. If successful, instead attack each engaged enemy.",
+  text: "This costs 1{c} more for each other card in your hand.\n<b>Fight.</b> You gain +3 {strength} for this fight. If successful, instead attack each engaged enemy.",
   flavour: `"Don't get in my way."`,
   subtypes: ["tactic", "attack"],
   faction: FACTION_ANARCH,
@@ -356,7 +357,7 @@ CardAllOut = new EventData("all_out", {
   skills: ["strength"],
   preventAttacks: true,
   calculateCost(source) {
-    return this.cost + (Cards.grip.length - 1) * 2;
+    return this.cost + (Cards.grip.length - 1);
   },
   canPlay(source) {
     const success = Enemy.getEnemiesAtCurrentLocation().length > 0;

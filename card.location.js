@@ -271,12 +271,12 @@ const LocationUnknownNet = new LocationData("unknown_net", {
     // Reveal the location
     let cardData;
 
-    // After 7 reveals, have a chance to reveal the source
+    // After 6 reveals, have a chance to reveal the source
     // If it is the last turn before the agenda would advance, remove the random chance
     if (
       !Story.isSourceRevealed &&
       (Story.randomNetLocations.length == 0 ||
-        (Story.netLocationsRevealed > 7 &&
+        (Story.netLocationsRevealed > 6 &&
           ((Agenda.cardData == Agenda3 &&
             Agenda.doom == Agenda.cardData.requirement - 1) ||
             randomInt(0, 3) == 0)))
