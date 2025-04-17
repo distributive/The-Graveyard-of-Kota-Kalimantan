@@ -430,26 +430,28 @@ class Game {
       Identity.addDamage(damage);
     }
     // Detect death
-    if (Identity.damage >= Identity.health) {
-      Audio.playEffect(AUDIO_DEATH);
-      Audio.fadeOutMusic(1000);
-      await new Modal({
-        header: "You died",
-        body: ``,
-        options: [new Option("", "Continue...")],
-        allowKeyboard: false,
-        size: "md",
-      }).display();
-      Serialisation.deleteSave();
-      if (Act.cardData == Act1) {
-        Ending.show(ENDING_BAD_ACT_ONE);
-      } else if (Act.cardData == Act2) {
-        Ending.show(ENDING_BAD_ACT_TWO);
+    if (!Ending.hasEnded) {
+      if (Identity.damage >= Identity.health) {
+        Audio.playEffect(AUDIO_DEATH);
+        Audio.fadeOutMusic(1000);
+        await new Modal({
+          header: "You died",
+          body: ``,
+          options: [new Option("", "Continue...")],
+          allowKeyboard: false,
+          size: "md",
+        }).display();
+        Serialisation.deleteSave();
+        if (Act.cardData == Act1) {
+          Ending.show(ENDING_BAD_ACT_ONE);
+        } else if (Act.cardData == Act2) {
+          Ending.show(ENDING_BAD_ACT_TWO);
+        } else {
+          Ending.show(ENDING_BAD_ACT_THREE);
+        }
       } else {
-        Ending.show(ENDING_BAD_ACT_THREE);
+        Audio.playEffect(AUDIO_PAIN);
       }
-    } else {
-      Audio.playEffect(AUDIO_PAIN);
     }
   }
 
