@@ -61,7 +61,10 @@ CardPennyearner = new AssetData("pennyearner", {
   },
   async onUse(source, data) {
     Stats.addClicks(-1);
-    const { success } = await Game.actionInvestigate({ costsClick: false });
+    const { success } = await Game.actionInvestigate({
+      costsClick: false,
+      preventAttacks: true,
+    });
     if (success) {
       await Stats.addCredits(source.power);
       source.setPower(0);
@@ -170,6 +173,7 @@ CardCrowbar = new AssetData("crowbar", {
       clues: 2,
       costsClick: false,
       base: base,
+      preventAttacks: true,
     });
   },
 });
@@ -433,6 +437,7 @@ CardInsideJob = new EventData("inside_job", {
       location: UiMode.data.selectedLocation,
       target: Location.getCurrentLocation().cardData.shroud,
       costsClick: false,
+      preventAttacks: true,
     });
   },
 });

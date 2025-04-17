@@ -364,6 +364,7 @@ class Game {
       base,
       target = location.cardData.shroud,
       canCancelIfEngaged,
+      preventAttacks = false,
     } = data;
     if (canCancelIfEngaged) {
       const confirmed = await Enemy.confirmAttackOfOpportunity();
@@ -384,7 +385,9 @@ class Game {
     if (costsClick) {
       await Stats.addClicks(-1);
     }
-    await Enemy.attackOfOpportunity();
+    if (!preventAttacks) {
+      await Enemy.attackOfOpportunity();
+    }
     await Broadcast.signal("onInvestigationAttempt", { location: location });
     const forceOutcome = !Tutorial.active
       ? null

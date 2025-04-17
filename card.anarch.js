@@ -314,6 +314,7 @@ CardDownloadTheSigns = new EventData("download_the_signs", {
       clues: 2,
       costsClick: false,
       base: base,
+      preventAttacks: true,
     });
   },
 });
