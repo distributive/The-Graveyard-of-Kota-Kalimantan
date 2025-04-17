@@ -88,7 +88,7 @@ const ARCHIVE_3_C = `
 const ARCHIVE_3_D = `
 <p>You look up, and instead of a ceiling you are met with a deep black night sky.</p>
 <p>The stars.</p>
-<p>God, have you ever really seen the stars before? Not just stars but constellations, lines joining them up into a complex tapestry. The stars hold the answers. If you stare long enough you’ll know everything. Above it all hangs the moon, luminous and perfectly full. Its light emanates, getting brighter and brighter, overwhelming your senses, filling you up.</p>
+<p>Gods, have you ever really seen the stars before? Not just stars but constellations, lines joining them up into a complex tapestry. The stars hold the answers. If you stare long enough you’ll know everything. Above it all hangs the moon, luminous and perfectly full. Its light emanates, getting brighter and brighter, overwhelming your senses, filling you up.</p>
 `;
 
 const ARCHIVE_3_E = `
@@ -113,7 +113,9 @@ Her.
 `;
 
 const HANTU_D = `
-You catch a glimpse of the hantu, racing through the newly created space at an unimaginable speed. Her white dress is flecked with red. Her dark hair is matted. She is hollow, a pulsating glitch of impossible shape and colour where her back should be. She breaks free of the forest, lets out a deafening wail. You know, deep in your bones, that she is on the hunt, and that the graveyard holds only one prey. You. 
+<p>You catch a glimpse of the hantu, racing through the newly created space at an unimaginable speed. Her white dress is flecked with red. Her dark hair is matted. She is hollow, a pulsating glitch of impossible shape and colour where her back should be. She breaks free of the forest, lets out a deafening wail.</p>
+<p>You know, deep in your bones, that she is on the hunt, and that the graveyard holds only one prey.</p>
+<p>You.</p> 
 `;
 
 const HANTU_E = `
@@ -757,7 +759,7 @@ class Tutorial {
         {
           header: "Onwards",
           body: "That's pretty much everything you need to know!<br><br>I'll still be with you, but try exploring this place by yourself now.<br><br>Remember: you want to download more data to advance the next act!",
-          options: [new Option("", "Next")],
+          options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasrara.png",
           slowRoll: true,
@@ -850,7 +852,7 @@ class Tutorial {
     exitAct2: {
       cutscene: [
         {
-          header: "Archives found",
+          header: "???",
           body: `<b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b>`,
           options: [new Option("", "Next")],
           allowKeyboard: false,
@@ -860,7 +862,7 @@ class Tutorial {
           size: "md",
         },
         {
-          header: "Archives found",
+          header: "???",
           body: "Woah! Was that a bird? This place must have been abandoned for some time.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
@@ -919,7 +921,7 @@ class Tutorial {
         },
         {
           header: "Second archive",
-          body: "Oh not you again.",
+          body: "Oh no, not you again.",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           image: "img/character/sahasraraPensive.png",

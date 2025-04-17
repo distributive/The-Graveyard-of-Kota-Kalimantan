@@ -469,12 +469,12 @@ class Menu {
         <ul>
           <li>Mild horror themes</li>
           <li>Unreality</li>
-          <li>Madness</li>
+          <li>Madness/obsession</li>
           <li>Captivity</li>
           <li>Hand-drawn depictions of rats, snakes, and bugs (including a spider)</li>
         </ul>
         <div>
-          There are no jumpscares, flashing lights, or sudden noises.
+          There are no jumpscares, flashing lights, or sudden loud noises.
         </div>
       </div>
       `;

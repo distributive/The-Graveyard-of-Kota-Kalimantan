@@ -200,7 +200,8 @@ const ENDING_GOOD_TEXT = `
 <p>It doesn’t take much rejigging to turn the code you pulled from that place into something useful. The next time you go into battle against those who run the world you’ll have something from beyond the world at your side.</p>
 <br>
 <p>Over time the hantu, or what’s left of it, proves a deadly tool in your arsenal. You’ve coded a leash for it with just the right amount of slack, one which gives it enough freedom to tear through your adversaries but not enough to tear through you. This program might be capable of even more if unshackled, but for once in your life you err on the side of caution. You’ve seen the gashes she’s left in the ice you put her up against. You’ve felt the heat from her eyes, the fury you imagine she would love to direct at her captor if given half a chance.</p>
-<p>A part of you wonders whether you’re tempting fate. Whether this net-demon has the capacity to hold a grudge, to overcome her programming and take revenge on the runner who tore her from her realm. But you need all the power you can get your hands on. The stakes are far too high for you to let a strength this potent go to waste. Plus, she had it coming. Nobody kills your favourite flower and comes out unscathed.</p>
+<p>A part of you wonders whether you’re tempting fate. Whether this net-demon has the capacity to hold a grudge, to overcome her programming and take revenge on the runner who tore her from her realm. But you need all the power you can get your hands on. The stakes are far too high for you to let a strength this potent go to waste.</p>
+<p>Plus, she had it coming. Nobody kills your favourite flower and comes out unscathed.</p>
 <br>
 <br>
 {image}
