@@ -667,10 +667,12 @@ class Enemy {
   async attack() {
     this.#jObj.addClass("attacking");
     await UiMode.setMode(UIMODE_WAITING);
-    if (this.cardData.attackEffect) {
-      Audio.playEffect(this.cardData.attackEffect);
-    } else {
-      Audio.playEffect(AUDIO_ATTACK);
+    if (!Ending.hasEnded) {
+      if (this.cardData.attackEffect) {
+        Audio.playEffect(this.cardData.attackEffect);
+      } else {
+        Audio.playEffect(AUDIO_ATTACK);
+      }
     }
     await wait(1000);
     await this.#cardData.attack(this);

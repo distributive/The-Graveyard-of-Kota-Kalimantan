@@ -9,11 +9,14 @@ const ENDING_GOOD = ending_i++;
 ///////////////////////////////////////////////////////////////////////////////
 
 class Ending {
+  static hasEnded = false;
+
   static show(ending, resetProgress = true) {
     Audio.fadeOutMusic(1000);
     $("#ending-window").removeClass("show");
     $("#ending-text-box").removeClass("show");
     $("#ending-text-box").empty();
+    this.hasEnded = true;
 
     // Story
     let text = "";
@@ -63,6 +66,7 @@ class Ending {
       $("#ending-text-box").empty();
       Audio.playEffect(AUDIO_CLICK);
       Menu.showMainMenu();
+      this.hasEnded = false;
     });
 
     // Card reveal
