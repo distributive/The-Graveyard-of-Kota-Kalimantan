@@ -61,12 +61,12 @@ class Ending {
     button.find("#ending-options").fadeOut(1);
     $("#ending-text-box").append(button);
     button.on("click", function () {
+      Ending.hasEnded = false;
       $("#ending-window").removeClass("show");
       $("#ending-text-box").removeClass("show");
       $("#ending-text-box").empty();
       Audio.playEffect(AUDIO_CLICK);
       Menu.showMainMenu();
-      this.hasEnded = false;
     });
 
     // Card reveal
