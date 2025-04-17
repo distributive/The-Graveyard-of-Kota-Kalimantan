@@ -21,11 +21,11 @@ const CardTopan = new IdentityData("topan", {
   faction: FACTION_ANARCH,
   image: "img/card/identity/topan.png",
   illustrator: "Illustrator: Zefanya Langkan Maega",
-  influence: 4,
-  mu: 3,
+  influence: 3,
+  mu: 4,
   strength: 4,
   link: 3,
-  health: 8,
+  health: 9,
   canUse(source) {
     const tutorial = !Tutorial.active; // Inactive during the tutorial
     const untapped = !source.tapped;

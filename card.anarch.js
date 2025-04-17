@@ -324,7 +324,7 @@ CardGritAndDetermination = new EventData("grit_and_determination", {
   subtypes: ["tactic"],
   faction: FACTION_ANARCH,
   image: "img/card/event/gritAndDetermination.jpg",
-  cost: 3,
+  cost: 0,
   skills: ["influence", "mu"],
   canPlay(source, data) {
     const activated = Game.getTurnEvent("downloaded");
