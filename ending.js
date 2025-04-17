@@ -156,7 +156,7 @@ const ENDING_BAD_ACT_THREE_TEXT = `
 <p>You feel blind. The world feels like a line. Your mind tells you your body occupies no space at all and yet as you try to stand, you are unable to support this flimsy form.</p>
 <br>
 <p>Hours or days later, someone finds you curled up on the floor. The same floor where you awoke from an irrelevant amount of time ago. As they try to raise you to your feet, you mutter something illegible.</p>
-<p class="mb-0">On the floor surrounding the space they found you are scrawlings of lines and shapes. Spheres within spheres and spiderwebs and spirals. In the centre of it all: a figure, pointing. Your mind no longer belongs to you, but it.</p>
+<p class="mb-0">On the floor surrounding the space they found you are scrawlings of lines and shapes. Spheres within spheres and spiderwebs and spirals. In the centre of it all: a figure, pointing. Your mind is no longer your own. You brought someone back with you.</p>
 <br>
 <br>
 {image}
@@ -168,7 +168,7 @@ const ENDING_NEUTRAL_TEXT = `
 <p>You run, and hide, and run, and hide, and run, and hide. You know how to jack out, you’ve done it a million times. You executed the command on instinct the moment she arrived. And yet you’re still here, in her domain, where time moves at whatever pace she chooses. And she’s here too, careening towards you faster than your avatar could dream of, teeth bared, hair parting, eyes burning with insatiable hunger.</p>
 <p>You drop to your knees. You always figured you’d die on your feet.</p>
 <br>
-<p>And then you’re back. In your physical body, in your apartment, in Kota Kalimantan, at the foot of the last great space elevator. As you wiggle your fingers and toes, reacclimatising to meatspace, a smell that you can’t place fills your nose. Your vision slides back into focus. A wilted purple flower sits across your chest.</p>
+<p>And then you’re back. In your physical body, in your apartment, in Kota Kalimantan, at the foot of the last great space elevator. As you wiggle your fingers and toes, reacclimatising to meatspace, a smell that you can’t place fills your nose. Your vision slides back into focus. A wilted purple flower lies on your chest.</p>
 <br>
 <p>You see her every night in your dreams. Those eyes, those terrible eyes she conceals under all that matted hair, stay with you through each waking moment. It’s almost enough to make you want to go back. After all, you got out once. What’s one more visit?</p>
 <p>No. You’ve toiled, sacrificed, rode your luck and committed an unspeakable act or two to build this life for yourself. You’re not going to throw it all away for some ghost in your computer. And yet, those eyes…</p>
@@ -199,7 +199,7 @@ const ENDING_GOOD_TEXT = `
 <p>No follow-up communication from your client ever comes. Who were they? A rival runner playing a prank? A creative sysop looking to make a name for themselves by taking out a leading light of the Kota Kalimantan underground? A cyber-cultist trying to keep their pet ghoul fed? Whatever. You brought something far more valuable than credits back with you.</p>
 <p>It doesn’t take much rejigging to turn the code you pulled from that place into something useful. The next time you go into battle against those who run the world you’ll have something from beyond the world at your side.</p>
 <br>
-<p>Over time the hantu, or what’s left of it, proves a deadly tool in your arsenal. You’ve coded a leash for it with just the right amount of slack, one which gives it enough freedom to tear through your adversaries but not enough to turn its rage back on you. This program might be capable of even more if unshackled, but for once in your life you err on the side of caution. You’ve seen the holes it’s left in the ice it comes up against. You’ve felt the heat from her eyes, a rage you imagine she would love to turn on you if given half a chance. </p>
+<p>Over time the hantu, or what’s left of it, proves a deadly tool in your arsenal. You’ve coded a leash for it with just the right amount of slack, one which gives it enough freedom to tear through your adversaries but not enough to tear through you. This program might be capable of even more if unshackled, but for once in your life you err on the side of caution. You’ve seen the gashes she’s left in the ice you put her up against. You’ve felt the heat from her eyes, the fury you imagine she would love to direct at her captor if given half a chance.</p>
 <p>A part of you wonders whether you’re tempting fate. Whether this net-demon has the capacity to hold a grudge, to overcome her programming and take revenge on the runner who tore her from her realm. But you need all the power you can get your hands on. The stakes are far too high for you to let a strength this potent go to waste. Plus, she had it coming. Nobody kills your favourite flower and comes out unscathed.</p>
 <br>
 <br>

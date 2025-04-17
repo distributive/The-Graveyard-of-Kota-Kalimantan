@@ -222,7 +222,7 @@ class Menu {
       options: [
         new Option("a", `"Let’s get to work"`),
         new Option("b", `"…job?"`),
-        new Option("c", `"I'm Baz"`),
+        new Option("c", `"I'm Baz."`),
       ],
       image: "img/character/sahasrara.png",
       allowKeyboard: false,
@@ -469,6 +469,8 @@ class Menu {
         <ul>
           <li>Mild horror themes</li>
           <li>Unreality</li>
+          <li>Madness</li>
+          <li>Captivity</li>
           <li>Hand-drawn depictions of rats, snakes, and bugs (including a spider)</li>
         </ul>
         <div>

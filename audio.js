@@ -93,6 +93,15 @@ const AUDIO_FLOWER_DEATH = "./audio/flowerDeath.mp3";
 
 const AUDIO_EMP = "./audio/emp.mp3";
 
+const AUDIO_VOICE_BIRD_0 = "./audio/bird0.mp3";
+const AUDIO_VOICE_BIRD_1 = "./audio/bird1.mp3";
+const AUDIO_VOICE_BIRD_2 = "./audio/bird2.mp3";
+const AUDIO_VOICES_BIRD = [
+  AUDIO_VOICE_BIRD_0,
+  AUDIO_VOICE_BIRD_1,
+  AUDIO_VOICE_BIRD_2,
+];
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class Audio {

@@ -32,10 +32,15 @@ TUTORIAL_MODE_TO_CLASS[TUTORIAL_MODE_USE_ASSET] = "force-use-asset";
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const ARCHIVE_1 = `
-<p>From the diaries of Barnaby “n1ckn4m3” Barnes, Urbextraordinaire</p>
+const ARCHIVE_1_A = `
+<p>From the diaries of Barnaby Barnes, Urbextraordinaire</p>
 <div class="font-scifi px-3">
   <p>Friends, countrymen, third-tier subscribers and above. You gotta check this one out. I got a tip-off from one <em>RAMSt0k3r</em> about an old-school net graveyard in <em>[inaudible]</em>, dating all the way back to the <em>[inaudible]</em>th century. If even a fraction of what I’ve heard about these places is true, you’re in for a treat.</p>
+</div>
+`;
+
+const ARCHIVE_1_B = `
+<div class="font-scifi px-3">
   <p>Now I know you’re probably screaming at your PAD right now. Don’t do it, it’s a trap, nobody gets out of those things alive! Well, unless you’re a turbodiamond-tier sub I can’t hear you. But listen, it’s a <em>net</em> graveyard. If I don’t wanna get monster mashed I can just not jack in.</p>
   <p>…brought my portable skulljack just in case though. All the juicy stuff’s gonna be hidden behind the firewalls. I’m all about the juicy.</p>
   <p>It almost beggars belief to think this was so close to my apartment all this time. That a facility like this lay untouched for so long, right under the nose of the Urbextraordinaire! Back soon, with much more to share.</p>
@@ -43,12 +48,17 @@ const ARCHIVE_1 = `
 </div>
 `;
 
-const ARCHIVE_2 = `
+const ARCHIVE_2_A = `
 <div class="font-scifi px-3">
   <p>This place is wild. Okay so I know that facilities like this were designed to repel intruders, right? I know their designers used a whole heap of psychological tricks to make you feel like you’re being followed. But knowing all that isn’t helping. Once I’m out we’re all gonna have a blast unpacking the design of this place. Like, all the corners are…wrong? I keep catching other shadows next to mine, just for a second, like there’s something sneaking up on me. Nice trick of light, very cool.</p>
   <p>Oh, yeah, so my tech is refusing to behave tonight. There was a, uh, shimmer or something in the entrance area. I didn’t think much of it then but I think it’s some kind of dampening field. Tragically, this means tonight’s proceedings will be VOD-only. I’ll make it up to you, promise. It also means my automapper isn’t working. That’s right, we’re going old-school tonight! I’ll be fine without it, I’ve only been down here for…</p>
   <p>Hm. I took a left, then I took a left, then I took a left, then I took a left, then I took a left, then I took a left, then I took a left, then I <em><b>WHAT THE FUCK IS THAT–</b></em></p>
-  <p>hahahaha. Sorry about that. Think a bird just flew past me or something? Oh my god, the vibe down here man. We all know the stories about HB’s Mad Science division, meme-demons, the hell realms under the net. This is the kind of place that makes them all feel true.</p>
+</div>
+`;
+
+const ARCHIVE_2_B = `
+<div class="font-scifi px-3">
+  <p>Hahahaha. Sorry about that. Think a bird just flew past me or something? Oh my god, the vibe down here man. We all know the stories about HB’s Mad Science division, meme-demons, the hell realms under the net. This is the kind of place that makes them all feel true.</p>
   <p>Oh, and there’s a fuckton of rats. That’s kind of a comfort at this point though? Like, London’s still London, even down here. I’m gonna keep going. More soon.</p>
 </div>
 `;
@@ -361,7 +371,7 @@ class Tutorial {
       modals: [
         {
           header: "Drawing cards",
-          body: "The simplest way to draw cards, is to spend a click to draw! Wouldn't you agree?",
+          body: "The simplest way to draw cards, is to spend a click to draw! Don't you agree?",
           options: [new Option("", "Close")],
           allowKeyboard: false,
           image: "img/character/sahasraraHappy.png",
@@ -841,9 +851,12 @@ class Tutorial {
       cutscene: [
         {
           header: "Archives found",
-          body: `<em class="w-100 text-center"><b>ke- ke- ke- ke- ke- ke-</b></em>`,
+          body: `<b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b> <b><em>ke-</em></b>`,
           options: [new Option("", "Next")],
           allowKeyboard: false,
+          slowRoll: true,
+          rollSpeed: 600,
+          voices: [AUDIO_VOICE_BIRD_2],
           size: "md",
         },
         {
@@ -871,7 +884,14 @@ class Tutorial {
       cutscene: [
         {
           header: "First archive",
-          body: ARCHIVE_1,
+          body: ARCHIVE_1_A,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "First archive",
+          body: ARCHIVE_1_B,
           options: [new Option("", "Next")],
           allowKeyboard: false,
           size: "md",
@@ -892,7 +912,7 @@ class Tutorial {
       cutscene: [
         {
           header: "Second archive",
-          body: "From the diaries of Barnaby “n1ckn4m3” Barnes, Urbextraordinaire–",
+          body: "From the diaries of Barnaby Barnes, Urbextraordinaire–",
           options: [new Option("", "Next")],
           allowKeyboard: false,
           size: "md",
@@ -908,7 +928,14 @@ class Tutorial {
         },
         {
           header: "Second archive",
-          body: ARCHIVE_2,
+          body: ARCHIVE_2_A,
+          options: [new Option("", "Next")],
+          allowKeyboard: false,
+          size: "md",
+        },
+        {
+          header: "Second archive",
+          body: ARCHIVE_2_B,
           options: [new Option("", "Next")],
           allowKeyboard: false,
           size: "md",
@@ -927,7 +954,7 @@ class Tutorial {
           body: "<p>Let’s keep moving.</p><p>I’ll…make sure I still know where the exit is.</p>",
           options: [new Option("", "Close")],
           allowKeyboard: false,
-          image: "img/character/sahasraraPensive.png",
+          image: "img/character/sahasrara.png",
           slowRoll: true,
           size: "lg",
         },
@@ -974,7 +1001,7 @@ class Tutorial {
           size: "md",
         },
         {
-          header: "Third archive",
+          header: "The abyss above",
           body: ARCHIVE_3_D,
           options: [new Option("", "Next")],
           allowKeyboard: false,
@@ -1027,7 +1054,7 @@ class Tutorial {
           size: "lg",
         },
         {
-          header: "Out of time out of mind",
+          header: "The abyss above",
           body: ARCHIVE_3_D,
           options: [new Option("", "Next")],
           allowKeyboard: false,
@@ -1066,7 +1093,7 @@ class Tutorial {
           size: "lg",
         },
         {
-          header: "Out of time out of mind",
+          header: "The abyss above",
           body: ARCHIVE_3_D,
           options: [new Option("", "Next")],
           allowKeyboard: false,
